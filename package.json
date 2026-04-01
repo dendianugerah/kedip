@@ -7,7 +7,14 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "format": "bun run format:rust && bun run format:ts",
+    "format:rust": "cd src-tauri && cargo fmt",
+    "format:ts": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "lint": "bun run lint:rust && bun run lint:ts",
+    "lint:rust": "cd src-tauri && cargo clippy",
+    "lint:ts": "tsc --noEmit",
+    "check": "bun run lint && bun run format"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
@@ -23,11 +30,12 @@
     "tailwindcss": "^4.2.1"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
+    "prettier": "^3.8.1",
     "typescript": "~5.8.3",
-    "vite": "^7.0.4",
-    "@tauri-apps/cli": "^2"
+    "vite": "^7.0.4"
   }
 }

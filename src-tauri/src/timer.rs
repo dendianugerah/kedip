@@ -41,7 +41,7 @@ pub fn start_loop(app: AppHandle, state: Arc<AppState>) {
             std::thread::sleep(Duration::from_millis(100));
 
             let paused = *state.is_paused.lock().unwrap();
-            
+
             // When paused, just update tray and continue
             if paused {
                 let timer = state.timer.lock().unwrap();
@@ -100,7 +100,7 @@ pub fn start_loop(app: AppHandle, state: Arc<AppState>) {
 
             // Emit state updates to all windows
             let _ = app.emit("timer-update", &current_state);
-            
+
             // Update tray title
             update_tray_title(&app, false, phase, time_remaining);
         }

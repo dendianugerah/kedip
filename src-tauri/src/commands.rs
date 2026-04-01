@@ -20,10 +20,10 @@ pub fn get_timer_state(state: tauri::State<'_, Arc<AppState>>) -> TimerState {
 #[tauri::command]
 pub fn skip_break(app: AppHandle, state: tauri::State<'_, Arc<AppState>>) {
     let mut timer = state.timer.lock().unwrap();
-    
+
     windows::close_break(&app);
     windows::close_notification(&app);
-    
+
     timer.phase = TimerPhase::Working;
     timer.time_remaining_ms = timer.work_duration_ms;
     *state.last_tick.lock().unwrap() = Instant::now();
@@ -33,9 +33,9 @@ pub fn skip_break(app: AppHandle, state: tauri::State<'_, Arc<AppState>>) {
 #[tauri::command]
 pub fn snooze_break(app: AppHandle, state: tauri::State<'_, Arc<AppState>>) {
     let mut timer = state.timer.lock().unwrap();
-    
+
     windows::close_notification(&app);
-    
+
     timer.phase = TimerPhase::Working;
     timer.time_remaining_ms = 5 * 60 * 1000; // 5 minutes
     *state.last_tick.lock().unwrap() = Instant::now();
@@ -45,13 +45,13 @@ pub fn snooze_break(app: AppHandle, state: tauri::State<'_, Arc<AppState>>) {
 #[tauri::command]
 pub fn start_break_now(app: AppHandle, state: tauri::State<'_, Arc<AppState>>) {
     let mut timer = state.timer.lock().unwrap();
-    
+
     windows::close_notification(&app);
-    
+
     timer.phase = TimerPhase::Break;
     timer.time_remaining_ms = timer.break_duration_ms;
     *state.last_tick.lock().unwrap() = Instant::now();
-    
+
     windows::show_break(&app, timer.time_remaining_ms);
 }
 
@@ -62,12 +62,12 @@ pub fn start_break_now(app: AppHandle, state: tauri::State<'_, Arc<AppState>>) {
 pub fn toggle_pause(state: tauri::State<'_, Arc<AppState>>) -> bool {
     let mut paused = state.is_paused.lock().unwrap();
     *paused = !*paused;
-    
+
     // Reset last_tick when unpausing to avoid big time jumps
     if !*paused {
         *state.last_tick.lock().unwrap() = Instant::now();
     }
-    
+
     *paused
 }
 
@@ -83,7 +83,7 @@ pub fn update_settings(
     countdown_duration_ms: u64,
 ) {
     let mut timer = state.timer.lock().unwrap();
-    
+
     timer.work_duration_ms = work_duration_ms;
     timer.break_duration_ms = break_duration_ms;
     timer.countdown_duration_ms = countdown_duration_ms;
@@ -107,7 +107,7 @@ pub fn lock_screen() -> Result<(), String> {
             .spawn()
             .map_err(|e| e.to_string())?;
     }
-    
+
     #[cfg(target_os = "windows")]
     {
         std::process::Command::new("rundll32.exe")
@@ -115,11 +115,15 @@ pub fn lock_screen() -> Result<(), String> {
             .spawn()
             .map_err(|e| e.to_string())?;
     }
-    
+
     #[cfg(target_os = "linux")]
     {
         // Try different screen lockers
-        let lockers = ["xdg-screensaver lock", "gnome-screensaver-command -l", "xscreensaver-command -lock"];
+        let lockers = [
+            "xdg-screensaver lock",
+            "gnome-screensaver-command -l",
+            "xscreensaver-command -lock",
+        ];
         for locker in lockers {
             if std::process::Command::new("sh")
                 .args(["-c", locker])
@@ -130,7 +134,7 @@ pub fn lock_screen() -> Result<(), String> {
             }
         }
     }
-    
+
     Ok(())
 }
 
@@ -138,7 +142,7 @@ pub fn lock_screen() -> Result<(), String> {
 #[tauri::command]
 pub fn add_break_time(state: tauri::State<'_, Arc<AppState>>, extra_ms: u64) {
     let mut timer = state.timer.lock().unwrap();
-    
+
     if timer.phase == TimerPhase::Break {
         timer.time_remaining_ms += extra_ms;
     }

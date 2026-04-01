@@ -17,17 +17,16 @@ pub fn show_notification(app: &AppHandle, time_remaining: u64) {
 
     let url = format!("index.html?window=notification&time={}", time_remaining);
 
-    if let Ok(window) =
-        WebviewWindowBuilder::new(app, "notification", WebviewUrl::App(url.into()))
-            .title("Break Coming")
-            .inner_size(400.0, 100.0)
-            .decorations(false)
-            .transparent(true)
-            .always_on_top(true)
-            .resizable(false)
-            .skip_taskbar(true)
-            .center()
-            .build()
+    if let Ok(window) = WebviewWindowBuilder::new(app, "notification", WebviewUrl::App(url.into()))
+        .title("Break Coming")
+        .inner_size(400.0, 100.0)
+        .decorations(false)
+        .transparent(true)
+        .always_on_top(true)
+        .resizable(false)
+        .skip_taskbar(true)
+        .center()
+        .build()
     {
         let _ = window.show();
         let _ = window.set_focus();

@@ -42,7 +42,9 @@ const BlobThree = ({ className }: { className?: string }) => (
 );
 
 function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+  const m = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
   const s = (seconds % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 }
@@ -68,14 +70,14 @@ export function BreakWindow() {
   useEffect(() => {
     // Start zen timer on mount
     resetZenTimer();
-    
+
     // Reset on any mouse movement or key press
     const handleActivity = () => resetZenTimer();
-    
+
     window.addEventListener("mousemove", handleActivity);
     window.addEventListener("keydown", handleActivity);
     window.addEventListener("mousedown", handleActivity);
-    
+
     return () => {
       window.removeEventListener("mousemove", handleActivity);
       window.removeEventListener("keydown", handleActivity);
@@ -162,8 +164,8 @@ export function BreakWindow() {
   }
 
   return (
-    <div 
-      className={`min-h-screen w-full bg-[#F9F8F4] relative overflow-hidden flex items-center justify-center selection:bg-[#EAE6DF] select-none transition-[cursor] duration-700 ${isZenMode ? 'cursor-none' : 'cursor-default'}`}
+    <div
+      className={`min-h-screen w-full bg-[#F9F8F4] relative overflow-hidden flex items-center justify-center selection:bg-[#EAE6DF] select-none transition-[cursor] duration-700 ${isZenMode ? "cursor-none" : "cursor-default"}`}
     >
       {/* Ambient Background Blobs - Slow, breathing animations */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center">
@@ -209,7 +211,6 @@ export function BreakWindow() {
 
       {/* Main Content - Centered & Minimal */}
       <div className="z-10 flex flex-col items-center text-center max-w-xl px-6 w-full">
-        
         {/* Heading & Description - Fades in Zen Mode */}
         <AnimatePresence>
           {!isZenMode && (
@@ -259,8 +260,7 @@ export function BreakWindow() {
                   onClick={addTime}
                   className="px-6 py-3 bg-[#EAE6DF] text-[#2A2A28] rounded-full font-medium hover:bg-[#DFDBD0] transition-colors flex items-center gap-2 font-sans"
                 >
-                  <Plus className="w-4 h-4" />
-                  1 Min
+                  <Plus className="w-4 h-4" />1 Min
                 </button>
                 <button
                   onClick={handleSkip}

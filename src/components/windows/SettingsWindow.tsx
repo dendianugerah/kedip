@@ -2,17 +2,7 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { motion } from "motion/react";
-import {
-  Eye,
-  Play,
-  Pause,
-  Coffee,
-  RotateCcw,
-  Clock,
-  Timer,
-  Zap,
-  Leaf,
-} from "lucide-react";
+import { Eye, Play, Pause, Coffee, RotateCcw, Clock, Timer, Zap, Leaf } from "lucide-react";
 
 interface TimerState {
   phase: string;
@@ -177,11 +167,7 @@ export function SettingsWindow() {
                       : "bg-[#EAE6DF] text-[#7A7974] hover:bg-[#DFDBD0]"
                   }`}
                 >
-                  {isPaused ? (
-                    <Play className="w-4 h-4 ml-0.5" />
-                  ) : (
-                    <Pause className="w-4 h-4" />
-                  )}
+                  {isPaused ? <Play className="w-4 h-4 ml-0.5" /> : <Pause className="w-4 h-4" />}
                 </button>
               </div>
 
@@ -254,9 +240,7 @@ export function SettingsWindow() {
           >
             {/* Presets */}
             <div>
-              <label className="text-sm font-medium text-[#7A7974] mb-3 block">
-                Presets
-              </label>
+              <label className="text-sm font-medium text-[#7A7974] mb-3 block">Presets</label>
               <div className="grid grid-cols-2 gap-2">
                 {presets.map((preset) => {
                   const Icon = preset.icon;
@@ -389,9 +373,7 @@ export function SettingsWindow() {
 
       {/* Footer */}
       <div className="px-6 py-4 border-t border-[#EAE6DF]">
-        <p className="text-xs text-center text-[#A3A19C]">
-          Kedip v0.1.0 · Made with care
-        </p>
+        <p className="text-xs text-center text-[#A3A19C]">Kedip v0.1.0 · Made with care</p>
       </div>
     </div>
   );
