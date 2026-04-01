@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { Eye, Lock, SkipForward, Sparkles } from "lucide-react";
-import { cn } from "../../lib/utils";
+import { motion } from "motion/react";
+import { Wind, Plus, X } from "lucide-react";
 
 interface TimerState {
   phase: string;
@@ -10,39 +10,59 @@ interface TimerState {
   break_duration_ms: number;
 }
 
-function formatTime(ms: number): string {
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+// Soft organic blob components
+const BlobOne = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path
+      fill="currentColor"
+      d="M45.7,-76.1C58.9,-69.3,69.1,-55.4,78.2,-40.8C87.3,-26.2,95.3,-10.9,94.1,3.8C92.9,18.5,82.5,32.6,71.2,44.7C59.9,56.8,47.7,66.9,33.8,74.1C19.9,81.3,4.3,85.6,-10.8,84.1C-25.9,82.6,-40.5,75.3,-53.4,65.6C-66.3,55.9,-77.5,43.8,-83.9,29.4C-90.3,15,-91.9,-1.7,-87.6,-16.6C-83.3,-31.5,-73.1,-44.6,-60.6,-54.2C-48.1,-63.8,-33.3,-69.9,-19.1,-73.4C-4.9,-76.9,8.7,-77.8,22.8,-76.3C36.9,-74.8,45.7,-76.1,45.7,-76.1Z"
+      transform="translate(100 100) scale(1.1)"
+    />
+  </svg>
+);
+
+const BlobTwo = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path
+      fill="currentColor"
+      d="M39.9,-65.7C53.1,-58.5,66.2,-50.4,75.6,-38.7C85,-27,90.7,-11.7,89.5,3.1C88.3,17.9,80.2,32.2,69.6,43.5C59,54.8,45.9,63.1,31.9,69.5C17.9,75.9,3,80.4,-11.4,79.5C-25.8,78.6,-39.7,72.3,-51.7,62.8C-63.7,53.3,-73.8,40.6,-79.6,26.1C-85.4,11.6,-86.9,-4.7,-82.5,-19.3C-78.1,-33.9,-67.8,-46.8,-55.2,-55.1C-42.6,-63.4,-27.7,-67.1,-13.7,-68.8C0.3,-70.5,14.3,-70.2,26.7,-72.9C39.1,-75.6,39.9,-65.7,39.9,-65.7Z"
+      transform="translate(100 100) scale(1.2) rotate(45)"
+    />
+  </svg>
+);
+
+const BlobThree = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path
+      fill="currentColor"
+      d="M44.7,-76.4C58.3,-69.2,70,-57.1,78.8,-43.1C87.6,-29.1,93.5,-13.2,92.1,2C90.7,17.2,82,31.7,71.5,43.9C61,56.1,48.7,66,34.8,73.1C20.9,80.2,5.4,84.5,-9.6,83.4C-24.6,82.3,-39.1,75.8,-51.3,66.1C-63.5,56.4,-73.4,43.5,-80.1,28.9C-86.8,14.3,-90.3,-2,-86.7,-16.5C-83.1,-31,-72.4,-43.7,-60,-53.6C-47.6,-63.5,-33.5,-70.6,-19.3,-74.6C-5.1,-78.6,9.2,-79.5,23.1,-77.6C37,-75.7,44.7,-76.4,44.7,-76.4Z"
+      transform="translate(100 100) scale(1.1) rotate(-20)"
+    />
+  </svg>
+);
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+  const s = (seconds % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
 }
 
-const tips = [
-  "Look at something 20 feet away 👀",
-  "Blink slowly a few times ✨",
-  "Close your eyes and breathe 🌸",
-  "Stretch your neck gently 🌿",
-  "Roll your shoulders back 💫",
-];
-
 export function BreakWindow() {
-  const [timeRemaining, setTimeRemaining] = useState(20000);
-  const [breakDuration, setBreakDuration] = useState(20000);
-  const [escPressCount, setEscPressCount] = useState(0);
-  const [escTimeout, setEscTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [tip] = useState(() => tips[Math.floor(Math.random() * tips.length)]);
+  const [timeRemaining, setTimeRemaining] = useState(20);
+  const [escCount, setEscCount] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const time = parseInt(params.get("time") || "20000");
-    setTimeRemaining(time);
-    setBreakDuration(time);
+    setTimeRemaining(Math.floor(time / 1000));
 
     const unlisten = listen<TimerState>("timer-update", (event) => {
       if (event.payload.phase === "Break") {
-        setTimeRemaining(event.payload.time_remaining_ms);
-        if (event.payload.break_duration_ms > 0) {
-          setBreakDuration(event.payload.break_duration_ms);
+        const seconds = Math.floor(event.payload.time_remaining_ms / 1000);
+        setTimeRemaining(seconds);
+        if (seconds <= 0) {
+          setIsComplete(true);
         }
       }
     });
@@ -52,185 +72,154 @@ export function BreakWindow() {
     };
   }, []);
 
-  // Handle double-Esc to skip
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      
-      if (escPressCount === 0) {
-        setEscPressCount(1);
-        const timeout = setTimeout(() => {
-          setEscPressCount(0);
-        }, 500);
-        setEscTimeout(timeout);
-      } else if (escPressCount === 1) {
-        if (escTimeout) clearTimeout(escTimeout);
-        setEscPressCount(0);
-        invoke("skip_break");
-      }
-    }
-  }, [escPressCount, escTimeout]);
-
+  // Esc key logic - double tap to skip
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setEscCount((prev) => prev + 1);
+      }
+    };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
+  }, []);
+
+  useEffect(() => {
+    if (escCount >= 2) {
+      invoke("skip_break");
+      setEscCount(0);
+    }
+    if (escCount === 1) {
+      const timer = setTimeout(() => setEscCount(0), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [escCount]);
+
+  const addTime = () => {
+    setTimeRemaining((prev) => prev + 60);
+  };
 
   const handleSkip = () => {
     invoke("skip_break");
   };
 
-  const handleLockScreen = () => {
-    invoke("lock_screen");
-  };
-
-  const progress = breakDuration > 0 ? ((breakDuration - timeRemaining) / breakDuration) * 100 : 0;
+  // Completion screen
+  if (isComplete) {
+    return (
+      <div className="min-h-screen w-full bg-[#F9F8F4] flex flex-col items-center justify-center font-sans text-[#2A2A28] relative overflow-hidden select-none">
+        <div className="absolute inset-0 pointer-events-none opacity-40 blur-3xl flex items-center justify-center">
+          <BlobOne className="absolute w-[600px] h-[600px] text-[#D3E4CD]" />
+        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="text-center z-10"
+        >
+          <div className="w-16 h-16 bg-[#EAE6DF] text-[#2A2A28] rounded-full flex items-center justify-center mx-auto mb-6">
+            <Wind className="w-6 h-6" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-medium tracking-tight mb-4">
+            Gently return.
+          </h1>
+          <p className="text-lg text-[#7A7974] mb-10">Your eyes are refreshed.</p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-screen h-screen relative overflow-hidden select-none cursor-default bg-[#f8f7ff]">
-      {/* Soft gradient background */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          background: `
-            radial-gradient(ellipse 80% 50% at 50% -20%, rgba(196, 181, 253, 0.5) 0%, transparent 50%),
-            radial-gradient(ellipse 60% 40% at 100% 50%, rgba(251, 207, 232, 0.4) 0%, transparent 50%),
-            radial-gradient(ellipse 60% 40% at 0% 80%, rgba(191, 219, 254, 0.4) 0%, transparent 50%),
-            linear-gradient(180deg, #f8f7ff 0%, #f3f1ff 100%)
-          `,
-        }}
-      />
+    <div className="min-h-screen w-full bg-[#F9F8F4] relative overflow-hidden flex items-center justify-center font-sans selection:bg-[#EAE6DF] select-none">
+      {/* Ambient Background Blobs - Slow, breathing animations */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center">
+        <motion.div
+          animate={{
+            rotate: [0, 10, -10, 0],
+            scale: [1, 1.05, 0.95, 1],
+            x: [0, 20, -20, 0],
+            y: [0, -20, 20, 0],
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-20 -left-20 w-[600px] h-[600px] text-[#D3E4CD] opacity-60 blur-2xl"
+        >
+          <BlobOne />
+        </motion.div>
 
-      {/* Floating decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Cloud shape top left */}
-        <div 
-          className="absolute -top-20 -left-20 w-80 h-80 rounded-full animate-float"
-          style={{
-            background: 'radial-gradient(circle, rgba(196, 181, 253, 0.3) 0%, transparent 70%)',
-            animationDelay: '0s',
+        <motion.div
+          animate={{
+            rotate: [0, -15, 15, 0],
+            scale: [1, 0.95, 1.05, 1],
+            x: [0, -30, 30, 0],
+            y: [0, 30, -30, 0],
           }}
-        />
-        {/* Cloud shape top right */}
-        <div 
-          className="absolute -top-10 right-20 w-60 h-60 rounded-full animate-float"
-          style={{
-            background: 'radial-gradient(circle, rgba(251, 207, 232, 0.3) 0%, transparent 70%)',
-            animationDelay: '1s',
+          transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/4 -right-40 w-[700px] h-[700px] text-[#F4D1B6] opacity-50 blur-2xl"
+        >
+          <BlobTwo />
+        </motion.div>
+
+        <motion.div
+          animate={{
+            rotate: [0, 20, -20, 0],
+            scale: [1, 1.1, 0.9, 1],
+            x: [0, 40, -40, 0],
+            y: [0, 40, -40, 0],
           }}
-        />
-        {/* Cloud shape bottom */}
-        <div 
-          className="absolute bottom-20 left-1/4 w-72 h-72 rounded-full animate-float"
-          style={{
-            background: 'radial-gradient(circle, rgba(191, 219, 254, 0.3) 0%, transparent 70%)',
-            animationDelay: '2s',
-          }}
-        />
+          transition={{ duration: 35, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -bottom-40 left-1/4 w-[500px] h-[500px] text-[#D1E8E2] opacity-60 blur-2xl"
+        >
+          <BlobThree />
+        </motion.div>
       </div>
 
-      {/* Main content card */}
-      <div className="relative h-full flex items-center justify-center p-8">
-        <div className="glass rounded-[2.5rem] p-12 max-w-lg w-full shadow-xl shadow-violet-200/50 border border-white/50">
-          {/* Icon */}
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg shadow-violet-300/50 animate-wiggle">
-              <Eye className="w-10 h-10 text-white" strokeWidth={1.5} />
-            </div>
-          </div>
+      {/* Main Content - Centered & Minimal */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.2, ease: "easeOut" }}
+        className="z-10 flex flex-col items-center text-center max-w-xl px-6 w-full"
+      >
+        <h1 className="text-4xl md:text-5xl font-medium tracking-tight text-[#2A2A28] mb-4">
+          Take a moment.
+        </h1>
 
-          {/* Title */}
-          <h1 className="text-4xl font-bold text-center text-slate-800 mb-2">
-            Rest your eyes
-          </h1>
-          
-          {/* Tip */}
-          <p className="text-lg text-center text-slate-500 mb-8">
-            {tip}
-          </p>
+        <p className="text-lg md:text-xl text-[#7A7974] mb-16 font-normal leading-relaxed">
+          Look away from the screen. Focus on something distant and let your
+          eyes rest.
+        </p>
 
-          {/* Timer circle */}
-          <div className="relative flex justify-center mb-8">
-            <div className="relative w-48 h-48">
-              {/* Background circle */}
-              <svg className="w-full h-full transform -rotate-90">
-                <circle
-                  cx="96"
-                  cy="96"
-                  r="88"
-                  fill="none"
-                  stroke="rgba(139, 92, 246, 0.1)"
-                  strokeWidth="8"
-                />
-                <circle
-                  cx="96"
-                  cy="96"
-                  r="88"
-                  fill="none"
-                  stroke="url(#gradient)"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray={2 * Math.PI * 88}
-                  strokeDashoffset={2 * Math.PI * 88 * (1 - progress / 100)}
-                  className="transition-all duration-1000 ease-linear"
-                />
-                <defs>
-                  <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#a78bfa" />
-                    <stop offset="100%" stopColor="#f472b6" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              {/* Timer text */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-5xl font-bold text-slate-800 tabular-nums">
-                  {formatTime(timeRemaining)}
-                </span>
-                <span className="text-sm text-slate-400 mt-1">remaining</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex justify-center gap-3">
-            <button
-              onClick={handleSkip}
-              className={cn(
-                "flex items-center gap-2 px-5 py-2.5 rounded-2xl",
-                "bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800",
-                "text-sm font-semibold transition-all duration-200",
-                "border border-slate-200/50"
-              )}
-            >
-              <SkipForward className="w-4 h-4" />
-              Skip
-            </button>
-
-            <button
-              onClick={handleLockScreen}
-              className={cn(
-                "flex items-center gap-2 px-5 py-2.5 rounded-2xl",
-                "bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600",
-                "text-white text-sm font-semibold transition-all duration-200",
-                "shadow-lg shadow-violet-300/50"
-              )}
-            >
-              <Lock className="w-4 h-4" />
-              Lock Screen
-            </button>
-          </div>
-
-          {/* Hint */}
-          <p className="text-center text-xs text-slate-400 mt-6">
-            Press <kbd className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-mono text-[10px]">Esc</kbd> twice to skip
-          </p>
+        {/* Countdown Timer */}
+        <div className="text-[100px] md:text-[140px] font-light text-[#2A2A28] mb-16 tracking-tighter tabular-nums leading-none">
+          {formatTime(timeRemaining)}
         </div>
-      </div>
 
-      {/* Sparkle decorations */}
-      <Sparkles className="absolute top-1/4 left-1/4 w-6 h-6 text-violet-300 animate-pulse-soft" />
-      <Sparkles className="absolute top-1/3 right-1/3 w-4 h-4 text-pink-300 animate-pulse-soft" style={{ animationDelay: '0.5s' }} />
-      <Sparkles className="absolute bottom-1/3 right-1/4 w-5 h-5 text-blue-300 animate-pulse-soft" style={{ animationDelay: '1s' }} />
+        {/* Action Buttons */}
+        <div className="flex items-center gap-4 mb-12">
+          <button
+            onClick={addTime}
+            className="px-6 py-3 bg-[#EAE6DF] text-[#2A2A28] rounded-full font-medium hover:bg-[#DFDBD0] transition-colors flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />1 Min
+          </button>
+          <button
+            onClick={handleSkip}
+            className="px-6 py-3 border border-[#EAE6DF] text-[#7A7974] rounded-full font-medium hover:bg-white/50 hover:text-[#2A2A28] transition-colors flex items-center gap-2"
+          >
+            <X className="w-4 h-4" />
+            Skip
+          </button>
+        </div>
+
+        {/* Hint Text */}
+        <div
+          className={`text-sm transition-colors duration-500 ${escCount > 0 ? "text-[#2A2A28]" : "text-[#A3A19C]"}`}
+        >
+          Double-tap{" "}
+          <kbd className="px-2 py-0.5 bg-white/50 rounded border border-[#EAE6DF] font-sans text-xs mx-1">
+            ESC
+          </kbd>{" "}
+          to skip
+        </div>
+      </motion.div>
     </div>
   );
 }

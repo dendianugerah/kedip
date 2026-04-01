@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { Play, Clock, X } from "lucide-react";
-import { cn } from "../../lib/utils";
+import { motion } from "motion/react";
+import { Clock, Play, X, Timer } from "lucide-react";
 
 interface TimerState {
   phase: string;
@@ -13,7 +13,7 @@ function formatTime(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
 export function NotificationWindow() {
@@ -48,57 +48,50 @@ export function NotificationWindow() {
   };
 
   return (
-    <div className="w-full h-full p-2">
-      <div 
-        className="w-full h-full rounded-2xl overflow-hidden select-none glass border border-white/30 shadow-xl shadow-violet-200/30"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 247, 255, 0.95) 100%)',
-        }}
-      >
-        <div className="flex items-center justify-between px-4 py-3 h-full">
-          {/* Left: Timer info */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-md shadow-violet-200/50">
-              <Clock className="w-5 h-5 text-white" strokeWidth={2} />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-slate-400">Break in</p>
-              <p className="text-xl font-bold text-slate-700 tabular-nums">
-                {formatTime(timeRemaining)}
-              </p>
-            </div>
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="w-full h-full bg-[#F9F8F4] rounded-2xl overflow-hidden select-none font-sans border border-[#EAE6DF]"
+    >
+      <div className="flex items-center justify-between px-5 py-4 h-full">
+        {/* Left: Timer info */}
+        <div className="flex items-center gap-4">
+          <div className="w-11 h-11 rounded-full bg-[#EAE6DF] flex items-center justify-center">
+            <Clock className="w-5 h-5 text-[#7A7974]" />
           </div>
-
-          {/* Right: Actions */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleStartNow}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl",
-                "bg-gradient-to-r from-violet-500 to-purple-500",
-                "text-white text-xs font-semibold",
-                "hover:from-violet-600 hover:to-purple-600 transition-all",
-                "shadow-md shadow-violet-200/50"
-              )}
-            >
-              <Play className="w-3 h-3" fill="currentColor" />
-              Start
-            </button>
-            <button
-              onClick={handleSnooze}
-              className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
-            >
-              +5m
-            </button>
-            <button
-              onClick={handleSkip}
-              className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+          <div>
+            <p className="text-xs font-medium text-[#A3A19C]">Break in</p>
+            <p className="text-xl font-medium text-[#2A2A28] tabular-nums tracking-tight">
+              {formatTime(timeRemaining)}
+            </p>
           </div>
         </div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleStartNow}
+            className="px-4 py-2 text-sm font-medium text-[#F9F8F4] bg-[#2A2A28] rounded-full hover:bg-[#1A1A18] transition-colors flex items-center gap-1.5"
+          >
+            <Play className="w-3.5 h-3.5" />
+            Now
+          </button>
+          <button
+            onClick={handleSnooze}
+            className="px-4 py-2 text-sm font-medium text-[#2A2A28] bg-[#EAE6DF] rounded-full hover:bg-[#DFDBD0] transition-colors flex items-center gap-1.5"
+          >
+            <Timer className="w-3.5 h-3.5" />
+            +5m
+          </button>
+          <button
+            onClick={handleSkip}
+            className="p-2 text-[#A3A19C] hover:text-[#2A2A28] hover:bg-[#EAE6DF] rounded-full transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

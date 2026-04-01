@@ -1,20 +1,18 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { 
-  Eye, 
-  Play, 
-  Pause, 
-  Coffee, 
-  RotateCcw, 
-  Sparkles,
+import { motion } from "motion/react";
+import {
+  Eye,
+  Play,
+  Pause,
+  Coffee,
+  RotateCcw,
   Clock,
   Timer,
-  Bell,
-  Settings,
-  Zap
+  Zap,
+  Leaf,
 } from "lucide-react";
-import { cn } from "../../lib/utils";
 
 interface TimerState {
   phase: string;
@@ -33,8 +31,8 @@ function formatTimeShort(ms: number): string {
 
 const presets = [
   { name: "20-20-20", icon: Eye, work: 20, break: 20, desc: "Classic eye care" },
-  { name: "Pomodoro", icon: Timer, work: 25, break: 5, desc: "Focus technique" },
-  { name: "Deep Work", icon: Zap, work: 50, break: 10, desc: "Long sessions" },
+  { name: "Pomodoro", icon: Timer, work: 25, break: 5, desc: "Focus sessions" },
+  { name: "Deep Work", icon: Zap, work: 50, break: 10, desc: "Long focus" },
   { name: "Quick", icon: Coffee, work: 10, break: 15, desc: "Short bursts" },
 ];
 
@@ -81,7 +79,7 @@ export function SettingsWindow() {
     invoke("start_break_now");
   };
 
-  const handleSkipBreak = () => {
+  const handleResetTimer = () => {
     invoke("skip_break");
   };
 
@@ -96,125 +94,128 @@ export function SettingsWindow() {
     });
   };
 
-  const phaseInfo = {
-    Idle: { label: "Ready", color: "from-slate-400 to-slate-500", bg: "bg-slate-100" },
-    Working: { label: "Focusing", color: "from-emerald-400 to-teal-500", bg: "bg-emerald-50" },
-    Countdown: { label: "Break soon", color: "from-amber-400 to-orange-500", bg: "bg-amber-50" },
-    Break: { label: "Resting", color: "from-violet-400 to-purple-500", bg: "bg-violet-50" },
+  const phaseLabel: Record<string, string> = {
+    Idle: "Ready",
+    Working: "Focusing",
+    Countdown: "Break soon",
+    Break: "Resting",
   };
 
-  const currentPhase = timerState?.phase as keyof typeof phaseInfo || "Idle";
-  const phase = phaseInfo[currentPhase] || phaseInfo.Idle;
-
-  const getProgress = () => {
-    if (!timerState) return 0;
-    if (timerState.phase === "Working") {
-      return ((timerState.work_duration_ms - timerState.time_remaining_ms) / timerState.work_duration_ms) * 100;
-    }
-    if (timerState.phase === "Break") {
-      return ((timerState.break_duration_ms - timerState.time_remaining_ms) / timerState.break_duration_ms) * 100;
-    }
-    return 0;
+  const phaseColor: Record<string, string> = {
+    Idle: "bg-[#A3A19C]",
+    Working: "bg-[#D3E4CD]",
+    Countdown: "bg-[#F4D1B6]",
+    Break: "bg-[#D1E8E2]",
   };
 
   return (
-    <div className="w-full h-full bg-[#f8f7ff] flex flex-col">
+    <div className="w-full h-full bg-[#F9F8F4] flex flex-col font-sans select-none">
       {/* Header */}
-      <div className="px-5 py-4 bg-white/80 backdrop-blur-xl border-b border-violet-100/50">
+      <div className="px-6 py-5 border-b border-[#EAE6DF]">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg shadow-violet-200/50">
-            <Eye className="w-5 h-5 text-white" strokeWidth={2} />
+          <div className="w-10 h-10 rounded-full bg-[#EAE6DF] flex items-center justify-center">
+            <Leaf className="w-5 h-5 text-[#7A7974]" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-slate-800">Kedip</h1>
-            <p className="text-xs text-slate-400">Your eye care buddy ✨</p>
+            <h1 className="text-lg font-medium text-[#2A2A28]">Kedip</h1>
+            <p className="text-xs text-[#A3A19C]">Gentle eye care</p>
           </div>
         </div>
       </div>
 
-      {/* Tab switcher */}
-      <div className="px-5 py-3 bg-white/50">
-        <div className="flex gap-1 p-1 bg-slate-100 rounded-2xl">
-          <button
-            onClick={() => setActiveTab("status")}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-sm font-semibold transition-all",
-              activeTab === "status"
-                ? "bg-white text-slate-800 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
-            )}
-          >
-            <Clock className="w-4 h-4" />
-            Status
-          </button>
-          <button
-            onClick={() => setActiveTab("settings")}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-sm font-semibold transition-all",
-              activeTab === "settings"
-                ? "bg-white text-slate-800 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
-            )}
-          >
-            <Settings className="w-4 h-4" />
-            Settings
-          </button>
-        </div>
+      {/* Tabs */}
+      <div className="flex border-b border-[#EAE6DF]">
+        <button
+          onClick={() => setActiveTab("status")}
+          className={`flex-1 py-3 text-sm font-medium transition-colors ${
+            activeTab === "status"
+              ? "text-[#2A2A28] border-b-2 border-[#2A2A28]"
+              : "text-[#A3A19C] hover:text-[#7A7974]"
+          }`}
+        >
+          Status
+        </button>
+        <button
+          onClick={() => setActiveTab("settings")}
+          className={`flex-1 py-3 text-sm font-medium transition-colors ${
+            activeTab === "settings"
+              ? "text-[#2A2A28] border-b-2 border-[#2A2A28]"
+              : "text-[#A3A19C] hover:text-[#7A7974]"
+          }`}
+        >
+          Settings
+        </button>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto px-5 py-4">
+      <div className="flex-1 overflow-auto p-6">
         {activeTab === "status" && timerState && (
-          <div className="space-y-4">
-            {/* Status card */}
-            <div className={cn(
-              "rounded-3xl p-6 border transition-all",
-              phase.bg,
-              "border-white/50"
-            )}>
-              {/* Status badge */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            {/* Current status card */}
+            <div className="bg-white rounded-2xl p-5 border border-[#EAE6DF]">
               <div className="flex items-center justify-between mb-4">
-                <div className={cn(
-                  "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white",
-                  `bg-gradient-to-r ${phase.color}`
-                )}>
-                  <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                  {isPaused ? "Paused" : phase.label}
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      phaseColor[timerState.phase] || "bg-[#A3A19C]"
+                    } ${timerState.phase === "Working" && !isPaused ? "animate-pulse" : ""}`}
+                  />
+                  <span className="text-sm font-medium text-[#7A7974]">
+                    {isPaused ? "Paused" : phaseLabel[timerState.phase] || timerState.phase}
+                  </span>
                 </div>
                 <button
                   onClick={handleTogglePause}
-                  className={cn(
-                    "w-10 h-10 rounded-2xl flex items-center justify-center transition-all",
-                    isPaused 
-                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200/50" 
-                      : "bg-white/80 text-slate-600 hover:bg-white shadow-sm"
-                  )}
+                  className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                    isPaused
+                      ? "bg-[#D3E4CD] text-[#2A2A28]"
+                      : "bg-[#EAE6DF] text-[#7A7974] hover:bg-[#DFDBD0]"
+                  }`}
                 >
-                  {isPaused ? <Play className="w-4 h-4" fill="currentColor" /> : <Pause className="w-4 h-4" />}
+                  {isPaused ? (
+                    <Play className="w-4 h-4 ml-0.5" />
+                  ) : (
+                    <Pause className="w-4 h-4" />
+                  )}
                 </button>
               </div>
 
               {/* Timer display */}
-              <div className="text-center mb-6">
-                <div className="text-6xl font-bold text-slate-800 tabular-nums tracking-tight">
+              <div className="text-center mb-4">
+                <div className="text-5xl font-light text-[#2A2A28] tabular-nums tracking-tight">
                   {formatTimeShort(timerState.time_remaining_ms)}
                 </div>
-                <p className="text-sm text-slate-500 mt-2">
-                  {timerState.phase === "Working" && "until your next break"}
-                  {timerState.phase === "Countdown" && "break starting soon"}
-                  {timerState.phase === "Break" && "enjoy your rest"}
-                  {timerState.phase === "Idle" && "ready to start"}
+                <p className="text-sm text-[#A3A19C] mt-1">
+                  {timerState.phase === "Working" && "until next break"}
+                  {timerState.phase === "Countdown" && "until break starts"}
+                  {timerState.phase === "Break" && "remaining"}
                 </p>
               </div>
 
-              {/* Progress bar */}
-              <div className="h-2 bg-white/50 rounded-full overflow-hidden">
-                <div
-                  className={cn(
-                    "h-full rounded-full transition-all duration-500",
-                    `bg-gradient-to-r ${phase.color}`
-                  )}
-                  style={{ width: `${getProgress()}%` }}
+              {/* Progress */}
+              <div className="h-1 bg-[#EAE6DF] rounded-full overflow-hidden">
+                <motion.div
+                  className={`h-full ${phaseColor[timerState.phase] || "bg-[#A3A19C]"} rounded-full`}
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: `${
+                      timerState.phase === "Working"
+                        ? ((timerState.work_duration_ms - timerState.time_remaining_ms) /
+                            timerState.work_duration_ms) *
+                          100
+                        : timerState.phase === "Break"
+                          ? ((timerState.break_duration_ms - timerState.time_remaining_ms) /
+                              timerState.break_duration_ms) *
+                            100
+                          : 0
+                    }%`,
+                  }}
+                  transition={{ duration: 0.5 }}
                 />
               </div>
             </div>
@@ -223,55 +224,38 @@ export function SettingsWindow() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={handleStartBreak}
-                className={cn(
-                  "flex items-center justify-center gap-2 py-4 px-4 rounded-2xl",
-                  "bg-gradient-to-r from-violet-500 to-purple-500",
-                  "text-white font-semibold transition-all",
-                  "hover:from-violet-600 hover:to-purple-600",
-                  "shadow-lg shadow-violet-200/50"
-                )}
+                className="py-3 px-4 bg-[#2A2A28] hover:bg-[#1A1A18] text-[#F9F8F4] rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
               >
-                <Coffee className="w-5 h-5" />
-                Take Break
+                <Coffee className="w-4 h-4" />
+                Break Now
               </button>
               <button
-                onClick={handleSkipBreak}
-                className={cn(
-                  "flex items-center justify-center gap-2 py-4 px-4 rounded-2xl",
-                  "bg-white text-slate-700 font-semibold transition-all",
-                  "hover:bg-slate-50 border border-slate-200/50",
-                  "shadow-sm"
-                )}
+                onClick={handleResetTimer}
+                className="py-3 px-4 bg-white hover:bg-[#EAE6DF] text-[#2A2A28] rounded-xl font-medium transition-colors border border-[#EAE6DF] flex items-center justify-center gap-2"
               >
-                <RotateCcw className="w-5 h-5" />
+                <RotateCcw className="w-4 h-4" />
                 Reset
               </button>
             </div>
 
-            {/* Current settings info */}
-            <div className="flex items-center justify-center gap-4 text-xs text-slate-400 py-2">
-              <span className="flex items-center gap-1">
-                <Timer className="w-3 h-3" /> {workMinutes}m work
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <Eye className="w-3 h-3" /> {breakSeconds}s break
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <Bell className="w-3 h-3" /> {countdownSeconds}s warning
-              </span>
+            {/* Info */}
+            <div className="text-center text-xs text-[#A3A19C]">
+              Work: {workMinutes}m · Break: {breakSeconds}s · Warning: {countdownSeconds}s
             </div>
-          </div>
+          </motion.div>
         )}
 
         {activeTab === "settings" && (
-          <div className="space-y-5">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
             {/* Presets */}
             <div>
-              <label className="text-sm font-semibold text-slate-700 mb-3 block flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-violet-500" />
-                Quick Presets
+              <label className="text-sm font-medium text-[#7A7974] mb-3 block">
+                Presets
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {presets.map((preset) => {
@@ -280,133 +264,133 @@ export function SettingsWindow() {
                     <button
                       key={preset.name}
                       onClick={() => applyPreset(preset)}
-                      className={cn(
-                        "p-4 rounded-2xl text-left transition-all border",
+                      className={`p-3 rounded-xl text-left transition-all border ${
                         selectedPreset === preset.name
-                          ? "bg-gradient-to-br from-violet-50 to-purple-50 border-violet-200 shadow-md shadow-violet-100/50"
-                          : "bg-white border-slate-100 hover:border-violet-200"
-                      )}
+                          ? "bg-[#2A2A28] border-[#2A2A28] text-[#F9F8F4]"
+                          : "bg-white border-[#EAE6DF] text-[#2A2A28] hover:border-[#DFDBD0]"
+                      }`}
                     >
                       <div className="flex items-center gap-2 mb-1">
-                        <Icon className={cn(
-                          "w-4 h-4",
-                          selectedPreset === preset.name ? "text-violet-500" : "text-slate-400"
-                        )} />
-                        <span className={cn(
-                          "text-sm font-semibold",
-                          selectedPreset === preset.name ? "text-violet-700" : "text-slate-700"
-                        )}>
-                          {preset.name}
-                        </span>
+                        <Icon className="w-4 h-4" />
+                        <span className="text-sm font-medium">{preset.name}</span>
                       </div>
-                      <span className="text-xs text-slate-400">{preset.desc}</span>
+                      <p
+                        className={`text-xs ${
+                          selectedPreset === preset.name ? "text-[#A3A19C]" : "text-[#A3A19C]"
+                        }`}
+                      >
+                        {preset.desc}
+                      </p>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* Custom settings */}
-            <div className="space-y-4">
-              {/* Work duration */}
-              <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                <div className="flex items-center justify-between mb-3">
-                  <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                    <Timer className="w-4 h-4 text-emerald-500" />
-                    Work Duration
-                  </label>
-                  <span className="text-lg font-bold text-slate-800 tabular-nums bg-slate-100 px-3 py-1 rounded-xl">
-                    {workMinutes}m
-                  </span>
+            {/* Work duration */}
+            <div className="bg-white rounded-xl p-4 border border-[#EAE6DF]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-[#7A7974]" />
+                  <span className="text-sm font-medium text-[#2A2A28]">Work Duration</span>
                 </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="60"
-                  value={workMinutes}
-                  onChange={(e) => setWorkMinutes(parseInt(e.target.value))}
-                  className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer accent-violet-500"
-                />
-                <div className="flex justify-between text-xs text-slate-400 mt-1">
-                  <span>1m</span>
-                  <span>60m</span>
-                </div>
+                <span className="text-lg font-medium text-[#2A2A28] tabular-nums">
+                  {workMinutes}m
+                </span>
               </div>
+              <input
+                type="range"
+                min="1"
+                max="60"
+                value={workMinutes}
+                onChange={(e) => setWorkMinutes(parseInt(e.target.value))}
+                className="w-full h-1 bg-[#EAE6DF] rounded-full appearance-none cursor-pointer
+                  [&::-webkit-slider-thumb]:appearance-none
+                  [&::-webkit-slider-thumb]:w-4
+                  [&::-webkit-slider-thumb]:h-4
+                  [&::-webkit-slider-thumb]:rounded-full
+                  [&::-webkit-slider-thumb]:bg-[#2A2A28]
+                  [&::-webkit-slider-thumb]:cursor-pointer
+                  [&::-webkit-slider-thumb]:transition-transform
+                  [&::-webkit-slider-thumb]:hover:scale-110"
+              />
+            </div>
 
-              {/* Break duration */}
-              <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                <div className="flex items-center justify-between mb-3">
-                  <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                    <Eye className="w-4 h-4 text-violet-500" />
-                    Break Duration
-                  </label>
-                  <span className="text-lg font-bold text-slate-800 tabular-nums bg-slate-100 px-3 py-1 rounded-xl">
-                    {breakSeconds}s
-                  </span>
+            {/* Break duration */}
+            <div className="bg-white rounded-xl p-4 border border-[#EAE6DF]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Coffee className="w-4 h-4 text-[#7A7974]" />
+                  <span className="text-sm font-medium text-[#2A2A28]">Break Duration</span>
                 </div>
-                <input
-                  type="range"
-                  min="5"
-                  max="300"
-                  step="5"
-                  value={breakSeconds}
-                  onChange={(e) => setBreakSeconds(parseInt(e.target.value))}
-                  className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer accent-violet-500"
-                />
-                <div className="flex justify-between text-xs text-slate-400 mt-1">
-                  <span>5s</span>
-                  <span>5m</span>
-                </div>
+                <span className="text-lg font-medium text-[#2A2A28] tabular-nums">
+                  {breakSeconds}s
+                </span>
               </div>
+              <input
+                type="range"
+                min="5"
+                max="300"
+                step="5"
+                value={breakSeconds}
+                onChange={(e) => setBreakSeconds(parseInt(e.target.value))}
+                className="w-full h-1 bg-[#EAE6DF] rounded-full appearance-none cursor-pointer
+                  [&::-webkit-slider-thumb]:appearance-none
+                  [&::-webkit-slider-thumb]:w-4
+                  [&::-webkit-slider-thumb]:h-4
+                  [&::-webkit-slider-thumb]:rounded-full
+                  [&::-webkit-slider-thumb]:bg-[#2A2A28]
+                  [&::-webkit-slider-thumb]:cursor-pointer
+                  [&::-webkit-slider-thumb]:transition-transform
+                  [&::-webkit-slider-thumb]:hover:scale-110"
+              />
+            </div>
 
-              {/* Countdown duration */}
-              <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                <div className="flex items-center justify-between mb-3">
-                  <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                    <Bell className="w-4 h-4 text-amber-500" />
-                    Warning Time
-                  </label>
-                  <span className="text-lg font-bold text-slate-800 tabular-nums bg-slate-100 px-3 py-1 rounded-xl">
-                    {countdownSeconds}s
-                  </span>
+            {/* Countdown warning */}
+            <div className="bg-white rounded-xl p-4 border border-[#EAE6DF]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Timer className="w-4 h-4 text-[#7A7974]" />
+                  <span className="text-sm font-medium text-[#2A2A28]">Warning Time</span>
                 </div>
-                <input
-                  type="range"
-                  min="10"
-                  max="120"
-                  step="5"
-                  value={countdownSeconds}
-                  onChange={(e) => setCountdownSeconds(parseInt(e.target.value))}
-                  className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer accent-violet-500"
-                />
-                <div className="flex justify-between text-xs text-slate-400 mt-1">
-                  <span>10s</span>
-                  <span>2m</span>
-                </div>
+                <span className="text-lg font-medium text-[#2A2A28] tabular-nums">
+                  {countdownSeconds}s
+                </span>
               </div>
+              <input
+                type="range"
+                min="10"
+                max="120"
+                step="5"
+                value={countdownSeconds}
+                onChange={(e) => setCountdownSeconds(parseInt(e.target.value))}
+                className="w-full h-1 bg-[#EAE6DF] rounded-full appearance-none cursor-pointer
+                  [&::-webkit-slider-thumb]:appearance-none
+                  [&::-webkit-slider-thumb]:w-4
+                  [&::-webkit-slider-thumb]:h-4
+                  [&::-webkit-slider-thumb]:rounded-full
+                  [&::-webkit-slider-thumb]:bg-[#2A2A28]
+                  [&::-webkit-slider-thumb]:cursor-pointer
+                  [&::-webkit-slider-thumb]:transition-transform
+                  [&::-webkit-slider-thumb]:hover:scale-110"
+              />
             </div>
 
             {/* Save button */}
             <button
               onClick={handleSaveSettings}
-              className={cn(
-                "w-full py-4 px-4 rounded-2xl",
-                "bg-gradient-to-r from-violet-500 to-purple-500",
-                "text-white font-semibold transition-all",
-                "hover:from-violet-600 hover:to-purple-600",
-                "shadow-lg shadow-violet-200/50"
-              )}
+              className="w-full py-3 px-4 bg-[#2A2A28] hover:bg-[#1A1A18] text-[#F9F8F4] rounded-xl font-medium transition-colors"
             >
               Save Changes
             </button>
-          </div>
+          </motion.div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="px-5 py-3 bg-white/50 border-t border-violet-100/50">
-        <p className="text-xs text-center text-slate-400">
-          Made with 💜 for your eyes
+      <div className="px-6 py-4 border-t border-[#EAE6DF]">
+        <p className="text-xs text-center text-[#A3A19C]">
+          Kedip v0.1.0 · Made with care
         </p>
       </div>
     </div>
