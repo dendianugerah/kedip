@@ -1,0 +1,23 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for all windows",
+  "windows": ["*"],
+  "permissions": [
+    "core:default",
+    "core:window:default",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-set-focus",
+    "core:window:allow-set-size",
+    "core:window:allow-set-position",
+    "core:window:allow-center",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-close",
+    "core:tray:default",
+    "core:tray:allow-set-title",
+    "core:tray:allow-set-icon",
+    "opener:default",
+    "store:default"
+  ]
+}
