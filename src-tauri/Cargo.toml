@@ -1,9 +1,12 @@
 [package]
 name = "kedip"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "A gentle eye care reminder app using the 20-20-20 rule"
+authors = ["Dendi Anugerah"]
+license = "MIT"
+repository = "https://github.com/dendianugerah/kedip"
 edition = "2021"
+rust-version = "1.70"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -20,8 +23,11 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = ["macos-private-api", "tray-icon"] }
 tauri-plugin-opener = "2"
+tauri-plugin-store = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tauri-plugin-store = "2.4.2"
-tokio = { version = "1", features = ["sync", "time"] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
 
