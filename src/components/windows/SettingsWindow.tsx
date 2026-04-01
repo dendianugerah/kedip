@@ -1,6 +1,20 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { 
+  Eye, 
+  Play, 
+  Pause, 
+  Coffee, 
+  RotateCcw, 
+  Sparkles,
+  Clock,
+  Timer,
+  Bell,
+  Settings,
+  Zap
+} from "lucide-react";
+import { cn } from "../../lib/utils";
 
 interface TimerState {
   phase: string;
@@ -14,14 +28,14 @@ function formatTimeShort(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
 const presets = [
-  { name: "20-20-20", work: 20, break: 20 },
-  { name: "Pomodoro", work: 25, break: 5 },
-  { name: "Long Focus", work: 50, break: 10 },
-  { name: "Quick", work: 10, break: 15 },
+  { name: "20-20-20", icon: Eye, work: 20, break: 20, desc: "Classic eye care" },
+  { name: "Pomodoro", icon: Timer, work: 25, break: 5, desc: "Focus technique" },
+  { name: "Deep Work", icon: Zap, work: 50, break: 10, desc: "Long sessions" },
+  { name: "Quick", icon: Coffee, work: 10, break: 15, desc: "Short bursts" },
 ];
 
 export function SettingsWindow() {
@@ -31,9 +45,9 @@ export function SettingsWindow() {
   const [countdownSeconds, setCountdownSeconds] = useState(30);
   const [isPaused, setIsPaused] = useState(false);
   const [activeTab, setActiveTab] = useState<"status" | "settings">("status");
+  const [selectedPreset, setSelectedPreset] = useState("20-20-20");
 
   useEffect(() => {
-    // Get initial state
     invoke<TimerState>("get_timer_state").then((state) => {
       setTimerState(state);
       setWorkMinutes(Math.floor(state.work_duration_ms / 60000));
@@ -41,7 +55,6 @@ export function SettingsWindow() {
       setCountdownSeconds(Math.floor(state.countdown_duration_ms / 1000));
     });
 
-    // Listen for timer updates
     const unlisten = listen<TimerState>("timer-update", (event) => {
       setTimerState(event.payload);
     });
@@ -73,6 +86,7 @@ export function SettingsWindow() {
   };
 
   const applyPreset = (preset: (typeof presets)[0]) => {
+    setSelectedPreset(preset.name);
     setWorkMinutes(preset.work);
     setBreakSeconds(preset.name === "20-20-20" ? 20 : preset.break * 60);
     invoke("update_settings", {
@@ -82,142 +96,125 @@ export function SettingsWindow() {
     });
   };
 
-  const phaseLabel = {
-    Idle: "Idle",
-    Working: "Working",
-    Countdown: "Break starting soon",
-    Break: "On break",
+  const phaseInfo = {
+    Idle: { label: "Ready", color: "from-slate-400 to-slate-500", bg: "bg-slate-100" },
+    Working: { label: "Focusing", color: "from-emerald-400 to-teal-500", bg: "bg-emerald-50" },
+    Countdown: { label: "Break soon", color: "from-amber-400 to-orange-500", bg: "bg-amber-50" },
+    Break: { label: "Resting", color: "from-violet-400 to-purple-500", bg: "bg-violet-50" },
   };
 
-  const phaseColor = {
-    Idle: "bg-slate-400",
-    Working: "bg-emerald-500",
-    Countdown: "bg-amber-500",
-    Break: "bg-indigo-500",
+  const currentPhase = timerState?.phase as keyof typeof phaseInfo || "Idle";
+  const phase = phaseInfo[currentPhase] || phaseInfo.Idle;
+
+  const getProgress = () => {
+    if (!timerState) return 0;
+    if (timerState.phase === "Working") {
+      return ((timerState.work_duration_ms - timerState.time_remaining_ms) / timerState.work_duration_ms) * 100;
+    }
+    if (timerState.phase === "Break") {
+      return ((timerState.break_duration_ms - timerState.time_remaining_ms) / timerState.break_duration_ms) * 100;
+    }
+    return 0;
   };
 
   return (
-    <div className="w-full h-full bg-slate-50 flex flex-col">
+    <div className="w-full h-full bg-[#f8f7ff] flex flex-col">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-slate-200 bg-white">
+      <div className="px-5 py-4 bg-white/80 backdrop-blur-xl border-b border-violet-100/50">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-200/50">
-            <svg
-              className="w-5 h-5 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-              />
-            </svg>
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg shadow-violet-200/50">
+            <Eye className="w-5 h-5 text-white" strokeWidth={2} />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-slate-900">Kedip</h1>
-            <p className="text-xs text-slate-500">Eye care reminder</p>
+            <h1 className="text-base font-bold text-slate-800">Kedip</h1>
+            <p className="text-xs text-slate-400">Your eye care buddy ✨</p>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-200 bg-white">
-        <button
-          onClick={() => setActiveTab("status")}
-          className={`flex-1 py-3 text-sm font-medium transition-colors ${
-            activeTab === "status"
-              ? "text-indigo-600 border-b-2 border-indigo-600"
-              : "text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          Status
-        </button>
-        <button
-          onClick={() => setActiveTab("settings")}
-          className={`flex-1 py-3 text-sm font-medium transition-colors ${
-            activeTab === "settings"
-              ? "text-indigo-600 border-b-2 border-indigo-600"
-              : "text-slate-500 hover:text-slate-700"
-          }`}
-        >
-          Settings
-        </button>
+      {/* Tab switcher */}
+      <div className="px-5 py-3 bg-white/50">
+        <div className="flex gap-1 p-1 bg-slate-100 rounded-2xl">
+          <button
+            onClick={() => setActiveTab("status")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-sm font-semibold transition-all",
+              activeTab === "status"
+                ? "bg-white text-slate-800 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            <Clock className="w-4 h-4" />
+            Status
+          </button>
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-sm font-semibold transition-all",
+              activeTab === "settings"
+                ? "bg-white text-slate-800 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            )}
+          >
+            <Settings className="w-4 h-4" />
+            Settings
+          </button>
+        </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto px-5 py-4">
         {activeTab === "status" && timerState && (
-          <div className="space-y-6">
-            {/* Current status */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+          <div className="space-y-4">
+            {/* Status card */}
+            <div className={cn(
+              "rounded-3xl p-6 border transition-all",
+              phase.bg,
+              "border-white/50"
+            )}>
+              {/* Status badge */}
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-2.5 h-2.5 rounded-full ${
-                      phaseColor[timerState.phase as keyof typeof phaseColor] || "bg-slate-400"
-                    } ${timerState.phase === "Working" && !isPaused ? "animate-pulse" : ""}`}
-                  />
-                  <span className="text-sm font-medium text-slate-700">
-                    {isPaused ? "Paused" : phaseLabel[timerState.phase as keyof typeof phaseLabel] || timerState.phase}
-                  </span>
+                <div className={cn(
+                  "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white",
+                  `bg-gradient-to-r ${phase.color}`
+                )}>
+                  <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                  {isPaused ? "Paused" : phase.label}
                 </div>
                 <button
                   onClick={handleTogglePause}
-                  className={`p-2 rounded-lg transition-colors ${
-                    isPaused ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-600"
-                  } hover:bg-slate-200`}
-                >
-                  {isPaused ? (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                    </svg>
+                  className={cn(
+                    "w-10 h-10 rounded-2xl flex items-center justify-center transition-all",
+                    isPaused 
+                      ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200/50" 
+                      : "bg-white/80 text-slate-600 hover:bg-white shadow-sm"
                   )}
+                >
+                  {isPaused ? <Play className="w-4 h-4" fill="currentColor" /> : <Pause className="w-4 h-4" />}
                 </button>
               </div>
 
               {/* Timer display */}
-              <div className="text-center mb-4">
-                <div className="text-5xl font-bold text-slate-800 tabular-nums">
+              <div className="text-center mb-6">
+                <div className="text-6xl font-bold text-slate-800 tabular-nums tracking-tight">
                   {formatTimeShort(timerState.time_remaining_ms)}
                 </div>
-                <p className="text-sm text-slate-500 mt-1">
-                  {timerState.phase === "Working" && "until next break"}
-                  {timerState.phase === "Countdown" && "until break starts"}
-                  {timerState.phase === "Break" && "remaining"}
+                <p className="text-sm text-slate-500 mt-2">
+                  {timerState.phase === "Working" && "until your next break"}
+                  {timerState.phase === "Countdown" && "break starting soon"}
+                  {timerState.phase === "Break" && "enjoy your rest"}
+                  {timerState.phase === "Idle" && "ready to start"}
                 </p>
               </div>
 
-              {/* Progress */}
-              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              {/* Progress bar */}
+              <div className="h-2 bg-white/50 rounded-full overflow-hidden">
                 <div
-                  className={`h-full transition-all duration-300 ${
-                    phaseColor[timerState.phase as keyof typeof phaseColor] || "bg-slate-400"
-                  }`}
-                  style={{
-                    width: `${
-                      timerState.phase === "Working"
-                        ? ((timerState.work_duration_ms - timerState.time_remaining_ms) /
-                            timerState.work_duration_ms) *
-                          100
-                        : timerState.phase === "Break"
-                        ? ((timerState.break_duration_ms - timerState.time_remaining_ms) /
-                            timerState.break_duration_ms) *
-                          100
-                        : 0
-                    }%`,
-                  }}
+                  className={cn(
+                    "h-full rounded-full transition-all duration-500",
+                    `bg-gradient-to-r ${phase.color}`
+                  )}
+                  style={{ width: `${getProgress()}%` }}
                 />
               </div>
             </div>
@@ -226,74 +223,127 @@ export function SettingsWindow() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={handleStartBreak}
-                className="py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-medium transition-colors shadow-sm"
+                className={cn(
+                  "flex items-center justify-center gap-2 py-4 px-4 rounded-2xl",
+                  "bg-gradient-to-r from-violet-500 to-purple-500",
+                  "text-white font-semibold transition-all",
+                  "hover:from-violet-600 hover:to-purple-600",
+                  "shadow-lg shadow-violet-200/50"
+                )}
               >
-                Take Break Now
+                <Coffee className="w-5 h-5" />
+                Take Break
               </button>
               <button
                 onClick={handleSkipBreak}
-                className="py-3 px-4 bg-white hover:bg-slate-50 text-slate-700 rounded-xl font-medium transition-colors border border-slate-200"
+                className={cn(
+                  "flex items-center justify-center gap-2 py-4 px-4 rounded-2xl",
+                  "bg-white text-slate-700 font-semibold transition-all",
+                  "hover:bg-slate-50 border border-slate-200/50",
+                  "shadow-sm"
+                )}
               >
-                Reset Timer
+                <RotateCcw className="w-5 h-5" />
+                Reset
               </button>
             </div>
 
-            <div className="text-center text-xs text-slate-400">
-              Work: {workMinutes}m • Break: {breakSeconds}s • Countdown: {countdownSeconds}s
+            {/* Current settings info */}
+            <div className="flex items-center justify-center gap-4 text-xs text-slate-400 py-2">
+              <span className="flex items-center gap-1">
+                <Timer className="w-3 h-3" /> {workMinutes}m work
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1">
+                <Eye className="w-3 h-3" /> {breakSeconds}s break
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1">
+                <Bell className="w-3 h-3" /> {countdownSeconds}s warning
+              </span>
             </div>
           </div>
         )}
 
         {activeTab === "settings" && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Presets */}
             <div>
-              <label className="text-sm font-medium text-slate-700 mb-3 block">
+              <label className="text-sm font-semibold text-slate-700 mb-3 block flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-violet-500" />
                 Quick Presets
               </label>
               <div className="grid grid-cols-2 gap-2">
-                {presets.map((preset) => (
-                  <button
-                    key={preset.name}
-                    onClick={() => applyPreset(preset)}
-                    className={`py-2.5 px-4 rounded-xl text-sm font-medium transition-all border ${
-                      workMinutes === preset.work
-                        ? "bg-indigo-50 border-indigo-200 text-indigo-700"
-                        : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-                    }`}
-                  >
-                    {preset.name}
-                  </button>
-                ))}
+                {presets.map((preset) => {
+                  const Icon = preset.icon;
+                  return (
+                    <button
+                      key={preset.name}
+                      onClick={() => applyPreset(preset)}
+                      className={cn(
+                        "p-4 rounded-2xl text-left transition-all border",
+                        selectedPreset === preset.name
+                          ? "bg-gradient-to-br from-violet-50 to-purple-50 border-violet-200 shadow-md shadow-violet-100/50"
+                          : "bg-white border-slate-100 hover:border-violet-200"
+                      )}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <Icon className={cn(
+                          "w-4 h-4",
+                          selectedPreset === preset.name ? "text-violet-500" : "text-slate-400"
+                        )} />
+                        <span className={cn(
+                          "text-sm font-semibold",
+                          selectedPreset === preset.name ? "text-violet-700" : "text-slate-700"
+                        )}>
+                          {preset.name}
+                        </span>
+                      </div>
+                      <span className="text-xs text-slate-400">{preset.desc}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Work duration */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-              <label className="text-sm font-medium text-slate-700 mb-3 block">
-                Work Duration
-              </label>
-              <div className="flex items-center gap-4">
+            {/* Custom settings */}
+            <div className="space-y-4">
+              {/* Work duration */}
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <Timer className="w-4 h-4 text-emerald-500" />
+                    Work Duration
+                  </label>
+                  <span className="text-lg font-bold text-slate-800 tabular-nums bg-slate-100 px-3 py-1 rounded-xl">
+                    {workMinutes}m
+                  </span>
+                </div>
                 <input
                   type="range"
                   min="1"
                   max="60"
                   value={workMinutes}
                   onChange={(e) => setWorkMinutes(parseInt(e.target.value))}
-                  className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-indigo-600"
+                  className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer accent-violet-500"
                 />
-                <span className="text-lg font-semibold text-slate-800 w-16 text-right tabular-nums">
-                  {workMinutes}m
-                </span>
+                <div className="flex justify-between text-xs text-slate-400 mt-1">
+                  <span>1m</span>
+                  <span>60m</span>
+                </div>
               </div>
-            </div>
 
-            {/* Break duration */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-              <label className="text-sm font-medium text-slate-700 mb-3 block">
-                Break Duration
-              </label>
-              <div className="flex items-center gap-4">
+              {/* Break duration */}
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <Eye className="w-4 h-4 text-violet-500" />
+                    Break Duration
+                  </label>
+                  <span className="text-lg font-bold text-slate-800 tabular-nums bg-slate-100 px-3 py-1 rounded-xl">
+                    {breakSeconds}s
+                  </span>
+                </div>
                 <input
                   type="range"
                   min="5"
@@ -301,20 +351,25 @@ export function SettingsWindow() {
                   step="5"
                   value={breakSeconds}
                   onChange={(e) => setBreakSeconds(parseInt(e.target.value))}
-                  className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-indigo-600"
+                  className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer accent-violet-500"
                 />
-                <span className="text-lg font-semibold text-slate-800 w-16 text-right tabular-nums">
-                  {breakSeconds}s
-                </span>
+                <div className="flex justify-between text-xs text-slate-400 mt-1">
+                  <span>5s</span>
+                  <span>5m</span>
+                </div>
               </div>
-            </div>
 
-            {/* Countdown duration */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-              <label className="text-sm font-medium text-slate-700 mb-3 block">
-                Countdown Warning
-              </label>
-              <div className="flex items-center gap-4">
+              {/* Countdown duration */}
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-amber-500" />
+                    Warning Time
+                  </label>
+                  <span className="text-lg font-bold text-slate-800 tabular-nums bg-slate-100 px-3 py-1 rounded-xl">
+                    {countdownSeconds}s
+                  </span>
+                </div>
                 <input
                   type="range"
                   min="10"
@@ -322,29 +377,36 @@ export function SettingsWindow() {
                   step="5"
                   value={countdownSeconds}
                   onChange={(e) => setCountdownSeconds(parseInt(e.target.value))}
-                  className="flex-1 h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-indigo-600"
+                  className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer accent-violet-500"
                 />
-                <span className="text-lg font-semibold text-slate-800 w-16 text-right tabular-nums">
-                  {countdownSeconds}s
-                </span>
+                <div className="flex justify-between text-xs text-slate-400 mt-1">
+                  <span>10s</span>
+                  <span>2m</span>
+                </div>
               </div>
             </div>
 
             {/* Save button */}
             <button
               onClick={handleSaveSettings}
-              className="w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-medium transition-colors shadow-sm"
+              className={cn(
+                "w-full py-4 px-4 rounded-2xl",
+                "bg-gradient-to-r from-violet-500 to-purple-500",
+                "text-white font-semibold transition-all",
+                "hover:from-violet-600 hover:to-purple-600",
+                "shadow-lg shadow-violet-200/50"
+              )}
             >
-              Save Settings
+              Save Changes
             </button>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 border-t border-slate-200 bg-white">
+      <div className="px-5 py-3 bg-white/50 border-t border-violet-100/50">
         <p className="text-xs text-center text-slate-400">
-          Kedip v0.1.0 • Protecting your eyes 👁
+          Made with 💜 for your eyes
         </p>
       </div>
     </div>

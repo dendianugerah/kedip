@@ -125,14 +125,14 @@ fn show_break_window(app: &AppHandle, time_remaining: u64) {
         .skip_taskbar(true)
         .focused(true)
         .visible_on_all_workspaces(true)
+        .fullscreen(true)
         .build()
     {
-        // Set fullscreen after creation for better compatibility
-        let _ = window.set_fullscreen(true);
         let _ = window.show();
         let _ = window.set_focus();
+        let _ = window.set_always_on_top(true);
         
-        // macOS: Keep window above all, including fullscreen apps
+        // macOS: Keep window visible on all workspaces
         #[cfg(target_os = "macos")]
         {
             let _ = window.set_visible_on_all_workspaces(true);
@@ -155,8 +155,8 @@ fn show_settings_window(app: &AppHandle) {
     }
 
     if let Ok(window) = WebviewWindowBuilder::new(app, "settings", WebviewUrl::App("index.html?window=settings".into()))
-        .title("Kedip Settings")
-        .inner_size(480.0, 560.0)
+        .title("Kedip")
+        .inner_size(380.0, 520.0)
         .decorations(true)
         .transparent(false)
         .resizable(false)

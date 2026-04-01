@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { Eye, Lock, SkipForward, Sparkles } from "lucide-react";
+import { cn } from "../../lib/utils";
 
 interface TimerState {
   phase: string;
@@ -15,17 +17,20 @@ function formatTime(ms: number): string {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-function getCurrentTime(): string {
-  const now = new Date();
-  return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-}
+const tips = [
+  "Look at something 20 feet away 👀",
+  "Blink slowly a few times ✨",
+  "Close your eyes and breathe 🌸",
+  "Stretch your neck gently 🌿",
+  "Roll your shoulders back 💫",
+];
 
 export function BreakWindow() {
   const [timeRemaining, setTimeRemaining] = useState(20000);
   const [breakDuration, setBreakDuration] = useState(20000);
-  const [currentTime, setCurrentTime] = useState(getCurrentTime);
   const [escPressCount, setEscPressCount] = useState(0);
   const [escTimeout, setEscTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [tip] = useState(() => tips[Math.floor(Math.random() * tips.length)]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -42,14 +47,8 @@ export function BreakWindow() {
       }
     });
 
-    // Update current time every second
-    const timeInterval = setInterval(() => {
-      setCurrentTime(getCurrentTime());
-    }, 1000);
-
     return () => {
       unlisten.then((fn) => fn());
-      clearInterval(timeInterval);
     };
   }, []);
 
@@ -88,111 +87,150 @@ export function BreakWindow() {
   const progress = breakDuration > 0 ? ((breakDuration - timeRemaining) / breakDuration) * 100 : 0;
 
   return (
-    <div className="w-screen h-screen relative overflow-hidden select-none cursor-default">
-      {/* Gradient background - matching LookAway's purple aesthetic */}
+    <div className="w-screen h-screen relative overflow-hidden select-none cursor-default bg-[#f8f7ff]">
+      {/* Soft gradient background */}
       <div 
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(ellipse 120% 80% at 50% 20%, rgba(139, 92, 246, 0.5) 0%, transparent 50%),
-            radial-gradient(ellipse 100% 60% at 80% 50%, rgba(168, 85, 247, 0.4) 0%, transparent 40%),
-            radial-gradient(ellipse 80% 80% at 20% 80%, rgba(124, 58, 237, 0.3) 0%, transparent 50%),
-            linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #581c87 75%, #3b0764 100%)
+            radial-gradient(ellipse 80% 50% at 50% -20%, rgba(196, 181, 253, 0.5) 0%, transparent 50%),
+            radial-gradient(ellipse 60% 40% at 100% 50%, rgba(251, 207, 232, 0.4) 0%, transparent 50%),
+            radial-gradient(ellipse 60% 40% at 0% 80%, rgba(191, 219, 254, 0.4) 0%, transparent 50%),
+            linear-gradient(180deg, #f8f7ff 0%, #f3f1ff 100%)
           `,
         }}
       />
-      
-      {/* Subtle noise texture overlay */}
-      <div 
-        className="absolute inset-0 opacity-[0.015]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-        }}
-      />
 
-      {/* Inner rounded container - like LookAway */}
-      <div className="absolute inset-8 rounded-[2.5rem] overflow-hidden">
-        {/* Inner gradient */}
+      {/* Floating decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Cloud shape top left */}
         <div 
-          className="absolute inset-0"
+          className="absolute -top-20 -left-20 w-80 h-80 rounded-full animate-float"
           style={{
-            background: `
-              radial-gradient(ellipse 100% 100% at 50% 0%, rgba(167, 139, 250, 0.15) 0%, transparent 50%),
-              radial-gradient(ellipse 80% 50% at 100% 50%, rgba(192, 132, 252, 0.1) 0%, transparent 40%)
-            `,
+            background: 'radial-gradient(circle, rgba(196, 181, 253, 0.3) 0%, transparent 70%)',
+            animationDelay: '0s',
           }}
         />
-        
-        {/* Content */}
-        <div className="relative h-full flex flex-col items-center justify-center">
-          {/* Current time - top */}
-          <div className="absolute top-12">
-            <span className="text-white/70 text-base font-normal tracking-wide">
-              Current time is {currentTime}
-            </span>
-          </div>
+        {/* Cloud shape top right */}
+        <div 
+          className="absolute -top-10 right-20 w-60 h-60 rounded-full animate-float"
+          style={{
+            background: 'radial-gradient(circle, rgba(251, 207, 232, 0.3) 0%, transparent 70%)',
+            animationDelay: '1s',
+          }}
+        />
+        {/* Cloud shape bottom */}
+        <div 
+          className="absolute bottom-20 left-1/4 w-72 h-72 rounded-full animate-float"
+          style={{
+            background: 'radial-gradient(circle, rgba(191, 219, 254, 0.3) 0%, transparent 70%)',
+            animationDelay: '2s',
+          }}
+        />
+      </div>
 
-          {/* Main content - centered */}
-          <div className="flex flex-col items-center">
-            {/* Title */}
-            <h1 className="text-[4rem] leading-none font-semibold text-white mb-4 tracking-tight">
-              Relax those eyes
-            </h1>
-            
-            {/* Subtitle */}
-            <p className="text-white/70 text-xl font-normal mb-12">
-              Set your eyes on something distant until the countdown is over
-            </p>
-
-            {/* Progress bar */}
-            <div className="w-48 h-[2px] bg-white/20 rounded-full overflow-hidden mb-8">
-              <div 
-                className="h-full bg-white/50 rounded-full transition-all duration-1000 ease-linear"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-
-            {/* Timer */}
-            <div className="text-[3.5rem] font-light text-white/40 tabular-nums tracking-wider">
-              {formatTime(timeRemaining)}
+      {/* Main content card */}
+      <div className="relative h-full flex items-center justify-center p-8">
+        <div className="glass rounded-[2.5rem] p-12 max-w-lg w-full shadow-xl shadow-violet-200/50 border border-white/50">
+          {/* Icon */}
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-violet-400 to-purple-500 flex items-center justify-center shadow-lg shadow-violet-300/50 animate-wiggle">
+              <Eye className="w-10 h-10 text-white" strokeWidth={1.5} />
             </div>
           </div>
 
-          {/* Bottom controls */}
-          <div className="absolute bottom-16 flex flex-col items-center gap-4">
-            <div className="flex items-center gap-3">
-              {/* Skip button */}
-              <button
-                onClick={handleSkip}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white/80 hover:text-white text-sm font-medium transition-all duration-200 backdrop-blur-sm"
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="opacity-70">
-                  <path d="M4 3L10 8L4 13V3Z" fill="currentColor"/>
-                  <path d="M8 3L14 8L8 13V3Z" fill="currentColor"/>
-                </svg>
-                Skip
-              </button>
+          {/* Title */}
+          <h1 className="text-4xl font-bold text-center text-slate-800 mb-2">
+            Rest your eyes
+          </h1>
+          
+          {/* Tip */}
+          <p className="text-lg text-center text-slate-500 mb-8">
+            {tip}
+          </p>
 
-              {/* Lock Screen button */}
-              <button
-                onClick={handleLockScreen}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white/80 hover:text-white text-sm font-medium transition-all duration-200 backdrop-blur-sm"
-              >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-70">
-                  <rect x="2" y="6" width="10" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                  <path d="M4.5 6V4.5C4.5 3.11929 5.61929 2 7 2C8.38071 2 9.5 3.11929 9.5 4.5V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-                Lock Screen
-              </button>
+          {/* Timer circle */}
+          <div className="relative flex justify-center mb-8">
+            <div className="relative w-48 h-48">
+              {/* Background circle */}
+              <svg className="w-full h-full transform -rotate-90">
+                <circle
+                  cx="96"
+                  cy="96"
+                  r="88"
+                  fill="none"
+                  stroke="rgba(139, 92, 246, 0.1)"
+                  strokeWidth="8"
+                />
+                <circle
+                  cx="96"
+                  cy="96"
+                  r="88"
+                  fill="none"
+                  stroke="url(#gradient)"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeDasharray={2 * Math.PI * 88}
+                  strokeDashoffset={2 * Math.PI * 88 * (1 - progress / 100)}
+                  className="transition-all duration-1000 ease-linear"
+                />
+                <defs>
+                  <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#a78bfa" />
+                    <stop offset="100%" stopColor="#f472b6" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              {/* Timer text */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-5xl font-bold text-slate-800 tabular-nums">
+                  {formatTime(timeRemaining)}
+                </span>
+                <span className="text-sm text-slate-400 mt-1">remaining</span>
+              </div>
             </div>
-
-            {/* Hint text */}
-            <span className="text-white/30 text-xs">
-              Press Esc twice to skip
-            </span>
           </div>
+
+          {/* Action buttons */}
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={handleSkip}
+              className={cn(
+                "flex items-center gap-2 px-5 py-2.5 rounded-2xl",
+                "bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800",
+                "text-sm font-semibold transition-all duration-200",
+                "border border-slate-200/50"
+              )}
+            >
+              <SkipForward className="w-4 h-4" />
+              Skip
+            </button>
+
+            <button
+              onClick={handleLockScreen}
+              className={cn(
+                "flex items-center gap-2 px-5 py-2.5 rounded-2xl",
+                "bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-600 hover:to-purple-600",
+                "text-white text-sm font-semibold transition-all duration-200",
+                "shadow-lg shadow-violet-300/50"
+              )}
+            >
+              <Lock className="w-4 h-4" />
+              Lock Screen
+            </button>
+          </div>
+
+          {/* Hint */}
+          <p className="text-center text-xs text-slate-400 mt-6">
+            Press <kbd className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-mono text-[10px]">Esc</kbd> twice to skip
+          </p>
         </div>
       </div>
+
+      {/* Sparkle decorations */}
+      <Sparkles className="absolute top-1/4 left-1/4 w-6 h-6 text-violet-300 animate-pulse-soft" />
+      <Sparkles className="absolute top-1/3 right-1/3 w-4 h-4 text-pink-300 animate-pulse-soft" style={{ animationDelay: '0.5s' }} />
+      <Sparkles className="absolute bottom-1/3 right-1/4 w-5 h-5 text-blue-300 animate-pulse-soft" style={{ animationDelay: '1s' }} />
     </div>
   );
 }
