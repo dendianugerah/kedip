@@ -1,16 +1,13 @@
-//! Window management utilities.
-//!
-//! This module handles creating, showing, and closing the various windows
-//! in the application: notification, break, and settings windows.
+//! Window management.
 
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
-/// Shows the countdown notification window.
-///
-/// This is a small floating window that appears before a break starts,
-/// giving the user a chance to snooze, skip, or start the break early.
+#[cfg(target_os = "macos")]
+use cocoa::base::id;
+#[cfg(target_os = "macos")]
+use objc::{class, msg_send, sel, sel_impl};
+
 pub fn show_notification(app: &AppHandle, time_remaining: u64) {
-    // Close existing notification if any
     if let Some(window) = app.get_webview_window("notification") {
         let _ = window.close();
     }
@@ -33,22 +30,15 @@ pub fn show_notification(app: &AppHandle, time_remaining: u64) {
     }
 }
 
-/// Closes the notification window if it exists.
 pub fn close_notification(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("notification") {
         let _ = window.close();
     }
 }
 
-/// Shows the fullscreen break window.
-///
-/// This window takes over the entire screen to encourage the user
-/// to actually take a break. It's always on top and visible on all workspaces.
 pub fn show_break(app: &AppHandle, time_remaining: u64) {
-    // Close notification first
     close_notification(app);
 
-    // Close existing break window if any
     if let Some(window) = app.get_webview_window("break") {
         let _ = window.close();
     }
@@ -58,40 +48,76 @@ pub fn show_break(app: &AppHandle, time_remaining: u64) {
     if let Ok(window) = WebviewWindowBuilder::new(app, "break", WebviewUrl::App(url.into()))
         .title("")
         .decorations(false)
-        .transparent(true)
+        .transparent(false)
         .always_on_top(true)
         .resizable(false)
         .skip_taskbar(true)
         .focused(true)
         .visible_on_all_workspaces(true)
-        .fullscreen(true)
         .build()
     {
         let _ = window.show();
+        let _ = window.set_fullscreen(true);
         let _ = window.set_focus();
-        let _ = window.set_always_on_top(true);
 
-        // macOS: Keep window visible on all workspaces
         #[cfg(target_os = "macos")]
         {
-            let _ = window.set_visible_on_all_workspaces(true);
+            apply_macos_lock_behavior(&window);
         }
     }
 }
 
-/// Closes the break window if it exists.
+#[cfg(target_os = "macos")]
+fn apply_macos_lock_behavior(window: &tauri::WebviewWindow) {
+    use tauri::Emitter;
+
+    if let Ok(ns_window) = window.ns_window() {
+        let ns_window = ns_window as id;
+
+        unsafe {
+            // CGShieldingWindowLevel - highest level used by screen savers
+            let shielding_level: i64 = 2147483628;
+            let _: () = msg_send![ns_window, setLevel: shielding_level];
+
+            // Collection behavior flags:
+            // CanJoinAllSpaces | Stationary | IgnoresCycle | FullScreenDisallowsTiling
+            let behavior: u64 = (1 << 0) | (1 << 4) | (1 << 6) | (1 << 11);
+            let _: () = msg_send![ns_window, setCollectionBehavior: behavior];
+            let _: () = msg_send![ns_window, setMovable: false];
+            let _: () = msg_send![ns_window, makeKeyAndOrderFront: cocoa::base::nil];
+            let _: () = msg_send![ns_window, setIgnoresMouseEvents: false];
+
+            // Presentation options: HideDock | HideMenuBar | DisableProcessSwitching
+            let app: id = msg_send![class!(NSApplication), sharedApplication];
+            let options: u64 = (1 << 1) | (1 << 3) | (1 << 5);
+            let _: () = msg_send![app, setPresentationOptions: options];
+        }
+    }
+
+    // Emit event to frontend that lock is active
+    let _ = window.emit("lock-active", true);
+}
+
 pub fn close_break(app: &AppHandle) {
+    #[cfg(target_os = "macos")]
+    {
+        restore_macos_presentation();
+    }
+
     if let Some(window) = app.get_webview_window("break") {
         let _ = window.close();
     }
 }
 
-/// Shows or focuses the settings window.
-///
-/// If the settings window already exists, it will be focused.
-/// Otherwise, a new settings window will be created.
+#[cfg(target_os = "macos")]
+fn restore_macos_presentation() {
+    unsafe {
+        let app: id = msg_send![class!(NSApplication), sharedApplication];
+        let _: () = msg_send![app, setPresentationOptions: 0u64];
+    }
+}
+
 pub fn show_settings(app: &AppHandle) {
-    // If settings window exists, focus it
     if let Some(window) = app.get_webview_window("settings") {
         let _ = window.show();
         let _ = window.set_focus();

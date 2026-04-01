@@ -1,7 +1,4 @@
 //! System tray setup and event handling.
-//!
-//! This module handles the creation and configuration of the system tray icon,
-//! including the menu and click event handlers.
 
 use std::sync::Arc;
 use std::time::Instant;
@@ -14,21 +11,13 @@ use tauri::{
 use crate::state::{AppState, TimerPhase};
 use crate::windows;
 
-/// Sets up the system tray icon and menu.
-///
-/// The tray shows:
-/// - Timer countdown in the menu bar (macOS)
-/// - Right-click menu with actions
-/// - Left-click opens settings
 pub fn setup(app: &App, state: Arc<AppState>) -> Result<(), Box<dyn std::error::Error>> {
-    // Create menu items
     let quit_item = MenuItem::with_id(app, "quit", "Quit Kedip", true, None::<&str>)?;
     let settings_item = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>)?;
     let pause_item = MenuItem::with_id(app, "pause", "Pause", true, None::<&str>)?;
     let skip_item = MenuItem::with_id(app, "skip", "Skip This Break", true, None::<&str>)?;
     let break_now_item = MenuItem::with_id(app, "break_now", "Take Break Now", true, None::<&str>)?;
 
-    // Build the menu
     let menu = Menu::with_items(
         app,
         &[
@@ -40,20 +29,17 @@ pub fn setup(app: &App, state: Arc<AppState>) -> Result<(), Box<dyn std::error::
         ],
     )?;
 
-    // Get the default app icon
     let icon = app
         .default_window_icon()
         .cloned()
         .expect("no default icon configured");
 
-    // Build and configure the tray icon
     TrayIconBuilder::with_id("main-tray")
         .icon(icon)
-        .title("20:00") // Initial title showing default work time
+        .title("20:00")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_tray_icon_event(|tray, event| {
-            // Left click opens settings window
             if let TrayIconEvent::Click {
                 button: MouseButton::Left,
                 button_state: MouseButtonState::Up,
@@ -72,7 +58,6 @@ pub fn setup(app: &App, state: Arc<AppState>) -> Result<(), Box<dyn std::error::
     Ok(())
 }
 
-/// Handles tray menu item clicks.
 fn handle_menu_event(app: &tauri::AppHandle, event_id: &str, state: &Arc<AppState>) {
     match event_id {
         "quit" => {
