@@ -59,10 +59,10 @@ export function TimerSettings({
           Duration
         </p>
         <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
-          <div className="px-4 py-4 bg-[#2C2C2E]">
+          <div className="px-4 py-4 bg-white/[0.06]">
             <div className="flex items-center justify-between mb-3.5">
-              <span className="text-[13px] text-zinc-300">Work</span>
-              <span className="text-[13px] text-zinc-500 tabular-nums">{workMinutes}m</span>
+              <span className="text-[13px] text-white/75">Work</span>
+              <span className="text-[13px] text-white/35 tabular-nums">{workMinutes}m</span>
             </div>
             <Slider
               min={1}
@@ -72,10 +72,10 @@ export function TimerSettings({
             />
           </div>
 
-          <div className="px-4 py-4 bg-[#2C2C2E]">
+          <div className="px-4 py-4 bg-white/[0.06]">
             <div className="flex items-center justify-between mb-3.5">
-              <span className="text-[13px] text-zinc-300">Break</span>
-              <span className="text-[13px] text-zinc-500 tabular-nums">{breakSeconds}s</span>
+              <span className="text-[13px] text-white/75">Break</span>
+              <span className="text-[13px] text-white/35 tabular-nums">{breakSeconds}s</span>
             </div>
             <Slider
               min={5}

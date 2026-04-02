@@ -86,7 +86,7 @@ export function SettingsWindow() {
                   className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer ${
                     active
                       ? "bg-white/[0.08] text-white"
-                      : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04]"
+                      : "text-white/30 hover:text-white/70 hover:bg-white/[0.04]"
                   }`}
                 >
                   <Icon className="w-[14px] h-[14px] flex-shrink-0" />
@@ -148,10 +148,10 @@ export function SettingsWindow() {
                         ).map(([label, value]) => (
                           <div
                             key={label}
-                            className="flex items-center justify-between px-4 py-3 bg-[#2C2C2E]"
+                            className="flex items-center justify-between px-4 py-3 bg-white/[0.06]"
                           >
-                            <span className="text-[13px] text-zinc-300">{label}</span>
-                            <span className="text-[13px] text-zinc-500">{value}</span>
+                            <span className="text-[13px] text-white/75">{label}</span>
+                            <span className="text-[13px] text-white/35">{value}</span>
                           </div>
                         ))}
                       </div>
@@ -161,7 +161,7 @@ export function SettingsWindow() {
                       <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
                         About
                       </p>
-                      <p className="text-[13px] text-zinc-500 leading-relaxed">
+                      <p className="text-[13px] text-white/35 leading-relaxed">
                         Kedip is a gentle eye care reminder. Every 20 minutes, look at something 20
                         feet away for 20 seconds — the 20-20-20 rule.
                       </p>

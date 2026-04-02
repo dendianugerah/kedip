@@ -174,9 +174,7 @@ pub fn close_break(app: &AppHandle) {
     #[cfg(target_os = "macos")]
     {
         if let Some(mtm) = MainThreadMarker::new() {
-            unsafe {
-                NSApplication::sharedApplication(mtm).hide(None);
-            }
+            NSApplication::sharedApplication(mtm).hide(None);
         }
     }
 }

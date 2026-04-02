@@ -31,14 +31,14 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
         <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
           Active
         </p>
-        <div className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl p-5">
-          <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">
+        <div className="bg-white/[0.06] border border-white/[0.06] rounded-xl p-5">
+          <p className="text-[11px] font-medium text-white/35 uppercase tracking-wider">
             {phaseLabel}
           </p>
           <p className="text-[52px] font-light text-white tabular-nums tracking-tight leading-none mt-2">
             {formatTime(timerState.time_remaining_ms)}
           </p>
-          <p className="text-[12px] text-zinc-600 mt-2">
+          <p className="text-[12px] text-white/20 mt-2">
             {timerState.phase === "Working" ? "until next break" : "remaining in break"}
           </p>
           <div className="mt-4 h-[2px] bg-white/[0.07] rounded-full overflow-hidden">
@@ -57,8 +57,8 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
           Controls
         </p>
         <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
-          <div className="flex items-center justify-between px-4 py-3.5 bg-[#2C2C2E]">
-            <span className="text-[13px] text-zinc-300">{isPaused ? "Resume" : "Pause"}</span>
+          <div className="flex items-center justify-between px-4 py-3.5 bg-white/[0.06]">
+            <span className="text-[13px] text-white/75">{isPaused ? "Resume" : "Pause"}</span>
             <Switch
               checked={isPaused}
               onCheckedChange={() => onTogglePause()}
@@ -68,18 +68,18 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
 
           <button
             onClick={onBreakNow}
-            className="w-full flex items-center justify-between px-4 py-3.5 bg-[#2C2C2E] text-left hover:bg-white/[0.03] transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between px-4 py-3.5 bg-white/[0.06] text-left hover:bg-white/[0.09] transition-colors cursor-pointer"
           >
-            <span className="text-[13px] text-zinc-300">Take a Break Now</span>
-            <span className="text-[13px] text-zinc-600">→</span>
+            <span className="text-[13px] text-white/75">Take a Break Now</span>
+            <span className="text-[13px] text-white/20">→</span>
           </button>
 
           <button
             onClick={onReset}
-            className="w-full flex items-center justify-between px-4 py-3.5 bg-[#2C2C2E] text-left hover:bg-white/[0.03] transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between px-4 py-3.5 bg-white/[0.06] text-left hover:bg-white/[0.09] transition-colors cursor-pointer"
           >
-            <span className="text-[13px] text-zinc-300">Reset Timer</span>
-            <span className="text-[13px] text-zinc-600">→</span>
+            <span className="text-[13px] text-white/75">Reset Timer</span>
+            <span className="text-[13px] text-white/20">→</span>
           </button>
         </div>
       </div>
