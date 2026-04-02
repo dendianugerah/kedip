@@ -4,22 +4,10 @@ import { listen } from "@tauri-apps/api/event";
 import { motion } from "motion/react";
 import { Eye, Play, Pause, Coffee, RotateCcw, Clock, Timer, Zap, Leaf } from "lucide-react";
 
-interface TimerState {
-  phase: string;
-  time_remaining_ms: number;
-  work_duration_ms: number;
-  break_duration_ms: number;
-  countdown_duration_ms: number;
-}
+import { formatTime } from "@/lib/format";
+import type { TimerState, Preset } from "@/types/timer";
 
-function formatTimeShort(ms: number): string {
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
-}
-
-const presets = [
+const presets: Preset[] = [
   { name: "20-20-20", icon: Eye, work: 20, break: 20, desc: "Classic eye care" },
   { name: "Pomodoro", icon: Timer, work: 25, break: 5, desc: "Focus sessions" },
   { name: "Deep Work", icon: Zap, work: 50, break: 10, desc: "Long focus" },
@@ -174,7 +162,7 @@ export function SettingsWindow() {
               {/* Timer display */}
               <div className="text-center mb-4">
                 <div className="text-5xl font-light text-[#2A2A28] tabular-nums tracking-tight">
-                  {formatTimeShort(timerState.time_remaining_ms)}
+                  {formatTime(timerState.time_remaining_ms)}
                 </div>
                 <p className="text-sm text-[#A3A19C] mt-1">
                   {timerState.phase === "Working" && "until next break"}

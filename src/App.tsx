@@ -1,6 +1,4 @@
-import { NotificationWindow } from "./components/windows/NotificationWindow";
-import { BreakWindow } from "./components/windows/BreakWindow";
-import { SettingsWindow } from "./components/windows/SettingsWindow";
+import { NotificationWindow, BreakWindow, SettingsWindow } from "@/components/windows";
 
 function App() {
   // Get window type from URL query params

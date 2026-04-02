@@ -1,92 +1,19 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { motion, AnimatePresence } from "motion/react";
 import { Wind, Plus, X } from "lucide-react";
 
-interface TimerState {
-  phase: string;
-  time_remaining_ms: number;
-  break_duration_ms: number;
-}
-
-// Soft organic blob components
-const BlobOne = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path
-      fill="currentColor"
-      d="M45.7,-76.1C58.9,-69.3,69.1,-55.4,78.2,-40.8C87.3,-26.2,95.3,-10.9,94.1,3.8C92.9,18.5,82.5,32.6,71.2,44.7C59.9,56.8,47.7,66.9,33.8,74.1C19.9,81.3,4.3,85.6,-10.8,84.1C-25.9,82.6,-40.5,75.3,-53.4,65.6C-66.3,55.9,-77.5,43.8,-83.9,29.4C-90.3,15,-91.9,-1.7,-87.6,-16.6C-83.3,-31.5,-73.1,-44.6,-60.6,-54.2C-48.1,-63.8,-33.3,-69.9,-19.1,-73.4C-4.9,-76.9,8.7,-77.8,22.8,-76.3C36.9,-74.8,45.7,-76.1,45.7,-76.1Z"
-      transform="translate(100 100) scale(1.1)"
-    />
-  </svg>
-);
-
-const BlobTwo = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path
-      fill="currentColor"
-      d="M39.9,-65.7C53.1,-58.5,66.2,-50.4,75.6,-38.7C85,-27,90.7,-11.7,89.5,3.1C88.3,17.9,80.2,32.2,69.6,43.5C59,54.8,45.9,63.1,31.9,69.5C17.9,75.9,3,80.4,-11.4,79.5C-25.8,78.6,-39.7,72.3,-51.7,62.8C-63.7,53.3,-73.8,40.6,-79.6,26.1C-85.4,11.6,-86.9,-4.7,-82.5,-19.3C-78.1,-33.9,-67.8,-46.8,-55.2,-55.1C-42.6,-63.4,-27.7,-67.1,-13.7,-68.8C0.3,-70.5,14.3,-70.2,26.7,-72.9C39.1,-75.6,39.9,-65.7,39.9,-65.7Z"
-      transform="translate(100 100) scale(1.2) rotate(45)"
-    />
-  </svg>
-);
-
-const BlobThree = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path
-      fill="currentColor"
-      d="M44.7,-76.4C58.3,-69.2,70,-57.1,78.8,-43.1C87.6,-29.1,93.5,-13.2,92.1,2C90.7,17.2,82,31.7,71.5,43.9C61,56.1,48.7,66,34.8,73.1C20.9,80.2,5.4,84.5,-9.6,83.4C-24.6,82.3,-39.1,75.8,-51.3,66.1C-63.5,56.4,-73.4,43.5,-80.1,28.9C-86.8,14.3,-90.3,-2,-86.7,-16.5C-83.1,-31,-72.4,-43.7,-60,-53.6C-47.6,-63.5,-33.5,-70.6,-19.3,-74.6C-5.1,-78.6,9.2,-79.5,23.1,-77.6C37,-75.7,44.7,-76.4,44.7,-76.4Z"
-      transform="translate(100 100) scale(1.1) rotate(-20)"
-    />
-  </svg>
-);
-
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, "0");
-  const s = (seconds % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
-}
+import { Button, BlobOne, BlobTwo, BlobThree } from "@/components/ui";
+import { useZenMode, useEscapeSkip } from "@/hooks";
+import { formatSeconds } from "@/lib/format";
+import type { TimerState } from "@/types/timer";
 
 export function BreakWindow() {
   const [timeRemaining, setTimeRemaining] = useState(20);
-  const [escCount, setEscCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-  const [isZenMode, setIsZenMode] = useState(false);
-  const zenTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Zen Mode: Hide controls after 3 seconds of inactivity
-  const resetZenTimer = useCallback(() => {
-    setIsZenMode(false);
-    if (zenTimeoutRef.current) {
-      clearTimeout(zenTimeoutRef.current);
-    }
-    zenTimeoutRef.current = setTimeout(() => {
-      setIsZenMode(true);
-    }, 3000);
-  }, []);
-
-  useEffect(() => {
-    // Start zen timer on mount
-    resetZenTimer();
-
-    // Reset on any mouse movement or key press
-    const handleActivity = () => resetZenTimer();
-
-    window.addEventListener("mousemove", handleActivity);
-    window.addEventListener("keydown", handleActivity);
-    window.addEventListener("mousedown", handleActivity);
-
-    return () => {
-      window.removeEventListener("mousemove", handleActivity);
-      window.removeEventListener("keydown", handleActivity);
-      window.removeEventListener("mousedown", handleActivity);
-      if (zenTimeoutRef.current) {
-        clearTimeout(zenTimeoutRef.current);
-      }
-    };
-  }, [resetZenTimer]);
+  const isZenMode = useZenMode({ delay: 3000 });
+  const escCount = useEscapeSkip({ requiredPresses: 2, timeout: 1000 });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -108,30 +35,8 @@ export function BreakWindow() {
     };
   }, []);
 
-  // Esc key logic - double tap to skip
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setEscCount((prev) => prev + 1);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  useEffect(() => {
-    if (escCount >= 2) {
-      invoke("skip_break");
-      setEscCount(0);
-    }
-    if (escCount === 1) {
-      const timer = setTimeout(() => setEscCount(0), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [escCount]);
-
   const addTime = () => {
-    setTimeRemaining((prev) => prev + 60);
+    invoke("add_break_time", { seconds: 60 });
   };
 
   const handleSkip = () => {
@@ -241,7 +146,7 @@ export function BreakWindow() {
           className="mb-16"
         >
           <div className="text-[100px] md:text-[140px] font-extralight text-[#2A2A28] tracking-tighter tabular-nums leading-none font-sans">
-            {formatTime(timeRemaining)}
+            {formatSeconds(timeRemaining)}
           </div>
         </motion.div>
 
@@ -256,19 +161,13 @@ export function BreakWindow() {
               className="flex flex-col items-center"
             >
               <div className="flex items-center gap-4 mb-12">
-                <button
-                  onClick={addTime}
-                  className="px-6 py-3 bg-[#EAE6DF] text-[#2A2A28] rounded-full font-medium hover:bg-[#DFDBD0] transition-colors flex items-center gap-2 font-sans"
-                >
+                <Button variant="secondary" size="lg" onClick={addTime}>
                   <Plus className="w-4 h-4" />1 Min
-                </button>
-                <button
-                  onClick={handleSkip}
-                  className="px-6 py-3 border border-[#EAE6DF] text-[#7A7974] rounded-full font-medium hover:bg-white/50 hover:text-[#2A2A28] transition-colors flex items-center gap-2 font-sans"
-                >
+                </Button>
+                <Button variant="outline" size="lg" onClick={handleSkip}>
                   <X className="w-4 h-4" />
                   Skip
-                </button>
+                </Button>
               </div>
 
               {/* Hint Text */}
