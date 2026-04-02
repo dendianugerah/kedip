@@ -17,7 +17,7 @@ export function BreakWindow() {
   const [timeRemaining, setTimeRemaining] = useState(20);
   const [isComplete, setIsComplete] = useState(false);
   const [isIdle, setIsIdle] = useState(false);
-  const [escProgress, setEscProgress] = useState(0);
+  const [escCount, setEscCount] = useState(0);
 
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const escTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -31,7 +31,7 @@ export function BreakWindow() {
   useEffect(() => {
     resetIdleTimer();
 
-    const events = ["mousemove", "keydown", "mousedown"];
+    const events = ["mousemove", "mousedown"];
     events.forEach((e) => window.addEventListener(e, resetIdleTimer));
 
     return () => {
@@ -61,14 +61,14 @@ export function BreakWindow() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setEscProgress((prev) => {
+        setEscCount((prev) => {
           const next = prev + 1;
           if (next >= 2) {
             invoke("skip_break");
             return 0;
           }
           if (escTimer.current) clearTimeout(escTimer.current);
-          escTimer.current = setTimeout(() => setEscProgress(0), 800);
+          escTimer.current = setTimeout(() => setEscCount(0), 800);
           return next;
         });
       }
@@ -81,7 +81,7 @@ export function BreakWindow() {
     };
   }, []);
 
-  const handleAddTime = () => invoke("add_break_time", { seconds: 60 });
+  const handleAddTime = () => invoke("add_break_time", { extraMs: 60000 });
   const handleSkip = () => invoke("skip_break");
 
   if (isComplete) {
@@ -136,10 +136,19 @@ export function BreakWindow() {
           </div>
 
           <p
-            className={`mt-8 text-sm transition-colors duration-300 ${escProgress > 0 ? "text-white/60" : "text-white/30"}`}
+            className={`mt-8 text-sm transition-colors duration-200 ${escCount > 0 ? "text-white/70" : "text-white/30"}`}
           >
-            Press <kbd className="mx-1 px-1.5 py-0.5 rounded bg-white/10 text-xs">ESC</kbd> twice to
-            skip
+            {escCount > 0 ? (
+              <>
+                Press <kbd className="mx-1 px-1.5 py-0.5 rounded bg-white/20 text-xs">ESC</kbd>{" "}
+                again to skip
+              </>
+            ) : (
+              <>
+                Press <kbd className="mx-1 px-1.5 py-0.5 rounded bg-white/10 text-xs">ESC</kbd>{" "}
+                twice to skip
+              </>
+            )}
           </p>
         </div>
       </div>
