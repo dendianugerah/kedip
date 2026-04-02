@@ -2,10 +2,12 @@
 
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager};
 
 use crate::state::{format_time, AppState, TimerPhase};
 use crate::windows;
+
+const WARNING_THRESHOLD_MS: u64 = 30_000;
 
 pub fn update_tray_title(app: &AppHandle, paused: bool, phase: TimerPhase, time_remaining_ms: u64) {
     if let Some(tray) = app.tray_by_id("main-tray") {
@@ -13,9 +15,7 @@ pub fn update_tray_title(app: &AppHandle, paused: bool, phase: TimerPhase, time_
             "⏸".to_string()
         } else {
             match phase {
-                TimerPhase::Idle => "👁".to_string(),
                 TimerPhase::Working => format_time(time_remaining_ms),
-                TimerPhase::Countdown => format!("⚠️ {}", format_time(time_remaining_ms)),
                 TimerPhase::Break => format!("😌 {}", format_time(time_remaining_ms)),
             }
         };
@@ -50,33 +50,48 @@ pub fn start_loop(app: AppHandle, state: Arc<AppState>) {
             timer.time_remaining_ms = 0;
         }
 
-        if timer.time_remaining_ms == 0 {
-            match timer.phase {
-                TimerPhase::Idle => {
-                    timer.phase = TimerPhase::Working;
-                    timer.time_remaining_ms = timer.work_duration_ms;
-                }
+        let phase = timer.phase;
+        let time_remaining = timer.time_remaining_ms;
+        let break_duration = timer.break_duration_ms;
+        let work_duration = timer.work_duration_ms;
+
+        if phase == TimerPhase::Working && time_remaining <= WARNING_THRESHOLD_MS {
+            let mut shown = state.notification_shown.lock().unwrap();
+            if !*shown {
+                *shown = true;
+                let app_clone = app.clone();
+                let _ = app.run_on_main_thread(move || {
+                    windows::show_notification(&app_clone, time_remaining);
+                });
+            }
+        }
+
+        if time_remaining == 0 {
+            match phase {
                 TimerPhase::Working => {
-                    timer.phase = TimerPhase::Countdown;
-                    timer.time_remaining_ms = timer.countdown_duration_ms;
-                    windows::show_notification(&app, timer.time_remaining_ms);
-                }
-                TimerPhase::Countdown => {
                     timer.phase = TimerPhase::Break;
-                    timer.time_remaining_ms = timer.break_duration_ms;
-                    windows::show_break(&app, timer.time_remaining_ms);
+                    timer.time_remaining_ms = break_duration;
+                    *state.notification_shown.lock().unwrap() = false;
+
+                    let app_clone = app.clone();
+                    let _ = app.run_on_main_thread(move || {
+                        windows::close_notification(&app_clone);
+                        windows::show_break(&app_clone, break_duration);
+                    });
                 }
                 TimerPhase::Break => {
                     timer.phase = TimerPhase::Working;
-                    timer.time_remaining_ms = timer.work_duration_ms;
-                    windows::close_break(&app);
+                    timer.time_remaining_ms = work_duration;
+
+                    let app_clone = app.clone();
+                    let _ = app.run_on_main_thread(move || {
+                        windows::close_break(&app_clone);
+                    });
                 }
             }
         }
 
         let current_state = timer.clone();
-        let phase = timer.phase;
-        let time_remaining = timer.time_remaining_ms;
         drop(timer);
 
         let _ = app.emit("timer-update", &current_state);

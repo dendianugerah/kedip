@@ -33,7 +33,6 @@ pub fn run() {
             commands::start_break_now,
             commands::toggle_pause,
             commands::update_settings,
-            commands::lock_screen,
             commands::add_break_time,
         ])
         .run(tauri::generate_context!())

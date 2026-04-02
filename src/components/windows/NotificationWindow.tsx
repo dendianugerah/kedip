@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { motion } from "motion/react";
-import { Clock, Play, X, Timer } from "lucide-react";
+import { Eye } from "lucide-react";
 
-import { Button } from "@/components/ui";
 import { formatTime } from "@/lib/format";
 import type { TimerState } from "@/types/timer";
 
 export function NotificationWindow() {
   const [timeRemaining, setTimeRemaining] = useState(30000);
+
+  const seconds = Math.floor(timeRemaining / 1000);
+  const isUrgent = seconds <= 10;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -17,7 +18,7 @@ export function NotificationWindow() {
     setTimeRemaining(time);
 
     const unlisten = listen<TimerState>("timer-update", (event) => {
-      if (event.payload.phase === "Countdown") {
+      if (event.payload.phase === "Working") {
         setTimeRemaining(event.payload.time_remaining_ms);
       }
     });
@@ -27,52 +28,49 @@ export function NotificationWindow() {
     };
   }, []);
 
-  const handleStartNow = () => {
-    invoke("start_break_now");
-  };
-
-  const handleSnooze = () => {
-    invoke("snooze_break");
-  };
-
-  const handleSkip = () => {
-    invoke("skip_break");
-  };
+  const handleStartNow = () => invoke("start_break_now");
+  const handleSnooze = (minutes: number) => invoke("snooze_break", { minutes });
+  const handleSkip = () => invoke("skip_break");
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="w-full h-full bg-[#F9F8F4] rounded-2xl overflow-hidden select-none font-sans border border-[#EAE6DF]"
-    >
-      <div className="flex items-center justify-between px-5 py-4 h-full">
-        <div className="flex items-center gap-4">
-          <div className="w-11 h-11 rounded-full bg-[#EAE6DF] flex items-center justify-center">
-            <Clock className="w-5 h-5 text-[#7A7974]" />
-          </div>
-          <div>
-            <p className="text-xs font-medium text-[#A3A19C]">Break in</p>
-            <p className="text-xl font-medium text-[#2A2A28] tabular-nums tracking-tight">
-              {formatTime(timeRemaining)}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="primary" size="md" onClick={handleStartNow}>
-            <Play className="w-3.5 h-3.5" />
-            Now
-          </Button>
-          <Button variant="secondary" size="md" onClick={handleSnooze}>
-            <Timer className="w-3.5 h-3.5" />
-            +5m
-          </Button>
-          <Button variant="ghost" size="icon" onClick={handleSkip}>
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+    <div className="w-full h-full flex items-center justify-between px-3 select-none font-sans">
+      <div className="flex items-center gap-2">
+        <Eye className={`w-4 h-4 text-white ${isUrgent ? "animate-pulse" : "opacity-60"}`} />
+        <span
+          className={`text-sm font-medium tabular-nums transition-colors ${
+            isUrgent ? "text-amber-400" : "text-white/90"
+          }`}
+        >
+          {formatTime(timeRemaining)}
+        </span>
       </div>
-    </motion.div>
+
+      <div className="flex items-center gap-1">
+        <button
+          onClick={handleStartNow}
+          className="px-2.5 py-1 text-xs font-medium bg-white/90 hover:bg-white text-black rounded-full transition-colors"
+        >
+          Now
+        </button>
+        <button
+          onClick={() => handleSnooze(1)}
+          className="px-2 py-1 text-xs font-medium bg-white/15 hover:bg-white/25 text-white rounded-full transition-colors"
+        >
+          +1m
+        </button>
+        <button
+          onClick={() => handleSnooze(5)}
+          className="px-2 py-1 text-xs font-medium bg-white/15 hover:bg-white/25 text-white rounded-full transition-colors"
+        >
+          +5m
+        </button>
+        <button
+          onClick={handleSkip}
+          className="px-2 py-1 text-xs font-medium text-white/50 hover:text-white/70 rounded-full transition-colors"
+        >
+          Skip
+        </button>
+      </div>
+    </div>
   );
 }

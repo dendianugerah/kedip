@@ -6,7 +6,8 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 use objc2::rc::Retained;
 #[cfg(target_os = "macos")]
 use objc2_app_kit::{
-    NSApplication, NSApplicationPresentationOptions, NSScreen, NSWindow, NSWindowCollectionBehavior,
+    NSApplication, NSApplicationPresentationOptions, NSScreen, NSWindow,
+    NSWindowCollectionBehavior,
 };
 #[cfg(target_os = "macos")]
 use objc2_foundation::MainThreadMarker;
@@ -20,19 +21,37 @@ pub fn show_notification(app: &AppHandle, time_remaining: u64) {
 
     let url = format!("index.html?window=notification&time={}", time_remaining);
 
+    let monitors = app.available_monitors().ok();
+    let (screen_width, _) = monitors
+        .and_then(|m| m.into_iter().next())
+        .map(|m| {
+            let s = m.size();
+            (s.width as f64, s.height as f64)
+        })
+        .unwrap_or((1920.0, 1080.0));
+
+    let width = 340.0;
+    let height = 48.0;
+    let x = screen_width - width - 20.0;
+    let y = 50.0;
+
     if let Ok(window) = WebviewWindowBuilder::new(app, "notification", WebviewUrl::App(url.into()))
-        .title("Break Coming")
-        .inner_size(400.0, 100.0)
+        .title("")
+        .inner_size(width, height)
+        .position(x, y)
         .decorations(false)
         .transparent(true)
         .always_on_top(true)
         .resizable(false)
         .skip_taskbar(true)
-        .center()
         .build()
     {
         let _ = window.show();
-        let _ = window.set_focus();
+
+        #[cfg(target_os = "macos")]
+        {
+            let _ = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, Some(24.0));
+        }
     }
 }
 
@@ -88,53 +107,49 @@ pub fn show_break(app: &AppHandle, time_remaining: u64) {
 fn apply_macos_lock_behavior(window: &tauri::WebviewWindow) {
     use tauri::Emitter;
 
-    if let Ok(ns_window_ptr) = window.ns_window() {
-        let mtm = MainThreadMarker::new().expect("must be on main thread");
+    let Some(mtm) = MainThreadMarker::new() else {
+        return;
+    };
 
-        unsafe {
-            let ns_window: Retained<NSWindow> =
-                Retained::retain(ns_window_ptr as *mut NSWindow).unwrap();
+    let Ok(ns_window_ptr) = window.ns_window() else {
+        return;
+    };
 
-            // Get main screen frame to cover entire display
-            if let Some(screen) = NSScreen::mainScreen(mtm) {
-                let frame = screen.frame();
-                ns_window.setFrame_display(frame, true);
-            }
+    unsafe {
+        let Some(ns_window) = Retained::retain(ns_window_ptr as *mut NSWindow) else {
+            return;
+        };
 
-            // Remove window shadow to prevent visible edges
-            ns_window.setHasShadow(false);
-
-            // CGShieldingWindowLevel - highest level used by screen savers
-            ns_window.setLevel(2147483628);
-
-            // Collection behavior: CanJoinAllSpaces | Stationary | IgnoresCycle | FullScreenDisallowsTiling
-            let behavior = NSWindowCollectionBehavior::CanJoinAllSpaces
-                | NSWindowCollectionBehavior::Stationary
-                | NSWindowCollectionBehavior::IgnoresCycle
-                | NSWindowCollectionBehavior::FullScreenDisallowsTiling;
-            ns_window.setCollectionBehavior(behavior);
-            ns_window.setMovable(false);
-            ns_window.makeKeyAndOrderFront(None);
-            ns_window.setIgnoresMouseEvents(false);
-
-            // Presentation options: HideDock | HideMenuBar | DisableProcessSwitching
-            let app = NSApplication::sharedApplication(mtm);
-            let options = NSApplicationPresentationOptions::HideDock
-                | NSApplicationPresentationOptions::HideMenuBar
-                | NSApplicationPresentationOptions::DisableProcessSwitching;
-            app.setPresentationOptions(options);
+        if let Some(screen) = NSScreen::mainScreen(mtm) {
+            let frame = screen.frame();
+            ns_window.setFrame_display(frame, true);
         }
+
+        ns_window.setHasShadow(false);
+        ns_window.setLevel(2147483628); // CGShieldingWindowLevel
+
+        let behavior = NSWindowCollectionBehavior::CanJoinAllSpaces
+            | NSWindowCollectionBehavior::Stationary
+            | NSWindowCollectionBehavior::IgnoresCycle
+            | NSWindowCollectionBehavior::FullScreenDisallowsTiling;
+        ns_window.setCollectionBehavior(behavior);
+        ns_window.setMovable(false);
+        ns_window.makeKeyAndOrderFront(None);
+        ns_window.setIgnoresMouseEvents(false);
+
+        let app = NSApplication::sharedApplication(mtm);
+        let options = NSApplicationPresentationOptions::HideDock
+            | NSApplicationPresentationOptions::HideMenuBar
+            | NSApplicationPresentationOptions::DisableProcessSwitching;
+        app.setPresentationOptions(options);
     }
 
-    // Emit event to frontend that lock is active
     let _ = window.emit("lock-active", true);
 }
 
 pub fn close_break(app: &AppHandle) {
     #[cfg(target_os = "macos")]
-    {
-        restore_macos_presentation();
-    }
+    restore_macos_presentation();
 
     if let Some(window) = app.get_webview_window("break") {
         let _ = window.destroy();

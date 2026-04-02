@@ -2,23 +2,21 @@ import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { motion } from "motion/react";
-import { Eye, Play, Pause, Coffee, RotateCcw, Clock, Timer, Zap, Leaf } from "lucide-react";
+import { Eye, Play, Pause, Coffee, RotateCcw, Clock, Zap, Leaf } from "lucide-react";
 
 import { formatTime } from "@/lib/format";
 import type { TimerState, Preset } from "@/types/timer";
 
 const presets: Preset[] = [
   { name: "20-20-20", icon: Eye, work: 20, break: 20, desc: "Classic eye care" },
-  { name: "Pomodoro", icon: Timer, work: 25, break: 5, desc: "Focus sessions" },
-  { name: "Deep Work", icon: Zap, work: 50, break: 10, desc: "Long focus" },
-  { name: "Quick", icon: Coffee, work: 10, break: 15, desc: "Short bursts" },
+  { name: "Pomodoro", icon: Coffee, work: 25, break: 300, desc: "Focus sessions" },
+  { name: "Deep Work", icon: Zap, work: 50, break: 600, desc: "Long focus" },
 ];
 
 export function SettingsWindow() {
   const [timerState, setTimerState] = useState<TimerState | null>(null);
   const [workMinutes, setWorkMinutes] = useState(20);
   const [breakSeconds, setBreakSeconds] = useState(20);
-  const [countdownSeconds, setCountdownSeconds] = useState(30);
   const [isPaused, setIsPaused] = useState(false);
   const [activeTab, setActiveTab] = useState<"status" | "settings">("status");
   const [selectedPreset, setSelectedPreset] = useState("20-20-20");
@@ -28,7 +26,6 @@ export function SettingsWindow() {
       setTimerState(state);
       setWorkMinutes(Math.floor(state.work_duration_ms / 60000));
       setBreakSeconds(Math.floor(state.break_duration_ms / 1000));
-      setCountdownSeconds(Math.floor(state.countdown_duration_ms / 1000));
     });
 
     const unlisten = listen<TimerState>("timer-update", (event) => {
@@ -44,7 +41,6 @@ export function SettingsWindow() {
     invoke("update_settings", {
       workDurationMs: workMinutes * 60 * 1000,
       breakDurationMs: breakSeconds * 1000,
-      countdownDurationMs: countdownSeconds * 1000,
     });
   };
 
@@ -68,21 +64,16 @@ export function SettingsWindow() {
     invoke("update_settings", {
       workDurationMs: preset.work * 60 * 1000,
       breakDurationMs: (preset.name === "20-20-20" ? 20 : preset.break * 60) * 1000,
-      countdownDurationMs: countdownSeconds * 1000,
     });
   };
 
   const phaseLabel: Record<string, string> = {
-    Idle: "Ready",
     Working: "Focusing",
-    Countdown: "Break soon",
     Break: "Resting",
   };
 
   const phaseColor: Record<string, string> = {
-    Idle: "bg-[#A3A19C]",
     Working: "bg-[#D3E4CD]",
-    Countdown: "bg-[#F4D1B6]",
     Break: "bg-[#D1E8E2]",
   };
 
@@ -166,7 +157,6 @@ export function SettingsWindow() {
                 </div>
                 <p className="text-sm text-[#A3A19C] mt-1">
                   {timerState.phase === "Working" && "until next break"}
-                  {timerState.phase === "Countdown" && "until break starts"}
                   {timerState.phase === "Break" && "remaining"}
                 </p>
               </div>
@@ -214,7 +204,7 @@ export function SettingsWindow() {
 
             {/* Info */}
             <div className="text-center text-xs text-[#A3A19C]">
-              Work: {workMinutes}m · Break: {breakSeconds}s · Warning: {countdownSeconds}s
+              Work: {workMinutes}m · Break: {breakSeconds}s
             </div>
           </motion.div>
         )}
@@ -306,36 +296,6 @@ export function SettingsWindow() {
                 step="5"
                 value={breakSeconds}
                 onChange={(e) => setBreakSeconds(parseInt(e.target.value))}
-                className="w-full h-1 bg-[#EAE6DF] rounded-full appearance-none cursor-pointer
-                  [&::-webkit-slider-thumb]:appearance-none
-                  [&::-webkit-slider-thumb]:w-4
-                  [&::-webkit-slider-thumb]:h-4
-                  [&::-webkit-slider-thumb]:rounded-full
-                  [&::-webkit-slider-thumb]:bg-[#2A2A28]
-                  [&::-webkit-slider-thumb]:cursor-pointer
-                  [&::-webkit-slider-thumb]:transition-transform
-                  [&::-webkit-slider-thumb]:hover:scale-110"
-              />
-            </div>
-
-            {/* Countdown warning */}
-            <div className="bg-white rounded-xl p-4 border border-[#EAE6DF]">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Timer className="w-4 h-4 text-[#7A7974]" />
-                  <span className="text-sm font-medium text-[#2A2A28]">Warning Time</span>
-                </div>
-                <span className="text-lg font-medium text-[#2A2A28] tabular-nums">
-                  {countdownSeconds}s
-                </span>
-              </div>
-              <input
-                type="range"
-                min="10"
-                max="120"
-                step="5"
-                value={countdownSeconds}
-                onChange={(e) => setCountdownSeconds(parseInt(e.target.value))}
                 className="w-full h-1 bg-[#EAE6DF] rounded-full appearance-none cursor-pointer
                   [&::-webkit-slider-thumb]:appearance-none
                   [&::-webkit-slider-thumb]:w-4

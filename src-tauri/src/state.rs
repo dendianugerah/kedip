@@ -6,9 +6,7 @@ use std::time::Instant;
 
 #[derive(Clone, Copy, PartialEq, Debug, Serialize, Deserialize)]
 pub enum TimerPhase {
-    Idle,
     Working,
-    Countdown,
     Break,
 }
 
@@ -18,7 +16,6 @@ pub struct TimerState {
     pub time_remaining_ms: u64,
     pub work_duration_ms: u64,
     pub break_duration_ms: u64,
-    pub countdown_duration_ms: u64,
 }
 
 impl Default for TimerState {
@@ -28,7 +25,6 @@ impl Default for TimerState {
             time_remaining_ms: 20 * 60 * 1000, // 20 minutes
             work_duration_ms: 20 * 60 * 1000,  // 20 minutes
             break_duration_ms: 20 * 1000,      // 20 seconds
-            countdown_duration_ms: 30 * 1000,  // 30 seconds
         }
     }
 }
@@ -37,6 +33,7 @@ pub struct AppState {
     pub timer: Mutex<TimerState>,
     pub last_tick: Mutex<Instant>,
     pub is_paused: Mutex<bool>,
+    pub notification_shown: Mutex<bool>,
 }
 
 impl Default for AppState {
@@ -45,6 +42,7 @@ impl Default for AppState {
             timer: Mutex::new(TimerState::default()),
             last_tick: Mutex::new(Instant::now()),
             is_paused: Mutex::new(false),
+            notification_shown: Mutex::new(false),
         }
     }
 }
