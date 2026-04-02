@@ -5,7 +5,9 @@
   "workspaces": ["apps/*"],
   "scripts": {
     "dev": "bun run --cwd apps/desktop dev",
+    "dev:web": "bun run --cwd apps/web dev",
     "build": "bun run --cwd apps/desktop build",
+    "build:web": "bun run --cwd apps/web build",
     "tauri": "bun run --cwd apps/desktop tauri",
     "lint": "bun run --cwd apps/desktop lint",
     "format": "bun run --cwd apps/desktop format"
