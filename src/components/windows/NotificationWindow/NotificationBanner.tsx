@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Eye } from "lucide-react";
 
 import { formatTime } from "@/lib/format";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   timeRemaining: number;
@@ -65,24 +66,27 @@ export function NotificationBanner({
           </div>
 
           <div className="flex items-center gap-2 mt-auto">
-            <button
+            <Button
+              variant="white"
               onClick={onStartNow}
-              className="flex-1 py-2 text-[12px] font-semibold bg-white/90 hover:bg-white active:scale-95 text-black rounded-xl transition-all cursor-pointer"
+              className="flex-1 py-2 text-[12px] font-semibold h-auto rounded-xl"
             >
               Break now
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => onSnooze(5)}
-              className="px-4 py-2 text-[12px] font-medium bg-white/10 hover:bg-white/18 active:scale-95 text-white/75 rounded-xl transition-all cursor-pointer"
+              className="px-4 py-2 text-[12px] font-medium h-auto rounded-xl bg-white/10 hover:bg-white/20 text-white/75 hover:text-white/75"
             >
               +5m
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               onClick={onSkip}
-              className="px-3 py-2 text-[12px] font-medium text-white/30 hover:text-white/60 active:scale-95 rounded-xl transition-all cursor-pointer"
+              className="px-3 py-2 text-[12px] font-medium h-auto rounded-xl text-white/30 hover:text-white/60 hover:bg-transparent"
             >
               Skip
-            </button>
+            </Button>
           </div>
         </motion.div>
       )}

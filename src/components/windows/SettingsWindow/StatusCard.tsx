@@ -3,7 +3,12 @@ import { Play, Pause, Coffee, RotateCcw, Clock, ChevronRight } from "lucide-reac
 
 import { formatTime } from "@/lib/format";
 import type { TimerState } from "@/types/timer";
-import { Toggle } from "@/components/ui/Toggle";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+
+const CARD_BASE =
+  "bg-[#2C2C2E] border border-white/[0.06] rounded-xl shadow-none ring-0 gap-0 py-0";
 
 const PHASE_LABEL: Record<string, string> = {
   Working: "Focusing",
@@ -27,12 +32,11 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
 
   return (
     <div className="space-y-5">
-      {/* ── Active session card ── */}
       <section className="space-y-2">
-        <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1">
+        <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1 mb-2">
           Active Session
         </h2>
-        <div className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl p-4">
+        <Card className={`${CARD_BASE} p-4`}>
           <div className="flex items-start justify-between">
             <div>
               <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
@@ -57,16 +61,14 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
               transition={{ duration: 0.4 }}
             />
           </div>
-        </div>
+        </Card>
       </section>
 
-      {/* ── Controls ── */}
       <section className="space-y-2">
-        <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1">
+        <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1 mb-2">
           Controls
         </h2>
-        <div className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
-          {/* Pause / Resume toggle row */}
+        <Card className={`${CARD_BASE} overflow-hidden divide-y divide-white/[0.06]`}>
           <div className="flex items-center justify-between px-4 py-3.5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
@@ -85,13 +87,17 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
                 </p>
               </div>
             </div>
-            <Toggle checked={isPaused} onChange={onTogglePause} />
+            <Switch
+              checked={isPaused}
+              onCheckedChange={() => onTogglePause()}
+              className="data-unchecked:bg-zinc-600 data-unchecked:border-transparent data-checked:bg-blue-500 data-checked:border-blue-500"
+            />
           </div>
 
-          {/* Break now */}
-          <button
+          <Button
+            variant="ghost"
             onClick={onBreakNow}
-            className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-black/10 active:bg-black/20 transition-colors cursor-pointer"
+            className="w-full h-auto flex items-center justify-between px-4 py-3.5 rounded-none hover:bg-black/10 active:bg-black/20"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
@@ -103,12 +109,12 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-zinc-600 flex-shrink-0" />
-          </button>
+          </Button>
 
-          {/* Reset */}
-          <button
+          <Button
+            variant="ghost"
             onClick={onReset}
-            className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-black/10 active:bg-black/20 transition-colors cursor-pointer"
+            className="w-full h-auto flex items-center justify-between px-4 py-3.5 rounded-none hover:bg-black/10 active:bg-black/20"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-zinc-500/20 flex items-center justify-center flex-shrink-0">
@@ -120,8 +126,8 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-zinc-600 flex-shrink-0" />
-          </button>
-        </div>
+          </Button>
+        </Card>
       </section>
     </div>
   );

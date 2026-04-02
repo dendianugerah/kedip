@@ -3,6 +3,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { AnimatePresence, motion } from "motion/react";
 import { Eye } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+
 const WORK_OPTIONS = [
   { label: "5m", value: 5 },
   { label: "10m", value: 10 },
@@ -89,12 +91,13 @@ export function OnboardingWindow() {
               ))}
             </div>
 
-            <button
+            <Button
+              variant="white"
               onClick={() => setStep(2)}
-              className="w-full py-3 text-sm font-semibold rounded-xl bg-white hover:bg-white/90 text-black transition-all active:scale-[0.98] cursor-pointer"
+              className="w-full py-3 text-sm font-semibold"
             >
               Get Started →
-            </button>
+            </Button>
           </motion.div>
         ) : (
           <motion.div
@@ -116,17 +119,18 @@ export function OnboardingWindow() {
               </p>
               <div className="flex gap-1.5">
                 {WORK_OPTIONS.map((opt) => (
-                  <button
+                  <Button
                     key={opt.value}
+                    variant={workMinutes === opt.value ? "white" : "ghost"}
                     onClick={() => setWorkMinutes(opt.value)}
-                    className={`flex-1 py-2.5 rounded-xl text-[12px] font-medium transition-all active:scale-95 cursor-pointer ${
+                    className={`flex-1 py-2.5 h-auto rounded-xl text-[12px] font-medium ${
                       workMinutes === opt.value
-                        ? "bg-white text-black"
+                        ? ""
                         : "bg-white/[0.06] text-white/50 hover:bg-white/[0.10] hover:text-white/70"
                     }`}
                   >
                     {opt.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -137,17 +141,18 @@ export function OnboardingWindow() {
               </p>
               <div className="flex gap-1.5">
                 {BREAK_OPTIONS.map((opt) => (
-                  <button
+                  <Button
                     key={opt.value}
+                    variant={breakSeconds === opt.value ? "white" : "ghost"}
                     onClick={() => setBreakSeconds(opt.value)}
-                    className={`flex-1 py-2.5 rounded-xl text-[12px] font-medium transition-all active:scale-95 cursor-pointer ${
+                    className={`flex-1 py-2.5 h-auto rounded-xl text-[12px] font-medium ${
                       breakSeconds === opt.value
-                        ? "bg-white text-black"
+                        ? ""
                         : "bg-white/[0.06] text-white/50 hover:bg-white/[0.10] hover:text-white/70"
                     }`}
                   >
                     {opt.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -161,19 +166,21 @@ export function OnboardingWindow() {
             </div>
 
             <div className="mt-auto flex flex-col gap-2">
-              <button
+              <Button
+                variant="white"
                 onClick={handleComplete}
                 disabled={loading}
-                className="w-full py-3 text-sm font-semibold rounded-xl bg-white hover:bg-white/90 text-black transition-all active:scale-[0.98] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-3 text-sm font-semibold"
               >
                 {loading ? "Starting..." : "Start Kedip"}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
                 onClick={() => setStep(1)}
-                className="w-full py-2 text-[12px] text-white/30 hover:text-white/50 transition-colors cursor-pointer"
+                className="w-full py-2 text-[12px] text-white/30 hover:text-white/50 hover:bg-transparent"
               >
                 ← Back
-              </button>
+              </Button>
             </div>
           </motion.div>
         )}

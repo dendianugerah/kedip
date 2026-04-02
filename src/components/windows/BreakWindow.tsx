@@ -6,6 +6,7 @@ import { Plus, X } from "lucide-react";
 
 import { formatSeconds } from "@/lib/format";
 import type { TimerState } from "@/types/timer";
+import { Button } from "@/components/ui/button";
 
 export function BreakWindow() {
   const [timeRemaining, setTimeRemaining] = useState(20);
@@ -121,19 +122,21 @@ export function BreakWindow() {
           className={`mt-16 flex flex-col items-center transition-opacity duration-700 ease-out ${isIdle ? "opacity-0 pointer-events-none" : "opacity-100"}`}
         >
           <div className="flex items-center gap-3">
-            <button
+            <Button
+              variant="ghost"
               onClick={handleAddTime}
-              className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white/80 text-sm font-medium flex items-center gap-2 transition-all cursor-pointer"
+              className="px-5 py-2.5 h-auto rounded-full bg-white/10 hover:bg-white/20 text-white/80 text-sm font-medium"
             >
               <Plus className="w-4 h-4" />1 min
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
               onClick={handleSkip}
-              className="px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 active:scale-95 text-white/60 text-sm font-medium flex items-center gap-2 border border-white/10 transition-all cursor-pointer"
+              className="px-5 py-2.5 h-auto rounded-full bg-white/5 hover:bg-white/10 text-white/60 text-sm font-medium border border-white/10 hover:border-white/10"
             >
               <X className="w-4 h-4" />
               Skip
-            </button>
+            </Button>
           </div>
 
           <p

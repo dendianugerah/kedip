@@ -8,6 +8,8 @@ import { Clock, Timer, Info } from "lucide-react";
 import type { TimerState, Preset } from "@/types/timer";
 import { StatusCard } from "./StatusCard";
 import { TimerSettings } from "./TimerSettings";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 type Page = "overview" | "schedule" | "about";
 
@@ -108,13 +110,12 @@ export function SettingsWindow() {
               {group.items.map(({ id, label, icon: Icon, color }) => {
                 const active = page === id;
                 return (
-                  <button
+                  <Button
                     key={id}
+                    variant={active ? "primary" : "ghost"}
                     onClick={() => setPage(id)}
-                    className={`w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-[7px] transition-colors cursor-pointer ${
-                      active
-                        ? "bg-blue-500 text-white shadow-sm"
-                        : "text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-200"
+                    className={`w-full justify-start gap-2.5 px-2.5 py-[7px] h-auto rounded-[7px] text-[13px] font-medium ${
+                      active ? "" : "text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-200"
                     }`}
                   >
                     <div
@@ -122,8 +123,8 @@ export function SettingsWindow() {
                     >
                       <Icon className="w-[13px] h-[13px] text-white" />
                     </div>
-                    <span className="text-[13px] font-medium">{label}</span>
-                  </button>
+                    <span>{label}</span>
+                  </Button>
                 );
               })}
             </div>
@@ -174,10 +175,10 @@ export function SettingsWindow() {
               {page === "about" && (
                 <>
                   <section className="space-y-2">
-                    <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider ml-1">
+                    <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1 mb-2">
                       App Info
                     </h2>
-                    <div className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
+                    <Card className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl shadow-none ring-0 gap-0 py-0 overflow-hidden divide-y divide-white/[0.06]">
                       {(
                         [
                           ["Version", "0.1.0"],
@@ -190,19 +191,19 @@ export function SettingsWindow() {
                           <span className="text-[13px] text-zinc-500">{value}</span>
                         </div>
                       ))}
-                    </div>
+                    </Card>
                   </section>
 
                   <section className="space-y-2">
-                    <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider ml-1">
+                    <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1 mb-2">
                       About
                     </h2>
-                    <div className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl p-4">
+                    <Card className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl shadow-none ring-0 gap-0 p-4">
                       <p className="text-[13px] text-zinc-400 leading-relaxed">
                         Kedip is a gentle eye care reminder. Every 20 minutes, look at something 20
                         feet away for 20 seconds — the 20-20-20 rule.
                       </p>
-                    </div>
+                    </Card>
                   </section>
                 </>
               )}
