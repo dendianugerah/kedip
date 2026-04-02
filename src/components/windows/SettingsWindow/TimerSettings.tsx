@@ -1,36 +1,37 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Eye, Coffee, Zap, Check } from "lucide-react";
+import { Eye, Coffee, Zap, Check, Clock } from "lucide-react";
 
 import type { Preset } from "@/types/timer";
 
 const PRESETS: Preset[] = [
-  { name: "20-20-20", icon: Eye, workMs: 20 * 60 * 1000, breakMs: 20 * 1000, desc: "Eye care" },
+  {
+    name: "20-20-20",
+    icon: Eye,
+    workMs: 20 * 60 * 1000,
+    breakMs: 20 * 1000,
+    desc: "20 min work, 20 sec break",
+  },
   {
     name: "Pomodoro",
     icon: Coffee,
     workMs: 25 * 60 * 1000,
     breakMs: 5 * 60 * 1000,
-    desc: "Focus",
+    desc: "25 min work, 5 min break",
   },
   {
     name: "Deep Work",
     icon: Zap,
     workMs: 50 * 60 * 1000,
     breakMs: 10 * 60 * 1000,
-    desc: "Deep focus",
+    desc: "50 min work, 10 min break",
   },
 ];
 
-const SLIDER_CLASS =
-  "w-full h-1 appearance-none rounded-full cursor-pointer bg-white/10 " +
-  "[&::-webkit-slider-thumb]:appearance-none " +
-  "[&::-webkit-slider-thumb]:w-3.5 " +
-  "[&::-webkit-slider-thumb]:h-3.5 " +
-  "[&::-webkit-slider-thumb]:rounded-full " +
-  "[&::-webkit-slider-thumb]:bg-white " +
-  "[&::-webkit-slider-thumb]:cursor-pointer " +
-  "[&::-webkit-slider-thumb]:transition-transform " +
-  "[&::-webkit-slider-thumb]:hover:scale-110";
+const PRESET_STYLE: Record<string, { bg: string; icon: string }> = {
+  "20-20-20": { bg: "bg-blue-500/20", icon: "text-blue-400" },
+  Pomodoro: { bg: "bg-orange-500/20", icon: "text-orange-400" },
+  "Deep Work": { bg: "bg-violet-500/20", icon: "text-violet-400" },
+};
 
 interface Props {
   workMinutes: number;
@@ -43,6 +44,14 @@ interface Props {
   onSave: () => void;
 }
 
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1 mb-2">
+      {children}
+    </h2>
+  );
+}
+
 export function TimerSettings({
   workMinutes,
   breakSeconds,
@@ -53,103 +62,136 @@ export function TimerSettings({
   onPreset,
   onSave,
 }: Props) {
+  const workFill = ((workMinutes - 1) / (60 - 1)) * 100;
+  const breakFill = ((breakSeconds - 5) / (300 - 5)) * 100;
+
   return (
-    <div className="space-y-8 pt-2">
-      <div>
-        <p className="text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-3">
-          Quick Presets
-        </p>
-        <div className="grid grid-cols-3 gap-2">
+    <div className="space-y-5">
+      {/* ── Presets ── */}
+      <section>
+        <SectionHeader>Quick Presets</SectionHeader>
+        <div className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
           {PRESETS.map((preset) => {
             const Icon = preset.icon;
             const active = selectedPreset === preset.name;
+            const style = PRESET_STYLE[preset.name] ?? { bg: "bg-zinc-500/20", icon: "text-zinc-400" };
             return (
               <button
                 key={preset.name}
                 onClick={() => onPreset(preset)}
-                className={`py-3.5 px-2 rounded-xl text-center transition-all active:scale-95 cursor-pointer ${
-                  active ? "bg-white" : "bg-white/[0.06] hover:bg-white/[0.10]"
-                }`}
+                className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-black/10 active:bg-black/20 transition-colors cursor-pointer"
               >
-                <Icon
-                  className={`w-4 h-4 mx-auto mb-2 ${active ? "text-black/50" : "text-white/30"}`}
-                />
-                <p
-                  className={`text-[11px] font-semibold leading-tight ${active ? "text-black" : "text-white/70"}`}
-                >
-                  {preset.name}
-                </p>
-                <p className={`text-[10px] mt-0.5 ${active ? "text-black/40" : "text-white/25"}`}>
-                  {preset.desc}
-                </p>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-lg ${style.bg} flex items-center justify-center flex-shrink-0`}
+                  >
+                    <Icon className={`w-5 h-5 ${style.icon}`} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[13.5px] font-medium text-zinc-100">{preset.name}</p>
+                    <p className="text-[12px] text-zinc-500 mt-0.5">{preset.desc}</p>
+                  </div>
+                </div>
+                {active && <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />}
               </button>
             );
           })}
         </div>
-      </div>
+      </section>
 
-      <div className="space-y-6">
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-[13px] font-medium text-white">Work Duration</p>
-              <p className="text-[11px] text-white/30 mt-0.5">How long before a break</p>
+      {/* ── Durations ── */}
+      <section>
+        <SectionHeader>Durations</SectionHeader>
+        <div className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
+          {/* Work duration */}
+          <div className="px-4 pt-4 pb-3.5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-blue-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-[13.5px] font-medium text-zinc-100">Work Duration</span>
+                  <span className="text-[13.5px] font-medium text-zinc-400 ml-4 tabular-nums">
+                    {workMinutes}m
+                  </span>
+                </div>
+                <p className="text-[12px] text-zinc-500 mt-0.5">How long you focus before a break</p>
+              </div>
             </div>
-            <span className="text-2xl font-light text-white tabular-nums">{workMinutes}m</span>
-          </div>
-          <input
-            type="range"
-            min="1"
-            max="60"
-            value={workMinutes}
-            onChange={(e) => onWorkChange(parseInt(e.target.value))}
-            className={SLIDER_CLASS}
-          />
-        </div>
-
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-[13px] font-medium text-white">Break Duration</p>
-              <p className="text-[11px] text-white/30 mt-0.5">How long each break lasts</p>
+            <div className="pl-[52px]">
+              <input
+                type="range"
+                min="1"
+                max="60"
+                value={workMinutes}
+                onChange={(e) => onWorkChange(parseInt(e.target.value))}
+                className="w-full cursor-pointer accent-blue-500 h-[3px]"
+                style={{
+                  background: `linear-gradient(to right, #3b82f6 ${workFill}%, #3f3f46 ${workFill}%)`,
+                }}
+              />
             </div>
-            <span className="text-2xl font-light text-white tabular-nums">{breakSeconds}s</span>
           </div>
-          <input
-            type="range"
-            min="5"
-            max="300"
-            step="5"
-            value={breakSeconds}
-            onChange={(e) => onBreakChange(parseInt(e.target.value))}
-            className={SLIDER_CLASS}
-          />
-        </div>
-      </div>
 
+          {/* Break duration */}
+          <div className="px-4 pt-4 pb-3.5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                <Coffee className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-[13.5px] font-medium text-zinc-100">Break Duration</span>
+                  <span className="text-[13.5px] font-medium text-zinc-400 ml-4 tabular-nums">
+                    {breakSeconds}s
+                  </span>
+                </div>
+                <p className="text-[12px] text-zinc-500 mt-0.5">How long each rest lasts</p>
+              </div>
+            </div>
+            <div className="pl-[52px]">
+              <input
+                type="range"
+                min="5"
+                max="300"
+                step="5"
+                value={breakSeconds}
+                onChange={(e) => onBreakChange(parseInt(e.target.value))}
+                className="w-full cursor-pointer accent-blue-500 h-[3px]"
+                style={{
+                  background: `linear-gradient(to right, #3b82f6 ${breakFill}%, #3f3f46 ${breakFill}%)`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Save ── */}
       <button
         onClick={onSave}
-        className="w-full py-3 text-sm font-semibold rounded-xl transition-all active:scale-[0.98] cursor-pointer overflow-hidden relative bg-white hover:bg-white/90 text-black"
+        className="w-full py-2.5 text-[13.5px] font-semibold rounded-xl bg-blue-500 hover:bg-blue-400 text-white transition-all active:scale-[0.98] cursor-pointer overflow-hidden"
       >
         <AnimatePresence mode="wait" initial={false}>
           {saved ? (
             <motion.span
               key="saved"
-              className="flex items-center justify-center gap-2"
-              initial={{ opacity: 0, y: 6 }}
+              className="flex items-center justify-center gap-1.5"
+              initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
+              exit={{ opacity: 0, y: -5 }}
               transition={{ duration: 0.15 }}
             >
               <Check className="w-4 h-4" />
-              Saved!
+              Saved
             </motion.span>
           ) : (
             <motion.span
               key="save"
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
+              exit={{ opacity: 0, y: -5 }}
               transition={{ duration: 0.15 }}
             >
               Save Changes

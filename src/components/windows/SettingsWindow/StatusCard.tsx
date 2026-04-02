@@ -1,12 +1,13 @@
 import { motion } from "motion/react";
-import { Play, Pause, Coffee, RotateCcw } from "lucide-react";
+import { Play, Pause, Coffee, RotateCcw, Clock, ChevronRight } from "lucide-react";
 
 import { formatTime } from "@/lib/format";
 import type { TimerState } from "@/types/timer";
+import { Toggle } from "@/components/ui/Toggle";
 
 const PHASE_LABEL: Record<string, string> = {
   Working: "Focusing",
-  Break: "Resting",
+  Break: "On a break",
 };
 
 interface Props {
@@ -22,58 +23,106 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
     timerState.phase === "Working" ? timerState.work_duration_ms : timerState.break_duration_ms;
   const elapsed = total - timerState.time_remaining_ms;
   const progress = Math.max(0, Math.min((elapsed / total) * 100, 100));
+  const phaseLabel = isPaused ? "Paused" : (PHASE_LABEL[timerState.phase] ?? timerState.phase);
 
   return (
-    <div className="space-y-6">
-      <div className="text-center py-6">
-        <p className="text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-4">
-          {isPaused ? "Paused" : (PHASE_LABEL[timerState.phase] ?? timerState.phase)}
-        </p>
-        <p className="text-7xl font-extralight text-white tabular-nums tracking-tight leading-none">
-          {formatTime(timerState.time_remaining_ms)}
-        </p>
-        <p className="text-[11px] text-white/25 mt-4">
-          {timerState.phase === "Working" ? "until next break" : "remaining"}
-        </p>
-      </div>
+    <div className="space-y-5">
+      {/* ── Active session card ── */}
+      <section className="space-y-2">
+        <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1">
+          Active Session
+        </h2>
+        <div className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl p-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                {phaseLabel}
+              </p>
+              <p className="text-[42px] font-light text-zinc-100 tabular-nums tracking-tight leading-none mt-2">
+                {formatTime(timerState.time_remaining_ms)}
+              </p>
+              <p className="text-[12px] text-zinc-500 mt-2">
+                {timerState.phase === "Working" ? "until next break" : "remaining"}
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+              <Clock className="w-5 h-5 text-blue-400" />
+            </div>
+          </div>
 
-      <div className="h-px bg-white/[0.08] rounded-full overflow-hidden">
-        <motion.div
-          className="h-full bg-white/40 rounded-full"
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.4 }}
-        />
-      </div>
+          <div className="mt-4 h-[3px] bg-zinc-700 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-blue-500 rounded-full"
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.4 }}
+            />
+          </div>
+        </div>
+      </section>
 
-      <div className="grid grid-cols-3 gap-2">
-        <button
-          onClick={onBreakNow}
-          className="flex flex-col items-center gap-2 py-3.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.10] active:scale-95 transition-all cursor-pointer"
-        >
-          <Coffee className="w-4 h-4 text-white/40" />
-          <span className="text-[10px] font-medium text-white/35">Break now</span>
-        </button>
-        <button
-          onClick={onTogglePause}
-          className="flex flex-col items-center gap-2 py-3.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.10] active:scale-95 transition-all cursor-pointer"
-        >
-          {isPaused ? (
-            <Play className="w-4 h-4 text-white/40" />
-          ) : (
-            <Pause className="w-4 h-4 text-white/40" />
-          )}
-          <span className="text-[10px] font-medium text-white/35">
-            {isPaused ? "Resume" : "Pause"}
-          </span>
-        </button>
-        <button
-          onClick={onReset}
-          className="flex flex-col items-center gap-2 py-3.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.10] active:scale-95 transition-all cursor-pointer"
-        >
-          <RotateCcw className="w-4 h-4 text-white/40" />
-          <span className="text-[10px] font-medium text-white/35">Reset</span>
-        </button>
-      </div>
+      {/* ── Controls ── */}
+      <section className="space-y-2">
+        <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1">
+          Controls
+        </h2>
+        <div className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
+          {/* Pause / Resume toggle row */}
+          <div className="flex items-center justify-between px-4 py-3.5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                {isPaused ? (
+                  <Play className="w-5 h-5 text-blue-400" />
+                ) : (
+                  <Pause className="w-5 h-5 text-blue-400" />
+                )}
+              </div>
+              <div>
+                <p className="text-[13.5px] font-medium text-zinc-100">
+                  {isPaused ? "Resume Session" : "Pause Session"}
+                </p>
+                <p className="text-[12px] text-zinc-500 mt-0.5">
+                  {isPaused ? "Continue where you left off" : "Temporarily stop the timer"}
+                </p>
+              </div>
+            </div>
+            <Toggle checked={isPaused} onChange={onTogglePause} />
+          </div>
+
+          {/* Break now */}
+          <button
+            onClick={onBreakNow}
+            className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-black/10 active:bg-black/20 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                <Coffee className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div className="text-left">
+                <p className="text-[13.5px] font-medium text-zinc-100">Start Break Now</p>
+                <p className="text-[12px] text-zinc-500 mt-0.5">Take your rest immediately</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-zinc-600 flex-shrink-0" />
+          </button>
+
+          {/* Reset */}
+          <button
+            onClick={onReset}
+            className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-black/10 active:bg-black/20 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-zinc-500/20 flex items-center justify-center flex-shrink-0">
+                <RotateCcw className="w-5 h-5 text-zinc-400" />
+              </div>
+              <div className="text-left">
+                <p className="text-[13.5px] font-medium text-zinc-100">Reset Timer</p>
+                <p className="text-[12px] text-zinc-500 mt-0.5">Restart the work countdown</p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-zinc-600 flex-shrink-0" />
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

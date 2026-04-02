@@ -181,8 +181,8 @@ pub fn show_settings(app: &AppHandle) {
         WebviewUrl::App("index.html?window=settings".into()),
     )
     .title("Kedip")
-    .inner_size(420.0, 580.0)
-    .min_inner_size(360.0, 480.0)
+    .inner_size(660.0, 460.0)
+    .min_inner_size(580.0, 400.0)
     .decorations(true)
     .transparent(false)
     .resizable(true)

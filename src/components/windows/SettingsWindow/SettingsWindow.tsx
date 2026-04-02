@@ -1,20 +1,55 @@
 import { useEffect, useState } from "react";
+import { type ElementType } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { motion, AnimatePresence } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { Clock, Timer, Info } from "lucide-react";
 
 import type { TimerState, Preset } from "@/types/timer";
 import { StatusCard } from "./StatusCard";
 import { TimerSettings } from "./TimerSettings";
 
-type Tab = "status" | "settings";
+type Page = "overview" | "schedule" | "about";
+
+interface NavItem {
+  id: Page;
+  label: string;
+  icon: ElementType;
+  color: string;
+}
+
+interface NavGroup {
+  group: string | null;
+  items: NavItem[];
+}
+
+const NAV: NavGroup[] = [
+  {
+    group: null,
+    items: [{ id: "overview", label: "Overview", icon: Clock, color: "bg-blue-500" }],
+  },
+  {
+    group: "Timer",
+    items: [{ id: "schedule", label: "Schedule", icon: Timer, color: "bg-violet-500" }],
+  },
+  {
+    group: "Kedip",
+    items: [{ id: "about", label: "About", icon: Info, color: "bg-amber-500" }],
+  },
+];
+
+const PAGE_TITLE: Record<Page, string> = {
+  overview: "Overview",
+  schedule: "Schedule",
+  about: "About",
+};
 
 export function SettingsWindow() {
   const [timerState, setTimerState] = useState<TimerState | null>(null);
   const [workMinutes, setWorkMinutes] = useState(20);
   const [breakSeconds, setBreakSeconds] = useState(20);
   const [isPaused, setIsPaused] = useState(false);
-  const [tab, setTab] = useState<Tab>("status");
+  const [page, setPage] = useState<Page>("overview");
   const [selectedPreset, setSelectedPreset] = useState("20-20-20");
   const [saved, setSaved] = useState(false);
 
@@ -59,34 +94,61 @@ export function SettingsWindow() {
   };
 
   return (
-    <div className="w-full h-full bg-[#111110] flex flex-col font-sans select-none">
-      <div className="flex-shrink-0 px-5 pt-4 pb-3 flex gap-1">
-        {(["status", "settings"] as Tab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`flex-1 py-2 text-[13px] font-medium rounded-xl transition-all cursor-pointer capitalize ${
-              tab === t
-                ? "bg-white/10 text-white"
-                : "text-white/30 hover:text-white/55 hover:bg-white/[0.04]"
-            }`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
+    <div className="w-full h-full bg-[#1C1C1E] flex font-sans select-none overflow-hidden text-zinc-200">
+      {/* ── Sidebar ── */}
+      <aside className="w-[200px] flex-shrink-0 border-r border-white/[0.07] flex flex-col">
+        <nav className="flex-1 overflow-y-auto py-3 px-2">
+          {NAV.map((group, gi) => (
+            <div key={gi} className={gi > 0 ? "mt-4" : ""}>
+              {group.group && (
+                <p className="px-2 pb-1 text-[10.5px] font-semibold text-zinc-500 uppercase tracking-widest">
+                  {group.group}
+                </p>
+              )}
+              {group.items.map(({ id, label, icon: Icon, color }) => {
+                const active = page === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setPage(id)}
+                    className={`w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-[7px] transition-colors cursor-pointer ${
+                      active
+                        ? "bg-blue-500 text-white shadow-sm"
+                        : "text-zinc-400 hover:bg-white/[0.06] hover:text-zinc-200"
+                    }`}
+                  >
+                    <div
+                      className={`w-[22px] h-[22px] rounded-[5px] flex items-center justify-center flex-shrink-0 ${active ? "bg-white/20" : color}`}
+                    >
+                      <Icon className="w-[13px] h-[13px] text-white" />
+                    </div>
+                    <span className="text-[13px] font-medium">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
+      </aside>
 
-      <div className="flex-1 overflow-y-auto px-5 pb-5 min-h-0">
-        <AnimatePresence mode="wait" initial={false}>
-          {tab === "status" ? (
-            timerState && (
-              <motion.div
-                key="status"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.12 }}
-              >
+      {/* ── Content pane ── */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Sticky header */}
+        <header className="h-[46px] flex items-center px-6 border-b border-white/[0.07] flex-shrink-0">
+          <h1 className="text-[15px] font-semibold text-zinc-100">{PAGE_TITLE[page]}</h1>
+        </header>
+
+        <div className="flex-1 overflow-y-auto">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={page}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1 }}
+              className="p-6 space-y-5"
+            >
+              {page === "overview" && timerState && (
                 <StatusCard
                   timerState={timerState}
                   isPaused={isPaused}
@@ -94,33 +156,59 @@ export function SettingsWindow() {
                   onBreakNow={() => invoke("start_break_now")}
                   onReset={() => invoke("skip_break")}
                 />
-              </motion.div>
-            )
-          ) : (
-            <motion.div
-              key="settings"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.12 }}
-            >
-              <TimerSettings
-                workMinutes={workMinutes}
-                breakSeconds={breakSeconds}
-                selectedPreset={selectedPreset}
-                saved={saved}
-                onWorkChange={setWorkMinutes}
-                onBreakChange={setBreakSeconds}
-                onPreset={handlePreset}
-                onSave={handleSave}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+              )}
 
-      <div className="flex-shrink-0 px-5 pb-3.5">
-        <p className="text-[10px] text-center text-white/15">Kedip · Open source · v0.1.0</p>
+              {page === "schedule" && (
+                <TimerSettings
+                  workMinutes={workMinutes}
+                  breakSeconds={breakSeconds}
+                  selectedPreset={selectedPreset}
+                  saved={saved}
+                  onWorkChange={setWorkMinutes}
+                  onBreakChange={setBreakSeconds}
+                  onPreset={handlePreset}
+                  onSave={handleSave}
+                />
+              )}
+
+              {page === "about" && (
+                <>
+                  <section className="space-y-2">
+                    <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider ml-1">
+                      App Info
+                    </h2>
+                    <div className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
+                      {(
+                        [
+                          ["Version", "0.1.0"],
+                          ["License", "Open source"],
+                          ["Platform", "macOS · Windows · Linux"],
+                        ] as [string, string][]
+                      ).map(([label, value]) => (
+                        <div key={label} className="flex items-center justify-between px-4 py-3">
+                          <span className="text-[13px] font-medium text-zinc-200">{label}</span>
+                          <span className="text-[13px] text-zinc-500">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="space-y-2">
+                    <h2 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider ml-1">
+                      About
+                    </h2>
+                    <div className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl p-4">
+                      <p className="text-[13px] text-zinc-400 leading-relaxed">
+                        Kedip is a gentle eye care reminder. Every 20 minutes, look at something 20
+                        feet away for 20 seconds — the 20-20-20 rule.
+                      </p>
+                    </div>
+                  </section>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
