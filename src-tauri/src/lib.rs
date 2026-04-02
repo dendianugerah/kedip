@@ -1,7 +1,5 @@
 //! Kedip - A gentle eye care reminder app.
 //!
-//! Helps protect your eyes using the 20-20-20 rule: every 20 minutes,
-//! look at something 20 feet away for 20 seconds.
 
 mod commands;
 mod state;
