@@ -79,6 +79,7 @@ fn handle_menu_event(app: &tauri::AppHandle, event_id: &str, state: &Arc<AppStat
             windows::close_notification(app);
             timer.phase = TimerPhase::Working;
             timer.time_remaining_ms = timer.work_duration_ms;
+            *state.notification_shown.lock().unwrap() = false;
             *state.last_tick.lock().unwrap() = Instant::now();
         }
         "break_now" => {
@@ -86,6 +87,7 @@ fn handle_menu_event(app: &tauri::AppHandle, event_id: &str, state: &Arc<AppStat
             windows::close_notification(app);
             timer.phase = TimerPhase::Break;
             timer.time_remaining_ms = timer.break_duration_ms;
+            *state.notification_shown.lock().unwrap() = false;
             *state.last_tick.lock().unwrap() = Instant::now();
             windows::show_break(app, timer.time_remaining_ms);
         }

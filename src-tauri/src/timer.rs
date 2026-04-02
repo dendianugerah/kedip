@@ -2,12 +2,19 @@
 
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter};
 
-use crate::state::{format_time, AppState, TimerPhase};
+use crate::state::{AppState, TimerPhase};
 use crate::windows;
 
 const WARNING_THRESHOLD_MS: u64 = 30_000;
+
+fn format_time(ms: u64) -> String {
+    let total_seconds = ms / 1000;
+    let minutes = total_seconds / 60;
+    let seconds = total_seconds % 60;
+    format!("{:02}:{:02}", minutes, seconds)
+}
 
 pub fn update_tray_title(app: &AppHandle, paused: bool, phase: TimerPhase, time_remaining_ms: u64) {
     if let Some(tray) = app.tray_by_id("main-tray") {

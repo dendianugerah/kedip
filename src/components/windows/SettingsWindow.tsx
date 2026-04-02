@@ -8,10 +8,38 @@ import { formatTime } from "@/lib/format";
 import type { TimerState, Preset } from "@/types/timer";
 
 const presets: Preset[] = [
-  { name: "20-20-20", icon: Eye, work: 20, break: 20, desc: "Classic eye care" },
-  { name: "Pomodoro", icon: Coffee, work: 25, break: 300, desc: "Focus sessions" },
-  { name: "Deep Work", icon: Zap, work: 50, break: 600, desc: "Long focus" },
+  {
+    name: "20-20-20",
+    icon: Eye,
+    workMs: 20 * 60 * 1000,
+    breakMs: 20 * 1000,
+    desc: "Classic eye care",
+  },
+  {
+    name: "Pomodoro",
+    icon: Coffee,
+    workMs: 25 * 60 * 1000,
+    breakMs: 5 * 60 * 1000,
+    desc: "Focus sessions",
+  },
+  {
+    name: "Deep Work",
+    icon: Zap,
+    workMs: 50 * 60 * 1000,
+    breakMs: 10 * 60 * 1000,
+    desc: "Long focus",
+  },
 ];
+
+const PHASE_LABEL: Record<string, string> = {
+  Working: "Focusing",
+  Break: "Resting",
+};
+
+const PHASE_COLOR: Record<string, string> = {
+  Working: "bg-[#D3E4CD]",
+  Break: "bg-[#D1E8E2]",
+};
 
 export function SettingsWindow() {
   const [timerState, setTimerState] = useState<TimerState | null>(null);
@@ -57,24 +85,14 @@ export function SettingsWindow() {
     invoke("skip_break");
   };
 
-  const applyPreset = (preset: (typeof presets)[0]) => {
+  const applyPreset = (preset: Preset) => {
     setSelectedPreset(preset.name);
-    setWorkMinutes(preset.work);
-    setBreakSeconds(preset.name === "20-20-20" ? 20 : preset.break * 60);
+    setWorkMinutes(Math.floor(preset.workMs / 60000));
+    setBreakSeconds(Math.floor(preset.breakMs / 1000));
     invoke("update_settings", {
-      workDurationMs: preset.work * 60 * 1000,
-      breakDurationMs: (preset.name === "20-20-20" ? 20 : preset.break * 60) * 1000,
+      workDurationMs: preset.workMs,
+      breakDurationMs: preset.breakMs,
     });
-  };
-
-  const phaseLabel: Record<string, string> = {
-    Working: "Focusing",
-    Break: "Resting",
-  };
-
-  const phaseColor: Record<string, string> = {
-    Working: "bg-[#D3E4CD]",
-    Break: "bg-[#D1E8E2]",
   };
 
   return (
@@ -131,11 +149,11 @@ export function SettingsWindow() {
                 <div className="flex items-center gap-2">
                   <div
                     className={`w-2 h-2 rounded-full ${
-                      phaseColor[timerState.phase] || "bg-[#A3A19C]"
+                      PHASE_COLOR[timerState.phase] || "bg-[#A3A19C]"
                     } ${timerState.phase === "Working" && !isPaused ? "animate-pulse" : ""}`}
                   />
                   <span className="text-sm font-medium text-[#7A7974]">
-                    {isPaused ? "Paused" : phaseLabel[timerState.phase] || timerState.phase}
+                    {isPaused ? "Paused" : PHASE_LABEL[timerState.phase] || timerState.phase}
                   </span>
                 </div>
                 <button
@@ -164,7 +182,7 @@ export function SettingsWindow() {
               {/* Progress */}
               <div className="h-1 bg-[#EAE6DF] rounded-full overflow-hidden">
                 <motion.div
-                  className={`h-full ${phaseColor[timerState.phase] || "bg-[#A3A19C]"} rounded-full`}
+                  className={`h-full ${PHASE_COLOR[timerState.phase] || "bg-[#A3A19C]"} rounded-full`}
                   initial={{ width: 0 }}
                   animate={{
                     width: `${

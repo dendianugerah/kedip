@@ -6,13 +6,15 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 use objc2::rc::Retained;
 #[cfg(target_os = "macos")]
 use objc2_app_kit::{
-    NSApplication, NSApplicationPresentationOptions, NSScreen, NSWindow,
-    NSWindowCollectionBehavior,
+    NSApplication, NSApplicationPresentationOptions, NSScreen, NSWindow, NSWindowCollectionBehavior,
 };
 #[cfg(target_os = "macos")]
 use objc2_foundation::MainThreadMarker;
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+
+#[cfg(target_os = "macos")]
+const SHIELDING_WINDOW_LEVEL: isize = 2147483628;
 
 pub fn show_notification(app: &AppHandle, time_remaining: u64) {
     if let Some(window) = app.get_webview_window("notification") {
@@ -126,7 +128,7 @@ fn apply_macos_lock_behavior(window: &tauri::WebviewWindow) {
         }
 
         ns_window.setHasShadow(false);
-        ns_window.setLevel(2147483628); // CGShieldingWindowLevel
+        ns_window.setLevel(SHIELDING_WINDOW_LEVEL);
 
         let behavior = NSWindowCollectionBehavior::CanJoinAllSpaces
             | NSWindowCollectionBehavior::Stationary

@@ -4,6 +4,9 @@ use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use std::time::Instant;
 
+const DEFAULT_WORK_DURATION_MS: u64 = 20 * 60 * 1000;
+const DEFAULT_BREAK_DURATION_MS: u64 = 20 * 1000;
+
 #[derive(Clone, Copy, PartialEq, Debug, Serialize, Deserialize)]
 pub enum TimerPhase {
     Working,
@@ -22,9 +25,9 @@ impl Default for TimerState {
     fn default() -> Self {
         Self {
             phase: TimerPhase::Working,
-            time_remaining_ms: 20 * 60 * 1000, // 20 minutes
-            work_duration_ms: 20 * 60 * 1000,  // 20 minutes
-            break_duration_ms: 20 * 1000,      // 20 seconds
+            time_remaining_ms: DEFAULT_WORK_DURATION_MS,
+            work_duration_ms: DEFAULT_WORK_DURATION_MS,
+            break_duration_ms: DEFAULT_BREAK_DURATION_MS,
         }
     }
 }
@@ -45,11 +48,4 @@ impl Default for AppState {
             notification_shown: Mutex::new(false),
         }
     }
-}
-
-pub fn format_time(ms: u64) -> String {
-    let total_seconds = ms / 1000;
-    let minutes = total_seconds / 60;
-    let seconds = total_seconds % 60;
-    format!("{:02}:{:02}", minutes, seconds)
 }

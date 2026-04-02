@@ -7,15 +7,10 @@ export interface TimerState {
   break_duration_ms: number;
 }
 
-export interface TimerSettings {
-  workDurationMs: number;
-  breakDurationMs: number;
-}
-
 export interface Preset {
   name: string;
   icon: React.ComponentType<{ className?: string }>;
-  work: number;
-  break: number;
+  workMs: number;
+  breakMs: number;
   desc: string;
 }

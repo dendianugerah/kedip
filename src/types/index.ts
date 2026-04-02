@@ -1,1 +1,1 @@
-export type { TimerPhase, TimerState, TimerSettings, Preset } from "./timer";
+export type { TimerPhase, TimerState, Preset } from "./timer";
