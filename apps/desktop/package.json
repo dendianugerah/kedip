@@ -12,7 +12,7 @@
     "format:rust": "cd src-tauri && cargo fmt",
     "format:ts": "prettier --write \"src/**/*.{ts,tsx}\"",
     "lint": "bun run lint:rust && bun run lint:ts",
-    "lint:rust": "cd src-tauri && cargo clippy",
+    "lint:rust": "mkdir -p dist && cd src-tauri && cargo clippy",
     "lint:ts": "tsc --noEmit",
     "check": "bun run lint && bun run format"
   },
