@@ -3,9 +3,11 @@
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 #[cfg(target_os = "macos")]
-use cocoa::base::id;
+use objc2::rc::Retained;
 #[cfg(target_os = "macos")]
-use objc::{class, msg_send, sel, sel_impl};
+use objc2_app_kit::{NSApplication, NSApplicationPresentationOptions, NSScreen, NSWindow, NSWindowCollectionBehavior};
+#[cfg(target_os = "macos")]
+use objc2_foundation::MainThreadMarker;
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
@@ -74,7 +76,7 @@ pub fn show_break(app: &AppHandle, time_remaining: u64) {
 
         #[cfg(target_os = "macos")]
         {
-            let _ = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, Some(12.0));
+            let _ = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None);
             apply_macos_lock_behavior(&window);
         }
     }
@@ -84,31 +86,40 @@ pub fn show_break(app: &AppHandle, time_remaining: u64) {
 fn apply_macos_lock_behavior(window: &tauri::WebviewWindow) {
     use tauri::Emitter;
 
-    if let Ok(ns_window) = window.ns_window() {
-        let ns_window = ns_window as id;
-
+    if let Ok(ns_window_ptr) = window.ns_window() {
+        let mtm = MainThreadMarker::new().expect("must be on main thread");
+        
         unsafe {
+            let ns_window: Retained<NSWindow> = Retained::retain(ns_window_ptr as *mut NSWindow).unwrap();
+            
             // Get main screen frame to cover entire display
-            let screen: id = msg_send![class!(NSScreen), mainScreen];
-            let frame: cocoa::foundation::NSRect = msg_send![screen, frame];
-            let _: () = msg_send![ns_window, setFrame: frame display: true];
-
+            if let Some(screen) = NSScreen::mainScreen(mtm) {
+                let frame = screen.frame();
+                ns_window.setFrame_display(frame, true);
+            }
+            
+            // Remove window shadow to prevent visible edges
+            ns_window.setHasShadow(false);
+            
             // CGShieldingWindowLevel - highest level used by screen savers
-            let shielding_level: i64 = 2147483628;
-            let _: () = msg_send![ns_window, setLevel: shielding_level];
+            ns_window.setLevel(2147483628);
 
-            // Collection behavior flags:
-            // CanJoinAllSpaces | Stationary | IgnoresCycle | FullScreenDisallowsTiling
-            let behavior: u64 = (1 << 0) | (1 << 4) | (1 << 6) | (1 << 11);
-            let _: () = msg_send![ns_window, setCollectionBehavior: behavior];
-            let _: () = msg_send![ns_window, setMovable: false];
-            let _: () = msg_send![ns_window, makeKeyAndOrderFront: cocoa::base::nil];
-            let _: () = msg_send![ns_window, setIgnoresMouseEvents: false];
+            // Collection behavior: CanJoinAllSpaces | Stationary | IgnoresCycle | FullScreenDisallowsTiling
+            let behavior = NSWindowCollectionBehavior::CanJoinAllSpaces
+                | NSWindowCollectionBehavior::Stationary
+                | NSWindowCollectionBehavior::IgnoresCycle
+                | NSWindowCollectionBehavior::FullScreenDisallowsTiling;
+            ns_window.setCollectionBehavior(behavior);
+            ns_window.setMovable(false);
+            ns_window.makeKeyAndOrderFront(None);
+            ns_window.setIgnoresMouseEvents(false);
 
             // Presentation options: HideDock | HideMenuBar | DisableProcessSwitching
-            let app: id = msg_send![class!(NSApplication), sharedApplication];
-            let options: u64 = (1 << 1) | (1 << 3) | (1 << 5);
-            let _: () = msg_send![app, setPresentationOptions: options];
+            let app = NSApplication::sharedApplication(mtm);
+            let options = NSApplicationPresentationOptions::HideDock
+                | NSApplicationPresentationOptions::HideMenuBar
+                | NSApplicationPresentationOptions::DisableProcessSwitching;
+            app.setPresentationOptions(options);
         }
     }
 
@@ -133,9 +144,9 @@ pub fn close_break(app: &AppHandle) {
 
 #[cfg(target_os = "macos")]
 fn restore_macos_presentation() {
-    unsafe {
-        let app: id = msg_send![class!(NSApplication), sharedApplication];
-        let _: () = msg_send![app, setPresentationOptions: 0u64];
+    if let Some(mtm) = MainThreadMarker::new() {
+        let app = NSApplication::sharedApplication(mtm);
+        app.setPresentationOptions(NSApplicationPresentationOptions::empty());
     }
 }
 
