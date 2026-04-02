@@ -123,13 +123,13 @@ export function BreakWindow() {
           <div className="flex items-center gap-3">
             <button
               onClick={handleAddTime}
-              className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white/80 text-sm font-medium flex items-center gap-2 transition-colors"
+              className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white/80 text-sm font-medium flex items-center gap-2 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />1 min
             </button>
             <button
               onClick={handleSkip}
-              className="px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 text-sm font-medium flex items-center gap-2 border border-white/10 transition-colors"
+              className="px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 active:scale-95 text-white/60 text-sm font-medium flex items-center gap-2 border border-white/10 transition-all cursor-pointer"
             >
               <X className="w-4 h-4" />
               Skip

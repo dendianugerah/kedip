@@ -22,7 +22,7 @@ pub fn show_notification(app: &AppHandle, time_remaining: u64) {
     }
 
     let width = 320.0_f64;
-    let height = 120.0_f64;
+    let height = 136.0_f64;
 
     let (x, y) = app
         .primary_monitor()
@@ -48,14 +48,10 @@ pub fn show_notification(app: &AppHandle, time_remaining: u64) {
         .always_on_top(true)
         .resizable(false)
         .skip_taskbar(true)
+        .shadow(false)
         .build()
     {
         let _ = window.show();
-
-        #[cfg(target_os = "macos")]
-        {
-            let _ = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, Some(26.0));
-        }
     }
 }
 

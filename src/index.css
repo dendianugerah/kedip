@@ -32,13 +32,13 @@ body,
   width: 100%;
   height: 100%;
   overflow: hidden;
+  background: transparent;
 }
 
 body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: transparent;
 }
 
 #root {
@@ -50,7 +50,6 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Custom scrollbar - calm palette */
 ::-webkit-scrollbar {
   width: 6px;
 }

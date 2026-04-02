@@ -31,58 +31,58 @@ export function NotificationBanner({
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="w-full h-full p-2"
-          initial={{ opacity: 0, y: -100 }}
+          className="fixed inset-0 rounded-2xl bg-neutral-900/95 backdrop-blur-xl shadow-2xl flex flex-col gap-2.5 px-4 pt-3.5 pb-3.5 select-none font-sans overflow-hidden"
+          initial={{ opacity: 0, y: -140 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -40, transition: { duration: 0.18, ease: "easeIn" } }}
-          transition={{ type: "spring", stiffness: 420, damping: 32 }}
+          exit={{ opacity: 0, y: -40, transition: { duration: 0.16, ease: "easeIn" } }}
+          transition={{ type: "spring", stiffness: 380, damping: 30 }}
         >
-          <div className="w-full h-full rounded-2xl bg-neutral-900/90 backdrop-blur-xl border border-white/10 shadow-2xl flex flex-col justify-between px-4 py-3 select-none font-sans">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Eye
-                  className={`w-3.5 h-3.5 ${isUrgent ? "text-amber-400 animate-pulse" : "text-white/40"}`}
-                />
-                <span className="text-[10px] font-semibold text-white/40 uppercase tracking-widest">
-                  Kedip
-                </span>
-              </div>
-              <span
-                className={`text-xs font-semibold tabular-nums transition-colors duration-300 ${
-                  isUrgent ? "text-amber-400" : "text-white/70"
-                }`}
-              >
-                {formatTime(timeRemaining)}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Eye
+                className={`w-3.5 h-3.5 ${isUrgent ? "text-amber-400 animate-pulse" : "text-white/30"}`}
+              />
+              <span className="text-[10px] font-semibold text-white/30 uppercase tracking-widest">
+                Kedip
               </span>
             </div>
+            <span
+              className={`text-[11px] font-semibold tabular-nums transition-colors duration-300 ${
+                isUrgent ? "text-amber-400" : "text-white/40"
+              }`}
+            >
+              {formatTime(timeRemaining)}
+            </span>
+          </div>
 
-            <div>
-              <p className="text-[13px] font-semibold text-white leading-snug">Wrap it up!</p>
-              <p className="text-[11px] text-white/50 mt-0.5 leading-snug">
-                {getBodyCopy(seconds)}
-              </p>
-            </div>
+          <div>
+            <p className="text-[13px] font-semibold text-white leading-tight tracking-tight">
+              Wrap it up!
+            </p>
+            <p className="text-[11.5px] text-white/45 mt-0.5 leading-snug">
+              {getBodyCopy(seconds)}
+            </p>
+          </div>
 
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={onStartNow}
-                className="flex-1 py-1 text-[11px] font-semibold bg-white/90 hover:bg-white text-black rounded-lg transition-colors"
-              >
-                Break now
-              </button>
-              <button
-                onClick={() => onSnooze(5)}
-                className="px-3 py-1 text-[11px] font-medium bg-white/10 hover:bg-white/20 text-white/80 rounded-lg transition-colors"
-              >
-                +5m
-              </button>
-              <button
-                onClick={onSkip}
-                className="px-3 py-1 text-[11px] font-medium text-white/35 hover:text-white/60 rounded-lg transition-colors"
-              >
-                Skip
-              </button>
-            </div>
+          <div className="flex items-center gap-2 mt-auto">
+            <button
+              onClick={onStartNow}
+              className="flex-1 py-2 text-[12px] font-semibold bg-white/90 hover:bg-white active:scale-95 text-black rounded-xl transition-all cursor-pointer"
+            >
+              Break now
+            </button>
+            <button
+              onClick={() => onSnooze(5)}
+              className="px-4 py-2 text-[12px] font-medium bg-white/10 hover:bg-white/18 active:scale-95 text-white/75 rounded-xl transition-all cursor-pointer"
+            >
+              +5m
+            </button>
+            <button
+              onClick={onSkip}
+              className="px-3 py-2 text-[12px] font-medium text-white/30 hover:text-white/60 active:scale-95 rounded-xl transition-all cursor-pointer"
+            >
+              Skip
+            </button>
           </div>
         </motion.div>
       )}
