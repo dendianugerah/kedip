@@ -59,6 +59,7 @@ pub fn show_notification(app: &AppHandle, time_remaining: u64) {
         .always_on_top(true)
         .resizable(false)
         .skip_taskbar(true)
+        .accept_first_mouse(true)
         .shadow(false)
         .build()
     {
@@ -168,6 +169,15 @@ pub fn close_break(app: &AppHandle) {
 
     if let Some(window) = app.get_webview_window("settings") {
         let _ = window.hide();
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        if let Some(mtm) = MainThreadMarker::new() {
+            unsafe {
+                NSApplication::sharedApplication(mtm).hide(None);
+            }
+        }
     }
 }
 

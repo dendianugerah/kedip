@@ -68,7 +68,7 @@ export function SettingsWindow() {
   return (
     <div
       data-tauri-drag-region
-      className="w-full h-full bg-[#1C1C1E] flex flex-col font-sans select-none overflow-hidden text-zinc-200"
+      className="w-full h-full bg-[#0A0A0A] flex flex-col font-sans select-none overflow-hidden text-white"
     >
       <div className="flex flex-1 min-h-0 overflow-hidden pt-10">
         {/* Sidebar */}
