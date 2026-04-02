@@ -3,15 +3,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { Plus, X } from "lucide-react";
 
+import { formatSeconds } from "@/lib/format";
 import type { TimerState } from "@/types/timer";
-
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, "0");
-  const s = (seconds % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
-}
 
 export function BreakWindow() {
   const [timeRemaining, setTimeRemaining] = useState(20);
@@ -102,24 +95,19 @@ export function BreakWindow() {
       <div
         className={`flex flex-col items-center text-center transition-transform duration-700 ease-out origin-center ${isIdle ? "scale-110" : "scale-100"}`}
       >
-        {/* Title & Subtitle */}
         <div className="mb-8">
-          <h1 className="text-4xl font-semibold text-white tracking-tight">
-            Screen Break!
-          </h1>
+          <h1 className="text-4xl font-semibold text-white tracking-tight">Screen Break!</h1>
           <p className="mt-3 text-lg font-light text-white/60 max-w-md">
             Your eyes have been working overtime. Give them a quick mini-vacation.
           </p>
         </div>
 
-        {/* Timer */}
         <div>
           <p className="text-[120px] font-extralight text-white tabular-nums tracking-tighter leading-none">
-            {formatTime(timeRemaining)}
+            {formatSeconds(timeRemaining)}
           </p>
         </div>
 
-        {/* Controls - fade out in zen mode */}
         <div
           className={`mt-16 flex flex-col items-center transition-opacity duration-700 ease-out ${isIdle ? "opacity-0 pointer-events-none" : "opacity-100"}`}
         >

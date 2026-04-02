@@ -5,7 +5,9 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 #[cfg(target_os = "macos")]
 use objc2::rc::Retained;
 #[cfg(target_os = "macos")]
-use objc2_app_kit::{NSApplication, NSApplicationPresentationOptions, NSScreen, NSWindow, NSWindowCollectionBehavior};
+use objc2_app_kit::{
+    NSApplication, NSApplicationPresentationOptions, NSScreen, NSWindow, NSWindowCollectionBehavior,
+};
 #[cfg(target_os = "macos")]
 use objc2_foundation::MainThreadMarker;
 #[cfg(target_os = "macos")]
@@ -88,19 +90,20 @@ fn apply_macos_lock_behavior(window: &tauri::WebviewWindow) {
 
     if let Ok(ns_window_ptr) = window.ns_window() {
         let mtm = MainThreadMarker::new().expect("must be on main thread");
-        
+
         unsafe {
-            let ns_window: Retained<NSWindow> = Retained::retain(ns_window_ptr as *mut NSWindow).unwrap();
-            
+            let ns_window: Retained<NSWindow> =
+                Retained::retain(ns_window_ptr as *mut NSWindow).unwrap();
+
             // Get main screen frame to cover entire display
             if let Some(screen) = NSScreen::mainScreen(mtm) {
                 let frame = screen.frame();
                 ns_window.setFrame_display(frame, true);
             }
-            
+
             // Remove window shadow to prevent visible edges
             ns_window.setHasShadow(false);
-            
+
             // CGShieldingWindowLevel - highest level used by screen savers
             ns_window.setLevel(2147483628);
 

@@ -47,7 +47,6 @@ export function NotificationWindow() {
       className="w-full h-full bg-[#F9F8F4] rounded-2xl overflow-hidden select-none font-sans border border-[#EAE6DF]"
     >
       <div className="flex items-center justify-between px-5 py-4 h-full">
-        {/* Left: Timer info */}
         <div className="flex items-center gap-4">
           <div className="w-11 h-11 rounded-full bg-[#EAE6DF] flex items-center justify-center">
             <Clock className="w-5 h-5 text-[#7A7974]" />
@@ -60,7 +59,6 @@ export function NotificationWindow() {
           </div>
         </div>
 
-        {/* Right: Actions */}
         <div className="flex items-center gap-2">
           <Button variant="primary" size="md" onClick={handleStartNow}>
             <Play className="w-3.5 h-3.5" />

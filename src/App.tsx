@@ -1,11 +1,9 @@
 import { NotificationWindow, BreakWindow, SettingsWindow } from "@/components/windows";
 
 function App() {
-  // Get window type from URL query params
   const params = new URLSearchParams(window.location.search);
   const windowType = params.get("window") || "settings";
 
-  // Render the appropriate window based on type
   switch (windowType) {
     case "notification":
       return <NotificationWindow />;
