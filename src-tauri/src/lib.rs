@@ -10,6 +10,7 @@ mod tray;
 mod windows;
 
 use std::sync::Arc;
+use tauri_plugin_store::StoreExt;
 
 pub use state::{AppState, TimerPhase, TimerState};
 
@@ -22,8 +23,32 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .manage(app_state.clone())
         .setup(move |app| {
+            let onboarding_complete = if let Ok(store) = app.store("kedip.json") {
+                let mut timer = app_state.timer.lock().unwrap();
+                if let Some(ms) = store.get("work_duration_ms").and_then(|v| v.as_u64()) {
+                    timer.work_duration_ms = ms;
+                    timer.time_remaining_ms = ms;
+                }
+                if let Some(ms) = store.get("break_duration_ms").and_then(|v| v.as_u64()) {
+                    timer.break_duration_ms = ms;
+                }
+                store
+                    .get("onboarding_complete")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false)
+            } else {
+                false
+            };
+
             tray::setup(app, app_state.clone())?;
             timer::start_loop(app.handle().clone(), app_state.clone());
+
+            if onboarding_complete {
+                windows::show_settings(app.handle());
+            } else {
+                windows::show_onboarding(app.handle());
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -34,6 +59,7 @@ pub fn run() {
             commands::toggle_pause,
             commands::update_settings,
             commands::add_break_time,
+            commands::complete_onboarding,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -181,7 +181,33 @@ pub fn show_settings(app: &AppHandle) {
         WebviewUrl::App("index.html?window=settings".into()),
     )
     .title("Kedip")
-    .inner_size(380.0, 520.0)
+    .inner_size(420.0, 580.0)
+    .min_inner_size(360.0, 480.0)
+    .decorations(true)
+    .transparent(false)
+    .resizable(true)
+    .center()
+    .build()
+    {
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
+}
+
+pub fn show_onboarding(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("onboarding") {
+        let _ = window.show();
+        let _ = window.set_focus();
+        return;
+    }
+
+    if let Ok(window) = WebviewWindowBuilder::new(
+        app,
+        "onboarding",
+        WebviewUrl::App("index.html?window=onboarding".into()),
+    )
+    .title("Welcome to Kedip")
+    .inner_size(440.0, 560.0)
     .decorations(true)
     .transparent(false)
     .resizable(false)
