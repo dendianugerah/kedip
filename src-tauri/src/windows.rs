@@ -21,21 +21,23 @@ pub fn show_notification(app: &AppHandle, time_remaining: u64) {
         let _ = window.destroy();
     }
 
-    let url = format!("index.html?window=notification&time={}", time_remaining);
+    let width = 320.0_f64;
+    let height = 52.0_f64;
 
-    let monitors = app.available_monitors().ok();
-    let (screen_width, _) = monitors
-        .and_then(|m| m.into_iter().next())
+    let (x, y) = app
+        .primary_monitor()
+        .ok()
+        .flatten()
         .map(|m| {
-            let s = m.size();
-            (s.width as f64, s.height as f64)
+            let scale = m.scale_factor();
+            let logical_width = m.size().width as f64 / scale;
+            let logical_x = m.position().x as f64 / scale;
+            let logical_y = m.position().y as f64 / scale;
+            (logical_x + logical_width - width - 20.0, logical_y + 20.0)
         })
-        .unwrap_or((1920.0, 1080.0));
+        .unwrap_or((1560.0, 20.0));
 
-    let width = 340.0;
-    let height = 48.0;
-    let x = screen_width - width - 20.0;
-    let y = 50.0;
+    let url = format!("index.html?window=notification&time={}", time_remaining);
 
     if let Ok(window) = WebviewWindowBuilder::new(app, "notification", WebviewUrl::App(url.into()))
         .title("")
@@ -52,7 +54,7 @@ pub fn show_notification(app: &AppHandle, time_remaining: u64) {
 
         #[cfg(target_os = "macos")]
         {
-            let _ = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, Some(24.0));
+            let _ = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, Some(26.0));
         }
     }
 }
