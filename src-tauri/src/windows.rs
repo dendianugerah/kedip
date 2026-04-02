@@ -16,13 +16,24 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 #[cfg(target_os = "macos")]
 const SHIELDING_WINDOW_LEVEL: isize = 2147483628;
 
+const NOTIFICATION_WIDTH: f64 = 320.0;
+const NOTIFICATION_HEIGHT: f64 = 136.0;
+const NOTIFICATION_MARGIN: f64 = 20.0;
+const NOTIFICATION_FALLBACK_X: f64 = 1560.0;
+const NOTIFICATION_FALLBACK_Y: f64 = 20.0;
+
+const SETTINGS_WIDTH: f64 = 660.0;
+const SETTINGS_HEIGHT: f64 = 460.0;
+const SETTINGS_MIN_WIDTH: f64 = 580.0;
+const SETTINGS_MIN_HEIGHT: f64 = 400.0;
+
+const ONBOARDING_WIDTH: f64 = 440.0;
+const ONBOARDING_HEIGHT: f64 = 560.0;
+
 pub fn show_notification(app: &AppHandle, time_remaining: u64) {
     if let Some(window) = app.get_webview_window("notification") {
         let _ = window.destroy();
     }
-
-    let width = 320.0_f64;
-    let height = 136.0_f64;
 
     let (x, y) = app
         .primary_monitor()
@@ -33,15 +44,18 @@ pub fn show_notification(app: &AppHandle, time_remaining: u64) {
             let logical_width = m.size().width as f64 / scale;
             let logical_x = m.position().x as f64 / scale;
             let logical_y = m.position().y as f64 / scale;
-            (logical_x + logical_width - width - 20.0, logical_y + 20.0)
+            (
+                logical_x + logical_width - NOTIFICATION_WIDTH - NOTIFICATION_MARGIN,
+                logical_y + NOTIFICATION_MARGIN,
+            )
         })
-        .unwrap_or((1560.0, 20.0));
+        .unwrap_or((NOTIFICATION_FALLBACK_X, NOTIFICATION_FALLBACK_Y));
 
     let url = format!("index.html?window=notification&time={}", time_remaining);
 
     if let Ok(window) = WebviewWindowBuilder::new(app, "notification", WebviewUrl::App(url.into()))
         .title("")
-        .inner_size(width, height)
+        .inner_size(NOTIFICATION_WIDTH, NOTIFICATION_HEIGHT)
         .position(x, y)
         .decorations(false)
         .transparent(true)
@@ -181,8 +195,8 @@ pub fn show_settings(app: &AppHandle) {
         WebviewUrl::App("index.html?window=settings".into()),
     )
     .title("Kedip")
-    .inner_size(660.0, 460.0)
-    .min_inner_size(580.0, 400.0)
+    .inner_size(SETTINGS_WIDTH, SETTINGS_HEIGHT)
+    .min_inner_size(SETTINGS_MIN_WIDTH, SETTINGS_MIN_HEIGHT)
     .decorations(true)
     .transparent(false)
     .resizable(true)
@@ -207,7 +221,7 @@ pub fn show_onboarding(app: &AppHandle) {
         WebviewUrl::App("index.html?window=onboarding".into()),
     )
     .title("Welcome to Kedip")
-    .inner_size(440.0, 560.0)
+    .inner_size(ONBOARDING_WIDTH, ONBOARDING_HEIGHT)
     .decorations(true)
     .transparent(false)
     .resizable(false)
