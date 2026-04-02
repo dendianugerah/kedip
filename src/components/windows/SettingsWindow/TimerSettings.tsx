@@ -1,14 +1,9 @@
 import { AnimatePresence, motion } from "motion/react";
-import { Check, Clock, Coffee } from "lucide-react";
+import { Check } from "lucide-react";
 
 import type { Preset } from "@/types/timer";
-import { PRESETS, PRESET_ICON_STYLE } from "@/constants/presets";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { PRESETS } from "@/constants/presets";
 import { Slider } from "@/components/ui/slider";
-
-const CARD_BASE =
-  "bg-[#2C2C2E] border border-white/[0.06] rounded-xl shadow-none ring-0 gap-0 py-0 overflow-hidden";
 
 interface Props {
   workMinutes: number;
@@ -33,109 +28,69 @@ export function TimerSettings({
 }: Props) {
   return (
     <div className="space-y-5">
-      <section>
-        <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1 mb-2">
-          Quick Presets
-        </h2>
-        <Card className={`${CARD_BASE} divide-y divide-white/[0.06]`}>
+      {/* Presets */}
+      <div>
+        <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
+          Preset
+        </p>
+        <div className="flex gap-2">
           {PRESETS.map((preset) => {
-            const Icon = preset.icon;
             const active = selectedPreset === preset.name;
-            const style = PRESET_ICON_STYLE[preset.name] ?? {
-              bg: "bg-zinc-500/20",
-              icon: "text-zinc-400",
-            };
             return (
-              <Button
+              <button
                 key={preset.name}
-                variant="ghost"
                 onClick={() => onPreset(preset)}
-                className="w-full h-auto flex items-center justify-between px-4 py-3.5 rounded-none hover:bg-black/10 active:bg-black/20"
+                className={`flex-1 py-2 rounded-[9px] text-[12px] font-medium transition-colors cursor-pointer ${
+                  active
+                    ? "bg-white text-black"
+                    : "bg-white/[0.06] text-zinc-400 hover:bg-white/[0.10] hover:text-zinc-200"
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-lg ${style.bg} flex items-center justify-center flex-shrink-0`}
-                  >
-                    <Icon className={`w-5 h-5 ${style.icon}`} />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[13.5px] font-medium text-zinc-100">{preset.name}</p>
-                    <p className="text-[12px] text-zinc-500 mt-0.5">{preset.desc}</p>
-                  </div>
-                </div>
-                {active && <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />}
-              </Button>
+                {preset.name}
+              </button>
             );
           })}
-        </Card>
-      </section>
+        </div>
+      </div>
 
-      <section>
-        <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1 mb-2">
-          Durations
-        </h2>
-        <Card className={`${CARD_BASE} divide-y divide-white/[0.06]`}>
-          <div className="px-4 pt-4 pb-3.5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                <Clock className="w-5 h-5 text-blue-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <span className="text-[13.5px] font-medium text-zinc-100">Work Duration</span>
-                  <span className="text-[13.5px] font-medium text-zinc-400 ml-4 tabular-nums">
-                    {workMinutes}m
-                  </span>
-                </div>
-                <p className="text-[12px] text-zinc-500 mt-0.5">
-                  How long you focus before a break
-                </p>
-              </div>
+      {/* Durations */}
+      <div>
+        <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
+          Duration
+        </p>
+        <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
+          <div className="px-4 py-4 bg-[#2C2C2E]">
+            <div className="flex items-center justify-between mb-3.5">
+              <span className="text-[13px] text-zinc-300">Work</span>
+              <span className="text-[13px] text-zinc-500 tabular-nums">{workMinutes}m</span>
             </div>
-            <div className="pl-[52px]">
-              <Slider
-                min={1}
-                max={60}
-                value={[workMinutes]}
-                onValueChange={(values) => onWorkChange(Array.isArray(values) ? values[0] : values)}
-              />
-            </div>
+            <Slider
+              min={1}
+              max={60}
+              value={[workMinutes]}
+              onValueChange={(values) => onWorkChange(Array.isArray(values) ? values[0] : values)}
+            />
           </div>
 
-          <div className="px-4 pt-4 pb-3.5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                <Coffee className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <span className="text-[13.5px] font-medium text-zinc-100">Break Duration</span>
-                  <span className="text-[13.5px] font-medium text-zinc-400 ml-4 tabular-nums">
-                    {breakSeconds}s
-                  </span>
-                </div>
-                <p className="text-[12px] text-zinc-500 mt-0.5">How long each rest lasts</p>
-              </div>
+          <div className="px-4 py-4 bg-[#2C2C2E]">
+            <div className="flex items-center justify-between mb-3.5">
+              <span className="text-[13px] text-zinc-300">Break</span>
+              <span className="text-[13px] text-zinc-500 tabular-nums">{breakSeconds}s</span>
             </div>
-            <div className="pl-[52px]">
-              <Slider
-                min={5}
-                max={300}
-                step={5}
-                value={[breakSeconds]}
-                onValueChange={(values) =>
-                  onBreakChange(Array.isArray(values) ? values[0] : values)
-                }
-              />
-            </div>
+            <Slider
+              min={5}
+              max={300}
+              step={5}
+              value={[breakSeconds]}
+              onValueChange={(values) => onBreakChange(Array.isArray(values) ? values[0] : values)}
+            />
           </div>
-        </Card>
-      </section>
+        </div>
+      </div>
 
-      <Button
-        variant="primary"
+      <button
         onClick={onSave}
-        className="w-full py-2.5 text-[13.5px] font-semibold rounded-xl overflow-hidden"
+        className="w-full py-2.5 rounded-xl text-[13px] font-semibold bg-blue-500 hover:bg-blue-400 text-white transition-colors overflow-hidden cursor-pointer"
       >
         <AnimatePresence mode="wait" initial={false}>
           {saved ? (
@@ -162,7 +117,7 @@ export function TimerSettings({
             </motion.span>
           )}
         </AnimatePresence>
-      </Button>
+      </button>
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { AnimatePresence, motion } from "motion/react";
-import { Eye } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -39,148 +38,151 @@ export function OnboardingWindow() {
     breakSeconds >= 60 ? `${Math.floor(breakSeconds / 60)} min` : `${breakSeconds}s`;
 
   return (
-    <div className="w-full h-full bg-[#111110] flex flex-col font-sans select-none overflow-hidden">
-      {/* Progress indicator */}
-      <div className="flex justify-center gap-1.5 pt-6 pb-2">
-        {[1, 2].map((s) => (
-          <div
-            key={s}
-            className={`rounded-full transition-all duration-300 ${
-              s <= step ? "w-4 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/20"
-            }`}
-          />
-        ))}
-      </div>
-
+    <div className="w-full h-full bg-[#0A0A0A] flex flex-col font-sans select-none overflow-hidden text-white">
       <AnimatePresence mode="wait" initial={false}>
         {step === 1 ? (
           <motion.div
             key="step1"
-            className="flex-1 flex flex-col items-center justify-center px-8 pb-8 gap-6 text-center"
-            initial={{ opacity: 0, x: 32 }}
+            className="flex-1 flex"
+            initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -32 }}
-            transition={{ duration: 0.22, ease: "easeInOut" }}
+            exit={{ opacity: 0, x: -24 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
           >
-            <div className="w-20 h-20 rounded-3xl bg-white/[0.06] flex items-center justify-center">
-              <Eye className="w-10 h-10 text-white/60" />
-            </div>
-
-            <div className="space-y-2.5">
-              <h1 className="text-2xl font-semibold text-white tracking-tight leading-snug">
-                Your eyes deserve
-                <br />a break
-              </h1>
-              <p className="text-[13px] text-white/40 leading-relaxed max-w-[260px] mx-auto">
-                Kedip reminds you to rest your eyes regularly using the 20-20-20 rule.
+            {/* Left — headline */}
+            <div className="flex-1 flex flex-col justify-between px-10 py-9">
+              <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.25em]">
+                Kedip
               </p>
+
+              <div>
+                <h1 className="text-[52px] font-semibold tracking-tight leading-[1.05] text-white">
+                  Look up,
+                  <br />
+                  every 20
+                  <br />
+                  minutes.
+                </h1>
+                <p className="mt-5 text-[13px] text-white/35 leading-relaxed max-w-[200px]">
+                  The 20-20-20 rule. A small habit that protects your eyes over a lifetime.
+                </p>
+              </div>
+
+              <Button
+                variant="white"
+                onClick={() => setStep(2)}
+                className="w-full py-3 text-[13px] font-semibold"
+              >
+                Get Started →
+              </Button>
             </div>
 
-            <div className="w-full grid grid-cols-3 gap-2 text-center">
+            {/* Right — stats */}
+            <div className="w-[210px] flex-shrink-0 border-l border-white/[0.06] flex flex-col divide-y divide-white/[0.06]">
               {(
                 [
-                  ["20", "min work"],
-                  ["20", "ft away"],
-                  ["20", "sec break"],
-                ] as [string, string][]
-              ).map(([n, l]) => (
-                <div key={l} className="py-3.5 rounded-xl bg-white/[0.06]">
-                  <p className="text-xl font-semibold text-white">{n}</p>
-                  <p className="text-[10px] text-white/30 mt-0.5">{l}</p>
+                  ["20", "minutes", "of focused work"],
+                  ["20", "feet", "look that far away"],
+                  ["20", "seconds", "of eye rest"],
+                ] as [string, string, string][]
+              ).map(([num, unit, desc]) => (
+                <div key={unit} className="flex-1 flex flex-col justify-center px-7">
+                  <p className="text-[44px] font-extralight text-white tabular-nums leading-none">
+                    {num}
+                  </p>
+                  <p className="text-[13px] font-medium text-white/60 mt-2">{unit}</p>
+                  <p className="text-[11px] text-white/20 mt-0.5">{desc}</p>
                 </div>
               ))}
             </div>
-
-            <Button
-              variant="white"
-              onClick={() => setStep(2)}
-              className="w-full py-3 text-sm font-semibold"
-            >
-              Get Started →
-            </Button>
           </motion.div>
         ) : (
           <motion.div
             key="step2"
-            className="flex-1 flex flex-col px-6 pt-2 pb-6 gap-5"
-            initial={{ opacity: 0, x: 32 }}
+            className="flex-1 flex flex-col px-10 py-9 gap-7"
+            initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -32 }}
-            transition={{ duration: 0.22, ease: "easeInOut" }}
+            exit={{ opacity: 0, x: -24 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
           >
             <div>
-              <p className="text-white text-base font-semibold">Set your schedule</p>
-              <p className="text-white/40 text-[12px] mt-0.5">You can always change this later.</p>
+              <h2 className="text-[28px] font-semibold tracking-tight leading-tight">
+                Set your rhythm
+              </h2>
+              <p className="text-[13px] text-white/30 mt-1.5">
+                You can change this any time from settings.
+              </p>
             </div>
 
-            <div>
-              <p className="text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-2.5">
-                Work Duration
-              </p>
-              <div className="flex gap-1.5">
-                {WORK_OPTIONS.map((opt) => (
-                  <Button
-                    key={opt.value}
-                    variant={workMinutes === opt.value ? "white" : "ghost"}
-                    onClick={() => setWorkMinutes(opt.value)}
-                    className={`flex-1 py-2.5 h-auto rounded-xl text-[12px] font-medium ${
-                      workMinutes === opt.value
-                        ? ""
-                        : "bg-white/[0.06] text-white/50 hover:bg-white/[0.10] hover:text-white/70"
-                    }`}
-                  >
-                    {opt.label}
-                  </Button>
-                ))}
+            <div className="flex-1 flex flex-col gap-6">
+              <div>
+                <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.2em] mb-3">
+                  Work Duration
+                </p>
+                <div className="flex gap-2">
+                  {WORK_OPTIONS.map((opt) => (
+                    <Button
+                      key={opt.value}
+                      variant={workMinutes === opt.value ? "white" : "ghost"}
+                      onClick={() => setWorkMinutes(opt.value)}
+                      className={`flex-1 py-3 h-auto rounded-xl text-[13px] font-medium ${
+                        workMinutes === opt.value
+                          ? ""
+                          : "bg-white/[0.05] text-white/35 hover:bg-white/10 hover:text-white/70"
+                      }`}
+                    >
+                      {opt.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div>
-              <p className="text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-2.5">
-                Break Duration
-              </p>
-              <div className="flex gap-1.5">
-                {BREAK_OPTIONS.map((opt) => (
-                  <Button
-                    key={opt.value}
-                    variant={breakSeconds === opt.value ? "white" : "ghost"}
-                    onClick={() => setBreakSeconds(opt.value)}
-                    className={`flex-1 py-2.5 h-auto rounded-xl text-[12px] font-medium ${
-                      breakSeconds === opt.value
-                        ? ""
-                        : "bg-white/[0.06] text-white/50 hover:bg-white/[0.10] hover:text-white/70"
-                    }`}
-                  >
-                    {opt.label}
-                  </Button>
-                ))}
+              <div>
+                <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.2em] mb-3">
+                  Break Duration
+                </p>
+                <div className="flex gap-2">
+                  {BREAK_OPTIONS.map((opt) => (
+                    <Button
+                      key={opt.value}
+                      variant={breakSeconds === opt.value ? "white" : "ghost"}
+                      onClick={() => setBreakSeconds(opt.value)}
+                      className={`flex-1 py-3 h-auto rounded-xl text-[13px] font-medium ${
+                        breakSeconds === opt.value
+                          ? ""
+                          : "bg-white/[0.05] text-white/35 hover:bg-white/10 hover:text-white/70"
+                      }`}
+                    >
+                      {opt.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="bg-white/[0.04] rounded-xl px-4 py-3 flex items-start gap-3">
-              <Eye className="w-4 h-4 text-white/30 flex-shrink-0 mt-0.5" />
-              <p className="text-[11px] text-white/40 leading-relaxed">
-                Every <span className="text-white/65">{workMinutes} min</span>, rest your eyes for{" "}
-                <span className="text-white/65">{breakLabel}</span> to reduce eye strain.
-              </p>
-            </div>
-
-            <div className="mt-auto flex flex-col gap-2">
-              <Button
-                variant="white"
-                onClick={handleComplete}
-                disabled={loading}
-                className="w-full py-3 text-sm font-semibold"
-              >
-                {loading ? "Starting..." : "Start Kedip"}
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setStep(1)}
-                className="w-full py-2 text-[12px] text-white/30 hover:text-white/50 hover:bg-transparent"
-              >
-                ← Back
-              </Button>
+              <div className="mt-auto border-t border-white/[0.06] pt-5 flex items-center justify-between">
+                <p className="text-[12px] text-white/25">
+                  Work <span className="text-white/55">{workMinutes}m</span>{" "}
+                  <span className="text-white/15">→</span> rest{" "}
+                  <span className="text-white/55">{breakLabel}</span>
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setStep(1)}
+                    className="text-[12px] text-white/25 hover:text-white/50 hover:bg-transparent px-3 py-2 h-auto"
+                  >
+                    ← Back
+                  </Button>
+                  <Button
+                    variant="white"
+                    onClick={handleComplete}
+                    disabled={loading}
+                    className="px-6 py-2.5 h-auto text-[13px] font-semibold"
+                  >
+                    {loading ? "Starting…" : "Start Kedip"}
+                  </Button>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}

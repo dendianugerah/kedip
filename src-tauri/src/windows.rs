@@ -22,13 +22,10 @@ const NOTIFICATION_MARGIN: f64 = 20.0;
 const NOTIFICATION_FALLBACK_X: f64 = 1560.0;
 const NOTIFICATION_FALLBACK_Y: f64 = 20.0;
 
-const SETTINGS_WIDTH: f64 = 660.0;
-const SETTINGS_HEIGHT: f64 = 460.0;
-const SETTINGS_MIN_WIDTH: f64 = 580.0;
-const SETTINGS_MIN_HEIGHT: f64 = 400.0;
-
-const ONBOARDING_WIDTH: f64 = 440.0;
-const ONBOARDING_HEIGHT: f64 = 560.0;
+const APP_WINDOW_WIDTH: f64 = 660.0;
+const APP_WINDOW_HEIGHT: f64 = 460.0;
+const APP_WINDOW_MIN_WIDTH: f64 = 580.0;
+const APP_WINDOW_MIN_HEIGHT: f64 = 400.0;
 
 pub fn show_notification(app: &AppHandle, time_remaining: u64) {
     if let Some(window) = app.get_webview_window("notification") {
@@ -195,8 +192,8 @@ pub fn show_settings(app: &AppHandle) {
         WebviewUrl::App("index.html?window=settings".into()),
     )
     .title("Kedip")
-    .inner_size(SETTINGS_WIDTH, SETTINGS_HEIGHT)
-    .min_inner_size(SETTINGS_MIN_WIDTH, SETTINGS_MIN_HEIGHT)
+    .inner_size(APP_WINDOW_WIDTH, APP_WINDOW_HEIGHT)
+    .min_inner_size(APP_WINDOW_MIN_WIDTH, APP_WINDOW_MIN_HEIGHT)
     .decorations(true)
     .transparent(false)
     .resizable(true)
@@ -221,10 +218,11 @@ pub fn show_onboarding(app: &AppHandle) {
         WebviewUrl::App("index.html?window=onboarding".into()),
     )
     .title("Welcome to Kedip")
-    .inner_size(ONBOARDING_WIDTH, ONBOARDING_HEIGHT)
+    .inner_size(APP_WINDOW_WIDTH, APP_WINDOW_HEIGHT)
+    .min_inner_size(APP_WINDOW_MIN_WIDTH, APP_WINDOW_MIN_HEIGHT)
     .decorations(true)
     .transparent(false)
-    .resizable(false)
+    .resizable(true)
     .center()
     .build()
     {

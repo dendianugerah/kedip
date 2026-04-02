@@ -1,14 +1,8 @@
 import { motion } from "motion/react";
-import { Play, Pause, Coffee, RotateCcw, Clock, ChevronRight } from "lucide-react";
 
 import { formatTime } from "@/lib/format";
 import type { TimerState } from "@/types/timer";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-
-const CARD_BASE =
-  "bg-[#2C2C2E] border border-white/[0.06] rounded-xl shadow-none ring-0 gap-0 py-0";
 
 const PHASE_LABEL: Record<string, string> = {
   Working: "Focusing",
@@ -32,61 +26,39 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
 
   return (
     <div className="space-y-5">
-      <section className="space-y-2">
-        <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1 mb-2">
-          Active Session
-        </h2>
-        <Card className={`${CARD_BASE} p-4`}>
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
-                {phaseLabel}
-              </p>
-              <p className="text-[42px] font-light text-zinc-100 tabular-nums tracking-tight leading-none mt-2">
-                {formatTime(timerState.time_remaining_ms)}
-              </p>
-              <p className="text-[12px] text-zinc-500 mt-2">
-                {timerState.phase === "Working" ? "until next break" : "remaining"}
-              </p>
-            </div>
-            <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-              <Clock className="w-5 h-5 text-blue-400" />
-            </div>
-          </div>
-
-          <div className="mt-4 h-[3px] bg-zinc-700 rounded-full overflow-hidden">
+      {/* Timer hero */}
+      <div>
+        <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
+          Active
+        </p>
+        <div className="bg-[#2C2C2E] border border-white/[0.06] rounded-xl p-5">
+          <p className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">
+            {phaseLabel}
+          </p>
+          <p className="text-[52px] font-light text-white tabular-nums tracking-tight leading-none mt-2">
+            {formatTime(timerState.time_remaining_ms)}
+          </p>
+          <p className="text-[12px] text-zinc-600 mt-2">
+            {timerState.phase === "Working" ? "until next break" : "remaining in break"}
+          </p>
+          <div className="mt-4 h-[2px] bg-white/[0.07] rounded-full overflow-hidden">
             <motion.div
               className="h-full bg-blue-500 rounded-full"
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.4 }}
             />
           </div>
-        </Card>
-      </section>
+        </div>
+      </div>
 
-      <section className="space-y-2">
-        <h2 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider ml-1 mb-2">
+      {/* Controls */}
+      <div>
+        <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
           Controls
-        </h2>
-        <Card className={`${CARD_BASE} overflow-hidden divide-y divide-white/[0.06]`}>
-          <div className="flex items-center justify-between px-4 py-3.5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                {isPaused ? (
-                  <Play className="w-5 h-5 text-blue-400" />
-                ) : (
-                  <Pause className="w-5 h-5 text-blue-400" />
-                )}
-              </div>
-              <div>
-                <p className="text-[13.5px] font-medium text-zinc-100">
-                  {isPaused ? "Resume Session" : "Pause Session"}
-                </p>
-                <p className="text-[12px] text-zinc-500 mt-0.5">
-                  {isPaused ? "Continue where you left off" : "Temporarily stop the timer"}
-                </p>
-              </div>
-            </div>
+        </p>
+        <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
+          <div className="flex items-center justify-between px-4 py-3.5 bg-[#2C2C2E]">
+            <span className="text-[13px] text-zinc-300">{isPaused ? "Resume" : "Pause"}</span>
             <Switch
               checked={isPaused}
               onCheckedChange={() => onTogglePause()}
@@ -94,41 +66,23 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
             />
           </div>
 
-          <Button
-            variant="ghost"
+          <button
             onClick={onBreakNow}
-            className="w-full h-auto flex items-center justify-between px-4 py-3.5 rounded-none hover:bg-black/10 active:bg-black/20"
+            className="w-full flex items-center justify-between px-4 py-3.5 bg-[#2C2C2E] text-left hover:bg-white/[0.03] transition-colors cursor-pointer"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                <Coffee className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div className="text-left">
-                <p className="text-[13.5px] font-medium text-zinc-100">Start Break Now</p>
-                <p className="text-[12px] text-zinc-500 mt-0.5">Take your rest immediately</p>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-zinc-600 flex-shrink-0" />
-          </Button>
+            <span className="text-[13px] text-zinc-300">Take a Break Now</span>
+            <span className="text-[13px] text-zinc-600">→</span>
+          </button>
 
-          <Button
-            variant="ghost"
+          <button
             onClick={onReset}
-            className="w-full h-auto flex items-center justify-between px-4 py-3.5 rounded-none hover:bg-black/10 active:bg-black/20"
+            className="w-full flex items-center justify-between px-4 py-3.5 bg-[#2C2C2E] text-left hover:bg-white/[0.03] transition-colors cursor-pointer"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-zinc-500/20 flex items-center justify-center flex-shrink-0">
-                <RotateCcw className="w-5 h-5 text-zinc-400" />
-              </div>
-              <div className="text-left">
-                <p className="text-[13.5px] font-medium text-zinc-100">Reset Timer</p>
-                <p className="text-[12px] text-zinc-500 mt-0.5">Restart the work countdown</p>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-zinc-600 flex-shrink-0" />
-          </Button>
-        </Card>
-      </section>
+            <span className="text-[13px] text-zinc-300">Reset Timer</span>
+            <span className="text-[13px] text-zinc-600">→</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
