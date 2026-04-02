@@ -2,44 +2,12 @@
   "name": "kedip",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
+  "workspaces": ["apps/*"],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri",
-    "format": "bun run format:rust && bun run format:ts",
-    "format:rust": "cd src-tauri && cargo fmt",
-    "format:ts": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "lint": "bun run lint:rust && bun run lint:ts",
-    "lint:rust": "cd src-tauri && cargo clippy",
-    "lint:ts": "tsc --noEmit",
-    "check": "bun run lint && bun run format"
-  },
-  "dependencies": {
-    "@base-ui/react": "^1.3.0",
-    "@fontsource-variable/inter": "^5.2.8",
-    "@tailwindcss/vite": "^4.2.1",
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^1.7.0",
-    "motion": "^12.38.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "shadcn": "^4.1.2",
-    "tailwind-merge": "^3.5.0",
-    "tailwindcss": "^4.2.1",
-    "tw-animate-css": "^1.4.0"
-  },
-  "devDependencies": {
-    "@tauri-apps/cli": "^2",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^4.6.0",
-    "prettier": "^3.8.1",
-    "typescript": "~5.8.3",
-    "vite": "^7.0.4"
+    "dev": "bun run --cwd apps/desktop dev",
+    "build": "bun run --cwd apps/desktop build",
+    "tauri": "bun run --cwd apps/desktop tauri",
+    "lint": "bun run --cwd apps/desktop lint",
+    "format": "bun run --cwd apps/desktop format"
   }
 }
