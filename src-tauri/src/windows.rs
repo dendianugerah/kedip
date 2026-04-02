@@ -204,29 +204,3 @@ pub fn show_settings(app: &AppHandle) {
         let _ = window.set_focus();
     }
 }
-
-pub fn show_onboarding(app: &AppHandle) {
-    if let Some(window) = app.get_webview_window("onboarding") {
-        let _ = window.show();
-        let _ = window.set_focus();
-        return;
-    }
-
-    if let Ok(window) = WebviewWindowBuilder::new(
-        app,
-        "onboarding",
-        WebviewUrl::App("index.html?window=onboarding".into()),
-    )
-    .title("Welcome to Kedip")
-    .inner_size(APP_WINDOW_WIDTH, APP_WINDOW_HEIGHT)
-    .min_inner_size(APP_WINDOW_MIN_WIDTH, APP_WINDOW_MIN_HEIGHT)
-    .decorations(true)
-    .transparent(false)
-    .resizable(true)
-    .center()
-    .build()
-    {
-        let _ = window.show();
-        let _ = window.set_focus();
-    }
-}

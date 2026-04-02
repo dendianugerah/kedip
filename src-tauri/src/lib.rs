@@ -21,7 +21,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .manage(app_state.clone())
         .setup(move |app| {
-            let onboarding_complete = if let Ok(store) = app.store("kedip.json") {
+            let _onboarding_complete = if let Ok(store) = app.store("kedip.json") {
                 let mut timer = app_state.timer.lock().unwrap();
                 if let Some(ms) = store.get("work_duration_ms").and_then(|v| v.as_u64()) {
                     timer.work_duration_ms = ms;
@@ -40,12 +40,7 @@ pub fn run() {
 
             tray::setup(app, app_state.clone())?;
             timer::start_loop(app.handle().clone(), app_state.clone());
-
-            if onboarding_complete {
-                windows::show_settings(app.handle());
-            } else {
-                windows::show_onboarding(app.handle());
-            }
+            windows::show_settings(app.handle());
 
             Ok(())
         })
@@ -57,6 +52,7 @@ pub fn run() {
             commands::toggle_pause,
             commands::update_settings,
             commands::add_break_time,
+            commands::is_onboarding_complete,
             commands::complete_onboarding,
         ])
         .run(tauri::generate_context!())

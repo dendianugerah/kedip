@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 use std::time::Instant;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_store::StoreExt;
 
 use crate::state::{AppState, TimerPhase, TimerState};
@@ -97,12 +97,24 @@ pub fn add_break_time(state: tauri::State<'_, Arc<AppState>>, extra_ms: u64) {
 }
 
 #[tauri::command]
-pub async fn complete_onboarding(
+pub fn is_onboarding_complete(app: AppHandle) -> bool {
+    if let Ok(store) = app.store("kedip.json") {
+        store
+            .get("onboarding_complete")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false)
+    } else {
+        false
+    }
+}
+
+#[tauri::command]
+pub fn complete_onboarding(
     app: AppHandle,
     state: tauri::State<'_, Arc<AppState>>,
     work_duration_ms: u64,
     break_duration_ms: u64,
-) -> Result<(), String> {
+) {
     {
         let mut timer = state.timer.lock().unwrap();
         timer.work_duration_ms = work_duration_ms;
@@ -119,27 +131,8 @@ pub async fn complete_onboarding(
         let _ = store.save();
     }
 
-    let was_fullscreen = app
-        .get_webview_window("onboarding")
-        .and_then(|w| w.is_fullscreen().ok())
-        .unwrap_or(false);
-
-    if let Some(onboarding) = app.get_webview_window("onboarding") {
-        if was_fullscreen {
-            let _ = onboarding.set_fullscreen(false);
-            tokio::time::sleep(tokio::time::Duration::from_millis(700)).await;
-        }
-        let _ = onboarding.destroy();
+    // Tell the frontend to switch views — no window operations needed.
+    if let Some(window) = app.get_webview_window("settings") {
+        let _ = window.emit("onboarding-complete", ());
     }
-
-    windows::show_settings(&app);
-
-    if was_fullscreen {
-        tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
-        if let Some(settings) = app.get_webview_window("settings") {
-            let _ = settings.set_fullscreen(true);
-        }
-    }
-
-    Ok(())
 }
