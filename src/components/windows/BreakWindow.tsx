@@ -99,25 +99,29 @@ export function BreakWindow() {
     <div
       className={`fixed inset-0 bg-black/70 backdrop-blur-2xl flex items-center justify-center select-none transition-[cursor] duration-300 ${isIdle ? "cursor-none" : ""}`}
     >
-      <div className="flex flex-col items-center text-center">
-        <div
-          className={`mb-12 transition-all duration-700 ease-out ${isIdle ? "opacity-0 -translate-y-4" : "opacity-100"}`}
-        >
-          <p className="text-2xl font-light text-white/70 tracking-wide">
-            Look away. Rest your eyes.
+      <div
+        className={`flex flex-col items-center text-center transition-transform duration-700 ease-out origin-center ${isIdle ? "scale-110" : "scale-100"}`}
+      >
+        {/* Title & Subtitle */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-semibold text-white tracking-tight">
+            Screen Break!
+          </h1>
+          <p className="mt-3 text-lg font-light text-white/60 max-w-md">
+            Your eyes have been working overtime. Give them a quick mini-vacation.
           </p>
         </div>
 
-        <div
-          className={`transition-all duration-700 ease-out ${isIdle ? "scale-110" : "scale-100"}`}
-        >
+        {/* Timer */}
+        <div>
           <p className="text-[120px] font-extralight text-white tabular-nums tracking-tighter leading-none">
             {formatTime(timeRemaining)}
           </p>
         </div>
 
+        {/* Controls - fade out in zen mode */}
         <div
-          className={`mt-16 flex flex-col items-center transition-all duration-700 ease-out ${isIdle ? "opacity-0 translate-y-4" : "opacity-100"}`}
+          className={`mt-16 flex flex-col items-center transition-opacity duration-700 ease-out ${isIdle ? "opacity-0 pointer-events-none" : "opacity-100"}`}
         >
           <div className="flex items-center gap-3">
             <button
