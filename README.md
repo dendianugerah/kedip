@@ -19,6 +19,12 @@ Grab the latest binary from the [**Releases**](https://github.com/dendianugerah/
 | Windows | `.msi` / `.exe` |
 | Linux | `.AppImage` / `.deb` |
 
+> **macOS note:** If you see "damaged and can't be opened", run this in Terminal:
+> ```bash
+> xattr -cr /Applications/kedip.app
+> ```
+> This happens because the app is not yet notarized with Apple. It is safe to run.
+
 ---
 
 ## Features
