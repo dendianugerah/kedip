@@ -191,12 +191,14 @@ pub fn show_settings(app: &AppHandle) {
         "settings",
         WebviewUrl::App("index.html?window=settings".into()),
     )
-    .title("Kedip")
+    .title("")
     .inner_size(APP_WINDOW_WIDTH, APP_WINDOW_HEIGHT)
     .min_inner_size(APP_WINDOW_MIN_WIDTH, APP_WINDOW_MIN_HEIGHT)
-    .decorations(true)
-    .transparent(false)
+    .title_bar_style(tauri::TitleBarStyle::Overlay)
+    .hidden_title(true)
+    .transparent(true)
     .resizable(true)
+    .traffic_light_position(tauri::LogicalPosition::new(12.0, 20.0))
     .center()
     .build()
     {

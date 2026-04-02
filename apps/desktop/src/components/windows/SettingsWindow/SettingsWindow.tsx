@@ -66,106 +66,111 @@ export function SettingsWindow() {
   };
 
   return (
-    <div className="w-full h-full bg-[#1C1C1E] flex font-sans select-none overflow-hidden text-zinc-200">
-      {/* Sidebar */}
-      <aside className="w-[168px] flex-shrink-0 border-r border-white/[0.06] flex flex-col py-5 px-2.5">
-        <p className="text-[10px] font-bold text-white/20 tracking-[0.22em] uppercase px-2 mb-4">
-          Kedip
-        </p>
-        <nav className="flex flex-col gap-0.5">
-          {NAV.map(({ id, label, icon: Icon }) => {
-            const active = page === id;
-            return (
-              <button
-                key={id}
-                onClick={() => setPage(id)}
-                className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer ${
-                  active
-                    ? "bg-white/[0.08] text-white"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04]"
-                }`}
+    <div
+      data-tauri-drag-region
+      className="w-full h-full bg-[#1C1C1E] flex flex-col font-sans select-none overflow-hidden text-zinc-200"
+    >
+      <div className="flex flex-1 min-h-0 overflow-hidden pt-10">
+        {/* Sidebar */}
+        <aside className="w-[168px] flex-shrink-0 border-r border-white/[0.06] flex flex-col pb-5 px-2.5">
+          <p className="text-[10px] font-bold text-white/20 tracking-[0.22em] uppercase px-2 mb-4">
+            Kedip
+          </p>
+          <nav className="flex flex-col gap-0.5">
+            {NAV.map(({ id, label, icon: Icon }) => {
+              const active = page === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setPage(id)}
+                  className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer ${
+                    active
+                      ? "bg-white/[0.08] text-white"
+                      : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.04]"
+                  }`}
+                >
+                  <Icon className="w-[14px] h-[14px] flex-shrink-0" />
+                  {label}
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* Content */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <div className="flex-1 overflow-y-auto">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={page}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.1 }}
+                className="p-8 space-y-6"
               >
-                <Icon className="w-[14px] h-[14px] flex-shrink-0" />
-                {label}
-              </button>
-            );
-          })}
-        </nav>
-      </aside>
+                {page === "overview" && timerState && (
+                  <StatusCard
+                    timerState={timerState}
+                    isPaused={isPaused}
+                    onTogglePause={handleTogglePause}
+                    onBreakNow={() => invoke("start_break_now")}
+                    onReset={() => invoke("skip_break")}
+                  />
+                )}
 
-      {/* Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="flex-1 overflow-y-auto">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={page}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1 }}
-              className="p-6 space-y-5"
-            >
-              {page === "overview" && timerState && (
-                <StatusCard
-                  timerState={timerState}
-                  isPaused={isPaused}
-                  onTogglePause={handleTogglePause}
-                  onBreakNow={() => invoke("start_break_now")}
-                  onReset={() => invoke("skip_break")}
-                />
-              )}
+                {page === "schedule" && (
+                  <TimerSettings
+                    workMinutes={workMinutes}
+                    breakSeconds={breakSeconds}
+                    selectedPreset={selectedPreset}
+                    saved={saved}
+                    onWorkChange={setWorkMinutes}
+                    onBreakChange={setBreakSeconds}
+                    onPreset={handlePreset}
+                    onSave={handleSave}
+                  />
+                )}
 
-              {page === "schedule" && (
-                <TimerSettings
-                  workMinutes={workMinutes}
-                  breakSeconds={breakSeconds}
-                  selectedPreset={selectedPreset}
-                  saved={saved}
-                  onWorkChange={setWorkMinutes}
-                  onBreakChange={setBreakSeconds}
-                  onPreset={handlePreset}
-                  onSave={handleSave}
-                />
-              )}
+                {page === "about" && (
+                  <div className="space-y-6">
+                    <div>
+                      <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
+                        App
+                      </p>
+                      <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
+                        {(
+                          [
+                            ["Version", "0.1.0"],
+                            ["License", "Open source · MIT"],
+                            ["Platform", "macOS · Windows · Linux"],
+                          ] as [string, string][]
+                        ).map(([label, value]) => (
+                          <div
+                            key={label}
+                            className="flex items-center justify-between px-4 py-3 bg-[#2C2C2E]"
+                          >
+                            <span className="text-[13px] text-zinc-300">{label}</span>
+                            <span className="text-[13px] text-zinc-500">{value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-              {page === "about" && (
-                <div className="space-y-6">
-                  <div>
-                    <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
-                      App
-                    </p>
-                    <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
-                      {(
-                        [
-                          ["Version", "0.1.0"],
-                          ["License", "Open source · MIT"],
-                          ["Platform", "macOS · Windows · Linux"],
-                        ] as [string, string][]
-                      ).map(([label, value]) => (
-                        <div
-                          key={label}
-                          className="flex items-center justify-between px-4 py-3 bg-[#2C2C2E]"
-                        >
-                          <span className="text-[13px] text-zinc-300">{label}</span>
-                          <span className="text-[13px] text-zinc-500">{value}</span>
-                        </div>
-                      ))}
+                    <div>
+                      <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
+                        About
+                      </p>
+                      <p className="text-[13px] text-zinc-500 leading-relaxed">
+                        Kedip is a gentle eye care reminder. Every 20 minutes, look at something 20
+                        feet away for 20 seconds — the 20-20-20 rule.
+                      </p>
                     </div>
                   </div>
-
-                  <div>
-                    <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
-                      About
-                    </p>
-                    <p className="text-[13px] text-zinc-500 leading-relaxed">
-                      Kedip is a gentle eye care reminder. Every 20 minutes, look at something 20
-                      feet away for 20 seconds — the 20-20-20 rule.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>
