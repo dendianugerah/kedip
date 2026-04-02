@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { motion } from "motion/react";
 import { Plus, X } from "lucide-react";
 
 import { formatSeconds } from "@/lib/format";
@@ -79,18 +80,26 @@ export function BreakWindow() {
 
   if (isComplete) {
     return (
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center select-none">
-        <div className="text-center animate-fade-in">
+      <motion.div
+        className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center select-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <div className="text-center">
           <p className="text-5xl font-semibold text-white/90 tracking-tight">Done</p>
           <p className="text-lg font-light text-white/50 mt-4">Your eyes are refreshed</p>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div
+    <motion.div
       className={`fixed inset-0 bg-black/70 backdrop-blur-2xl flex items-center justify-center select-none transition-[cursor] duration-300 ${isIdle ? "cursor-none" : ""}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.7, ease: "easeOut" }}
     >
       <div
         className={`flex flex-col items-center text-center transition-transform duration-700 ease-out origin-center ${isIdle ? "scale-110" : "scale-100"}`}
@@ -144,6 +153,6 @@ export function BreakWindow() {
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
