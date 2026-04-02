@@ -22,7 +22,7 @@ pub fn show_notification(app: &AppHandle, time_remaining: u64) {
     }
 
     let width = 320.0_f64;
-    let height = 52.0_f64;
+    let height = 120.0_f64;
 
     let (x, y) = app
         .primary_monitor()
