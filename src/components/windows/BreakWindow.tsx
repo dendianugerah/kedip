@@ -88,8 +88,8 @@ export function BreakWindow() {
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center select-none">
         <div className="text-center animate-fade-in">
-          <p className="text-5xl font-light text-white/90 tracking-tight">Done</p>
-          <p className="text-lg text-white/50 mt-4">Your eyes are refreshed</p>
+          <p className="text-5xl font-semibold text-white/90 tracking-tight">Done</p>
+          <p className="text-lg font-light text-white/50 mt-4">Your eyes are refreshed</p>
         </div>
       </div>
     );
