@@ -1,19 +1,44 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { motion, AnimatePresence } from "motion/react";
-import { Wind, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
-import { Button, BlobOne, BlobTwo, BlobThree } from "@/components/ui";
-import { useZenMode, useEscapeSkip } from "@/hooks";
-import { formatSeconds } from "@/lib/format";
 import type { TimerState } from "@/types/timer";
+
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
+  const s = (seconds % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+}
 
 export function BreakWindow() {
   const [timeRemaining, setTimeRemaining] = useState(20);
   const [isComplete, setIsComplete] = useState(false);
-  const isZenMode = useZenMode({ delay: 3000 });
-  const escCount = useEscapeSkip({ requiredPresses: 2, timeout: 1000 });
+  const [isIdle, setIsIdle] = useState(false);
+  const [escProgress, setEscProgress] = useState(0);
+
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const escTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const resetIdleTimer = useCallback(() => {
+    setIsIdle(false);
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(() => setIsIdle(true), 3000);
+  }, []);
+
+  useEffect(() => {
+    resetIdleTimer();
+
+    const events = ["mousemove", "keydown", "mousedown"];
+    events.forEach((e) => window.addEventListener(e, resetIdleTimer));
+
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, resetIdleTimer));
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+    };
+  }, [resetIdleTimer]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -24,9 +49,7 @@ export function BreakWindow() {
       if (event.payload.phase === "Break") {
         const seconds = Math.floor(event.payload.time_remaining_ms / 1000);
         setTimeRemaining(seconds);
-        if (seconds <= 0) {
-          setIsComplete(true);
-        }
+        if (seconds <= 0) setIsComplete(true);
       }
     });
 
@@ -35,154 +58,90 @@ export function BreakWindow() {
     };
   }, []);
 
-  const addTime = () => {
-    invoke("add_break_time", { seconds: 60 });
-  };
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setEscProgress((prev) => {
+          const next = prev + 1;
+          if (next >= 2) {
+            invoke("skip_break");
+            return 0;
+          }
+          if (escTimer.current) clearTimeout(escTimer.current);
+          escTimer.current = setTimeout(() => setEscProgress(0), 800);
+          return next;
+        });
+      }
+    };
 
-  const handleSkip = () => {
-    invoke("skip_break");
-  };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      if (escTimer.current) clearTimeout(escTimer.current);
+    };
+  }, []);
 
-  // Completion screen
+  const handleAddTime = () => invoke("add_break_time", { seconds: 60 });
+  const handleSkip = () => invoke("skip_break");
+
   if (isComplete) {
     return (
-      <div className="min-h-screen w-full bg-[#F9F8F4] flex flex-col items-center justify-center text-[#2A2A28] relative overflow-hidden select-none">
-        <div className="absolute inset-0 pointer-events-none opacity-40 blur-3xl flex items-center justify-center">
-          <BlobOne className="absolute w-[600px] h-[600px] text-[#D3E4CD]" />
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center select-none">
+        <div className="text-center animate-fade-in">
+          <p className="text-5xl font-light text-white/90 tracking-tight">Done</p>
+          <p className="text-lg text-white/50 mt-4">Your eyes are refreshed</p>
         </div>
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="text-center z-10"
-        >
-          <div className="w-16 h-16 bg-[#EAE6DF] text-[#2A2A28] rounded-full flex items-center justify-center mx-auto mb-6">
-            <Wind className="w-6 h-6" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-serif font-normal tracking-tight mb-4 italic">
-            Gently return.
-          </h1>
-          <p className="text-lg text-[#7A7974] mb-10 font-sans">Your eyes are refreshed.</p>
-        </motion.div>
       </div>
     );
   }
 
   return (
     <div
-      className={`min-h-screen w-full bg-[#F9F8F4] relative overflow-hidden flex items-center justify-center selection:bg-[#EAE6DF] select-none transition-[cursor] duration-700 ${isZenMode ? "cursor-none" : "cursor-default"}`}
+      className={`fixed inset-0 bg-black/70 backdrop-blur-2xl flex items-center justify-center select-none transition-[cursor] duration-300 ${isIdle ? "cursor-none" : ""}`}
     >
-      {/* Ambient Background Blobs - Slow, breathing animations */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center">
-        <motion.div
-          animate={{
-            rotate: [0, 10, -10, 0],
-            scale: [1, 1.05, 0.95, 1],
-            x: [0, 20, -20, 0],
-            y: [0, -20, 20, 0],
-          }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-20 -left-20 w-[600px] h-[600px] text-[#D3E4CD] opacity-60 blur-2xl"
+      <div className="flex flex-col items-center text-center">
+        <div
+          className={`mb-12 transition-all duration-700 ease-out ${isIdle ? "opacity-0 -translate-y-4" : "opacity-100"}`}
         >
-          <BlobOne />
-        </motion.div>
+          <p className="text-2xl font-light text-white/70 tracking-wide">
+            Look away. Rest your eyes.
+          </p>
+        </div>
 
-        <motion.div
-          animate={{
-            rotate: [0, -15, 15, 0],
-            scale: [1, 0.95, 1.05, 1],
-            x: [0, -30, 30, 0],
-            y: [0, 30, -30, 0],
-          }}
-          transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-1/4 -right-40 w-[700px] h-[700px] text-[#F4D1B6] opacity-50 blur-2xl"
+        <div
+          className={`transition-all duration-700 ease-out ${isIdle ? "scale-110" : "scale-100"}`}
         >
-          <BlobTwo />
-        </motion.div>
+          <p className="text-[120px] font-extralight text-white tabular-nums tracking-tighter leading-none">
+            {formatTime(timeRemaining)}
+          </p>
+        </div>
 
-        <motion.div
-          animate={{
-            rotate: [0, 20, -20, 0],
-            scale: [1, 1.1, 0.9, 1],
-            x: [0, 40, -40, 0],
-            y: [0, 40, -40, 0],
-          }}
-          transition={{ duration: 35, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -bottom-40 left-1/4 w-[500px] h-[500px] text-[#D1E8E2] opacity-60 blur-2xl"
+        <div
+          className={`mt-16 flex flex-col items-center transition-all duration-700 ease-out ${isIdle ? "opacity-0 translate-y-4" : "opacity-100"}`}
         >
-          <BlobThree />
-        </motion.div>
-      </div>
-
-      {/* Main Content - Centered & Minimal */}
-      <div className="z-10 flex flex-col items-center text-center max-w-xl px-6 w-full">
-        {/* Heading & Description - Fades in Zen Mode */}
-        <AnimatePresence>
-          {!isZenMode && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="mb-16"
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleAddTime}
+              className="px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white/80 text-sm font-medium flex items-center gap-2 transition-colors"
             >
-              <h1 className="text-4xl md:text-5xl font-serif font-normal tracking-tight text-[#2A2A28] mb-4 italic">
-                Take a moment.
-              </h1>
-              <p className="text-lg md:text-xl text-[#7A7974] font-sans font-normal leading-relaxed">
-                Look away from the screen. Focus on something distant and let your eyes rest.
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Countdown Timer - Scales up slightly in Zen Mode */}
-        <motion.div
-          animate={{
-            scale: isZenMode ? 1.08 : 1,
-            y: isZenMode ? -20 : 0,
-          }}
-          transition={{ duration: 1.2, ease: "easeInOut" }}
-          className="mb-16"
-        >
-          <div className="text-[100px] md:text-[140px] font-extralight text-[#2A2A28] tracking-tighter tabular-nums leading-none font-sans">
-            {formatSeconds(timeRemaining)}
+              <Plus className="w-4 h-4" />1 min
+            </button>
+            <button
+              onClick={handleSkip}
+              className="px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 text-sm font-medium flex items-center gap-2 border border-white/10 transition-colors"
+            >
+              <X className="w-4 h-4" />
+              Skip
+            </button>
           </div>
-        </motion.div>
 
-        {/* Action Buttons - Fades in Zen Mode */}
-        <AnimatePresence>
-          {!isZenMode && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="flex flex-col items-center"
-            >
-              <div className="flex items-center gap-4 mb-12">
-                <Button variant="secondary" size="lg" onClick={addTime}>
-                  <Plus className="w-4 h-4" />1 Min
-                </Button>
-                <Button variant="outline" size="lg" onClick={handleSkip}>
-                  <X className="w-4 h-4" />
-                  Skip
-                </Button>
-              </div>
-
-              {/* Hint Text */}
-              <div
-                className={`text-sm transition-colors duration-500 font-sans ${escCount > 0 ? "text-[#2A2A28]" : "text-[#A3A19C]"}`}
-              >
-                Double-tap{" "}
-                <kbd className="px-2 py-0.5 bg-white/50 rounded border border-[#EAE6DF] font-sans text-xs mx-1">
-                  ESC
-                </kbd>{" "}
-                to skip
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+          <p
+            className={`mt-8 text-sm transition-colors duration-300 ${escProgress > 0 ? "text-white/60" : "text-white/30"}`}
+          >
+            Press <kbd className="mx-1 px-1.5 py-0.5 rounded bg-white/10 text-xs">ESC</kbd> twice to
+            skip
+          </p>
+        </div>
       </div>
     </div>
   );

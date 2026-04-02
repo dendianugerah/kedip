@@ -6,6 +6,8 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 use cocoa::base::id;
 #[cfg(target_os = "macos")]
 use objc::{class, msg_send, sel, sel_impl};
+#[cfg(target_os = "macos")]
+use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 pub fn show_notification(app: &AppHandle, time_remaining: u64) {
     if let Some(window) = app.get_webview_window("notification") {
@@ -48,7 +50,7 @@ pub fn show_break(app: &AppHandle, time_remaining: u64) {
     if let Ok(window) = WebviewWindowBuilder::new(app, "break", WebviewUrl::App(url.into()))
         .title("")
         .decorations(false)
-        .transparent(false)
+        .transparent(true)
         .always_on_top(true)
         .resizable(false)
         .skip_taskbar(true)
@@ -62,6 +64,7 @@ pub fn show_break(app: &AppHandle, time_remaining: u64) {
 
         #[cfg(target_os = "macos")]
         {
+            let _ = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, Some(12.0));
             apply_macos_lock_behavior(&window);
         }
     }
