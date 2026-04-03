@@ -45,7 +45,7 @@ export function OnboardingWindow() {
         {step === 1 && (
           <OnboardingStepContainer key="step1" className="flex-1 flex">
             <div className="flex-1 flex flex-col justify-between px-10 pb-9 pt-4">
-              <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.25em]">
+              <p className="text-[10px] font-semibold text-white uppercase tracking-[0.25em]">
                 Kedip
               </p>
 
@@ -105,57 +105,59 @@ export function OnboardingWindow() {
             primaryLabel="Next →"
             onPrimary={() => setStep(3)}
           >
-            <div className="mb-5">
-              <h2 className="text-[28px] font-semibold tracking-tight leading-tight">
-                Set your rhythm
-              </h2>
-              <p className="text-[13px] text-white/30 mt-1.5">
-                You can change this any time from settings.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-6">
               <div>
-                <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.2em] mb-3">
-                  Work Duration
+                <h2 className="text-[28px] font-semibold tracking-tight leading-tight">
+                  Set your rhythm
+                </h2>
+                <p className="text-[13px] text-white/30 mt-1.5">
+                  You can change this any time from settings.
                 </p>
-                <div className="flex gap-2">
-                  {WORK_OPTIONS.map((opt) => (
-                    <Button
-                      key={opt.value}
-                      variant={workMinutes === opt.value ? "white" : "ghost"}
-                      onClick={() => setWorkMinutes(opt.value)}
-                      className={`flex-1 py-3 h-auto rounded-xl text-[13px] font-medium ${
-                        workMinutes === opt.value
-                          ? ""
-                          : "bg-white/[0.05] text-white/35 hover:bg-white/10 hover:text-white/70"
-                      }`}
-                    >
-                      {opt.label}
-                    </Button>
-                  ))}
-                </div>
               </div>
 
-              <div>
-                <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.2em] mb-3">
-                  Break Duration
-                </p>
-                <div className="flex gap-2">
-                  {BREAK_OPTIONS.map((opt) => (
-                    <Button
-                      key={opt.value}
-                      variant={breakSeconds === opt.value ? "white" : "ghost"}
-                      onClick={() => setBreakSeconds(opt.value)}
-                      className={`flex-1 py-3 h-auto rounded-xl text-[13px] font-medium ${
-                        breakSeconds === opt.value
-                          ? ""
-                          : "bg-white/[0.05] text-white/35 hover:bg-white/10 hover:text-white/70"
-                      }`}
-                    >
-                      {opt.label}
-                    </Button>
-                  ))}
+              <div className="flex flex-col gap-5">
+                <div>
+                  <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.2em] mb-3">
+                    Work Duration
+                  </p>
+                  <div className="flex gap-2">
+                    {WORK_OPTIONS.map((opt) => (
+                      <Button
+                        key={opt.value}
+                        variant={workMinutes === opt.value ? "white" : "ghost"}
+                        onClick={() => setWorkMinutes(opt.value)}
+                        className={`flex-1 py-3 h-auto rounded-xl text-[13px] font-medium ${
+                          workMinutes === opt.value
+                            ? ""
+                            : "bg-white/[0.05] text-white/35 hover:bg-white/10 hover:text-white/70"
+                        }`}
+                      >
+                        {opt.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.2em] mb-3">
+                    Break Duration
+                  </p>
+                  <div className="flex gap-2">
+                    {BREAK_OPTIONS.map((opt) => (
+                      <Button
+                        key={opt.value}
+                        variant={breakSeconds === opt.value ? "white" : "ghost"}
+                        onClick={() => setBreakSeconds(opt.value)}
+                        className={`flex-1 py-3 h-auto rounded-xl text-[13px] font-medium ${
+                          breakSeconds === opt.value
+                            ? ""
+                            : "bg-white/[0.05] text-white/35 hover:bg-white/10 hover:text-white/70"
+                        }`}
+                      >
+                        {opt.label}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -170,7 +172,7 @@ export function OnboardingWindow() {
             onPrimary={handleComplete}
             primaryDisabled={loading}
           >
-            <div className="flex-1 flex flex-col justify-center gap-6">
+            <div className="flex flex-col gap-6">
               <div>
                 <h2 className="text-[28px] font-semibold tracking-tight leading-tight">
                   Quick demo first.
