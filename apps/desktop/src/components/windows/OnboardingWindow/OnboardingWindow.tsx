@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence } from "motion/react";
 
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
+import { OnboardingStepContainer } from "./OnboardingStepContainer";
 
 const WORK_OPTIONS = [
   { label: "5m", value: 5 },
@@ -42,15 +43,7 @@ export function OnboardingWindow() {
     <div className="w-full h-full bg-[#0A0A0A] flex flex-col font-sans select-none overflow-hidden text-white pt-10">
       <AnimatePresence mode="wait" initial={false}>
         {step === 1 && (
-          <motion.div
-            key="step1"
-            className="flex-1 flex"
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -24 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-          >
-            {/* Left — headline */}
+          <OnboardingStepContainer key="step1" className="flex-1 flex">
             <div className="flex-1 flex flex-col justify-between px-10 pb-9 pt-4">
               <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.25em]">
                 Kedip
@@ -78,7 +71,6 @@ export function OnboardingWindow() {
               </Button>
             </div>
 
-            {/* Right — stats */}
             <div className="w-[210px] flex-shrink-0 border-l border-white/[0.06] flex flex-col divide-y divide-white/[0.06]">
               {(
                 [
@@ -96,17 +88,22 @@ export function OnboardingWindow() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </OnboardingStepContainer>
         )}
 
         {step === 2 && (
-          <motion.div
+          <OnboardingStepContainer
             key="step2"
-            className="flex-1 flex flex-col px-10 pb-7 pt-4"
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -24 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
+            onBack={() => setStep(1)}
+            info={
+              <>
+                Work <span className="text-white/55">{workMinutes}m</span>{" "}
+                <span className="text-white/15">→</span> rest{" "}
+                <span className="text-white/55">{breakLabel}</span>
+              </>
+            }
+            primaryLabel="Next →"
+            onPrimary={() => setStep(3)}
           >
             <div className="mb-5">
               <h2 className="text-[28px] font-semibold tracking-tight leading-tight">
@@ -117,7 +114,7 @@ export function OnboardingWindow() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-5 flex-1 min-h-0">
+            <div className="flex flex-col gap-5">
               <div>
                 <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.2em] mb-3">
                   Work Duration
@@ -162,50 +159,25 @@ export function OnboardingWindow() {
                 </div>
               </div>
             </div>
-
-            <div className="flex-shrink-0 border-t border-white/[0.06] pt-4 mt-4 flex items-center justify-between">
-              <p className="text-[12px] text-white/25">
-                Work <span className="text-white/55">{workMinutes}m</span>{" "}
-                <span className="text-white/15">→</span> rest{" "}
-                <span className="text-white/55">{breakLabel}</span>
-              </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => setStep(1)}
-                  className="text-[12px] text-white/25 hover:text-white/50 hover:bg-transparent px-3 py-2 h-auto"
-                >
-                  ← Back
-                </Button>
-                <Button
-                  variant="white"
-                  onClick={() => setStep(3)}
-                  className="px-6 py-2.5 h-auto text-[13px] font-semibold"
-                >
-                  Next →
-                </Button>
-              </div>
-            </div>
-          </motion.div>
+          </OnboardingStepContainer>
         )}
 
         {step === 3 && (
-          <motion.div
+          <OnboardingStepContainer
             key="step3"
-            className="flex-1 flex flex-col px-10 pb-7 pt-4"
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -24 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
+            onBack={() => setStep(2)}
+            primaryLabel={loading ? "Starting\u2026" : "Got it, show me"}
+            onPrimary={handleComplete}
+            primaryDisabled={loading}
           >
             <div className="flex-1 flex flex-col justify-center gap-6">
               <div>
                 <h2 className="text-[28px] font-semibold tracking-tight leading-tight">
                   Quick demo first.
                 </h2>
-                <p className="text-[13px] text-white/40 mt-2 leading-relaxed max-w-sm">
+                <p className="text-[13px] text-white/40 mt-2 leading-relaxed max-w-l">
                   In about 10 seconds you’ll see a notification banner — that’s Kedip reminding you
-                  to wrap up. Then your screen will dim for a short break.
+                  to wrap up.
                 </p>
               </div>
 
@@ -246,25 +218,7 @@ export function OnboardingWindow() {
                 </div>
               </div>
             </div>
-
-            <div className="border-t border-white/[0.06] pt-4 flex-shrink-0 flex items-center justify-between">
-              <Button
-                variant="ghost"
-                onClick={() => setStep(2)}
-                className="text-[12px] text-white/25 hover:text-white/50 hover:bg-transparent px-3 py-2 h-auto"
-              >
-                ← Back
-              </Button>
-              <Button
-                variant="white"
-                onClick={handleComplete}
-                disabled={loading}
-                className="px-6 py-2.5 h-auto text-[13px] font-semibold"
-              >
-                {loading ? "Starting\u2026" : "Got it, show me"}
-              </Button>
-            </div>
-          </motion.div>
+          </OnboardingStepContainer>
         )}
       </AnimatePresence>
     </div>
