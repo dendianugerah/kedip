@@ -194,7 +194,7 @@ export function SettingsWindow() {
                       </p>
                       <p className="text-[13px] text-white/50 leading-relaxed">
                         Kedip is a gentle eye care reminder. Every 20 minutes, look at something 20
-                        feet away for 20 seconds — the 20-20-20 rule.
+                        feet away for 20 seconds, the 20-20-20 rule.
                       </p>
                     </div>
 
