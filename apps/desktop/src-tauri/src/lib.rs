@@ -17,6 +17,7 @@ pub fn run() {
     let app_state = Arc::new(AppState::default());
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .manage(app_state.clone())
@@ -42,6 +43,11 @@ pub fn run() {
             timer::start_loop(app.handle().clone(), app_state.clone());
             windows::show_settings(app.handle());
 
+            let handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                check_for_update(handle).await;
+            });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -57,4 +63,15 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+async fn check_for_update(app: tauri::AppHandle) {
+    use tauri_plugin_updater::UpdaterExt;
+
+    let Ok(updater) = app.updater() else { return };
+    let Ok(Some(update)) = updater.check().await else {
+        return;
+    };
+    let _ = update.download_and_install(|_, _| {}, || {}).await;
+    app.restart();
 }

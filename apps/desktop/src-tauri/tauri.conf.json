@@ -18,6 +18,7 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": "all",
     "icon": [
       "icons/32x32.png",
@@ -28,6 +29,14 @@
     ],
     "macOS": {
       "minimumSystemVersion": "10.15"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDEzMTE5MjU3NUZCRjJEMTEKUldRUkxiOWZWNUlSRTRrT1BiRWZINnhGVEZKNnFXcytLWUxSbHNRQy9oREE1Y1g0T2RjSTlXU3UK",
+      "endpoints": [
+        "https://github.com/dendianugerah/kedip/releases/latest/download/latest.json"
+      ]
     }
   }
 }
