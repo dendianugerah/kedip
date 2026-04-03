@@ -194,7 +194,7 @@ pub fn show_settings(app: &AppHandle) {
         return;
     }
 
-    if let Ok(window) = WebviewWindowBuilder::new(
+    let builder = WebviewWindowBuilder::new(
         app,
         "settings",
         WebviewUrl::App("index.html?window=settings".into()),
@@ -202,14 +202,17 @@ pub fn show_settings(app: &AppHandle) {
     .title("")
     .inner_size(APP_WINDOW_WIDTH, APP_WINDOW_HEIGHT)
     .min_inner_size(APP_WINDOW_MIN_WIDTH, APP_WINDOW_MIN_HEIGHT)
-    .title_bar_style(tauri::TitleBarStyle::Overlay)
-    .hidden_title(true)
     .transparent(true)
     .resizable(true)
-    .traffic_light_position(tauri::LogicalPosition::new(12.0, 20.0))
-    .center()
-    .build()
-    {
+    .center();
+
+    #[cfg(target_os = "macos")]
+    let builder = builder
+        .title_bar_style(tauri::TitleBarStyle::Overlay)
+        .hidden_title(true)
+        .traffic_light_position(tauri::LogicalPosition::new(12.0, 20.0));
+
+    if let Ok(window) = builder.build() {
         let _ = window.show();
         let _ = window.set_focus();
     }
