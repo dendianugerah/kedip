@@ -2,17 +2,19 @@ import { useEffect, useState, type ElementType } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { AnimatePresence, motion } from "motion/react";
-import { LayoutDashboard, Timer, Info } from "lucide-react";
+import { LayoutDashboard, Timer, Info, Keyboard } from "lucide-react";
 
 import type { TimerState, Preset } from "@/types/timer";
 import { StatusCard } from "./StatusCard";
 import { TimerSettings } from "./TimerSettings";
+import { ShortcutsPage } from "./ShortcutsPage";
 
-type Page = "overview" | "schedule" | "about";
+type Page = "overview" | "schedule" | "shortcuts" | "about";
 
 const NAV: { id: Page; label: string; icon: ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "schedule", label: "Schedule", icon: Timer },
+  { id: "shortcuts", label: "Shortcuts", icon: Keyboard },
   { id: "about", label: "About", icon: Info },
 ];
 
@@ -131,6 +133,8 @@ export function SettingsWindow() {
                     onSave={handleSave}
                   />
                 )}
+
+                {page === "shortcuts" && <ShortcutsPage />}
 
                 {page === "about" && (
                   <div className="space-y-6">

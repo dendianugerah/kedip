@@ -30,6 +30,25 @@ export function NotificationWindow() {
     setTimeout(action, 220);
   };
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!visible) return;
+      if (e.code === "Space") {
+        e.preventDefault();
+        setVisible(false);
+        setTimeout(() => invoke("start_break_now"), 220);
+      } else if (e.key === "s" || e.key === "S") {
+        setVisible(false);
+        setTimeout(() => invoke("snooze_break", { minutes: 5 }), 220);
+      } else if (e.key === "Escape") {
+        setVisible(false);
+        setTimeout(() => invoke("skip_break"), 220);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [visible]);
+
   return (
     <NotificationBanner
       timeRemaining={timeRemaining}

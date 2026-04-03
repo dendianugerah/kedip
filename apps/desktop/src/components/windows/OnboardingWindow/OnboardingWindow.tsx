@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { AnimatePresence, motion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
 
 const WORK_OPTIONS = [
   { label: "5m", value: 5 },
@@ -223,6 +224,26 @@ export function OnboardingWindow() {
                     <p className="text-[13px] text-white/60 leading-snug">{desc}</p>
                   </div>
                 ))}
+              </div>
+
+              <div className="border border-white/[0.06] rounded-xl px-4 py-3 flex flex-col gap-2.5">
+                <p className="text-[10px] font-semibold text-white/25 uppercase tracking-[0.2em]">
+                  When the notification appears
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  {(
+                    [
+                      ["Space", "Start break now"],
+                      ["S", "Snooze 5 minutes"],
+                      ["Esc", "Skip"],
+                    ] as [string, string][]
+                  ).map(([key, label]) => (
+                    <div key={key} className="flex items-center justify-between">
+                      <span className="text-[12px] text-white/50">{label}</span>
+                      <Kbd>{key}</Kbd>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
