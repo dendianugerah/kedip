@@ -62,7 +62,7 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
             <Switch
               checked={isPaused}
               onCheckedChange={() => onTogglePause()}
-              className="data-unchecked:bg-zinc-600 data-unchecked:border-transparent data-checked:bg-blue-500 data-checked:border-blue-500"
+              className="data-unchecked:bg-zinc-600 data-unchecked:border-transparent data-checked:bg-blue-500 data-checked:border-blue-500 cursor-pointer"
             />
           </div>
 
