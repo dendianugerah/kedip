@@ -1,8 +1,10 @@
+import { useMemo } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Eye } from "lucide-react";
 
 import { formatTime } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { NOTIFICATION_HEADLINES, pickRandom } from "@/constants/copy";
 
 interface Props {
   timeRemaining: number;
@@ -27,6 +29,7 @@ export function NotificationBanner({
 }: Props) {
   const seconds = Math.floor(timeRemaining / 1000);
   const isUrgent = seconds <= 10;
+  const headline = useMemo(() => pickRandom(NOTIFICATION_HEADLINES), []);
 
   return (
     <AnimatePresence>
@@ -58,7 +61,7 @@ export function NotificationBanner({
 
           <div>
             <p className="text-[13px] font-semibold text-white leading-tight tracking-tight">
-              Wrap it up!
+              {headline}
             </p>
             <p className="text-[11.5px] text-white/45 mt-0.5 leading-snug">
               {getBodyCopy(seconds)}
