@@ -16,12 +16,17 @@ export function BreakWindow() {
 
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const escTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isIdleRef = useRef(isIdle);
 
   const resetIdleTimer = useCallback(() => {
     setIsIdle(false);
     if (idleTimer.current) clearTimeout(idleTimer.current);
     idleTimer.current = setTimeout(() => setIsIdle(true), 3000);
   }, []);
+
+  useEffect(() => {
+    isIdleRef.current = isIdle;
+  }, [isIdle]);
 
   useEffect(() => {
     resetIdleTimer();
@@ -56,6 +61,11 @@ export function BreakWindow() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        if (isIdleRef.current) {
+          resetIdleTimer();
+          return;
+        }
+
         setEscCount((prev) => {
           const next = prev + 1;
           if (next >= 2) {
@@ -74,7 +84,7 @@ export function BreakWindow() {
       window.removeEventListener("keydown", handleKeyDown);
       if (escTimer.current) clearTimeout(escTimer.current);
     };
-  }, []);
+  }, [resetIdleTimer]);
 
   const handleAddTime = () => invoke("add_break_time", { extraMs: 60000 });
   const handleSkip = () => invoke("skip_break");
