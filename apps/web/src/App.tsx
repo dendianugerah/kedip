@@ -1,5 +1,5 @@
 import { motion } from "motion/react"
-import { Eye, ArrowRight } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { GithubIcon } from "./components/ui/GithubIcon"
 import { AppWindow } from "./components/ui/AppWindow"
 import { ScreenAsset } from "./components/ui/ScreenAsset"
@@ -60,7 +60,7 @@ export default function App() {
                 href={RELEASES_URL}
                 className="group inline-flex items-center gap-2 rounded-lg bg-stone-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-stone-700 active:scale-95"
               >
-                Download — v0.1.0
+                Download v0.1.0
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </a>
               <a
@@ -96,9 +96,7 @@ export default function App() {
                 muted
                 playsInline
                 className="w-full"
-                poster="/demo-poster.png"
-              >
-              </video>
+              />
             </div>
             <p className="mt-3 text-center text-xs text-stone-300">
               Notification → break overlay → back to work
@@ -142,16 +140,16 @@ export default function App() {
                     Up and running in seconds.
                   </h3>
                   <p className="max-w-lg text-base leading-relaxed text-stone-500">
-                    A three-step setup, pick your work duration, set your break length, then watch
-                    a quick demo so you know exactly what to expect before the real timer starts.
+                    Three steps. Pick how long you want to work, pick your break length, then sit
+                    through a quick demo so the first real notification isn't a surprise.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   {[
-                    { src: "/assets/screens/onboarding-1.webp", alt: "Step 1 — intro", label: "Welcome" },
-                    { src: "/assets/screens/onboarding-2.webp", alt: "Step 2 — set rhythm", label: "Set your rhythm" },
-                    { src: "/assets/screens/onboarding-3.webp", alt: "Step 3 — demo", label: "Quick demo" },
+                    { src: "/assets/screens/onboarding-1.webp", alt: "Step 1: intro", label: "Welcome" },
+                    { src: "/assets/screens/onboarding-2.webp", alt: "Step 2: set rhythm", label: "Set your rhythm" },
+                    { src: "/assets/screens/onboarding-3.webp", alt: "Step 3: demo", label: "Quick demo" },
                   ].map(({ src, alt, label }, i) => (
                     <motion.div
                       key={src}
@@ -175,29 +173,11 @@ export default function App() {
                 transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                 className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2"
               >
-                <div className="order-2 flex justify-center lg:order-1">
-                  <div className="w-full max-w-sm">
-                    <ScreenAsset
-                      gifSrc="/screens/notification.gif"
-                      alt="Notification pill — snooze, skip, or break now"
-                      aspectClass="aspect-[4/3]"
-                    />
-                    <p className="mt-2 text-center text-[11px] text-stone-300">
-                      Press{" "}
-                      <kbd className="rounded bg-stone-100 px-1 py-0.5 font-mono text-[10px] text-stone-500">
-                        Space
-                      </kbd>{" "}
-                      to break ·{" "}
-                      <kbd className="rounded bg-stone-100 px-1 py-0.5 font-mono text-[10px] text-stone-500">
-                        S
-                      </kbd>{" "}
-                      to snooze ·{" "}
-                      <kbd className="rounded bg-stone-100 px-1 py-0.5 font-mono text-[10px] text-stone-500">
-                        Esc
-                      </kbd>{" "}
-                      to skip
-                    </p>
-                  </div>
+                <div className="order-2 overflow-hidden rounded-xl border border-stone-200 shadow-xl shadow-stone-200/40 lg:order-1">
+                  <ScreenAsset
+                    src="/assets/screens/notification.webp"
+                    alt="Notification pill: break now, snooze, or skip"
+                  />
                 </div>
 
                 <div className="order-1 lg:order-2">
@@ -208,12 +188,11 @@ export default function App() {
                     </span>
                   </div>
                   <h3 className="mb-3 text-2xl font-semibold tracking-tight">
-                    A gentle nudge, not an interruption.
+                    A nudge, not a popup.
                   </h3>
                   <p className="text-base leading-relaxed text-stone-500">
-                    When your 20 minutes are up, a small floating pill slides in. You choose:
-                    break now, snooze for 5 minutes, or skip entirely. Keyboard shortcuts work
-                    right away — no click needed.
+                    When time's up, a small pill drops down. Hit Space to start your break, S
+                    to snooze 5 minutes, or Esc to skip. No mouse needed.
                   </p>
                 </div>
               </motion.div>
@@ -236,16 +215,15 @@ export default function App() {
                     20 seconds. Look away.
                   </h3>
                   <p className="text-base leading-relaxed text-stone-500">
-                    The screen dims with a countdown. No busy graphics — just enough to remind you
-                    to actually look somewhere else. Press Esc twice if you really need to bail.
+                    The screen goes dark with a countdown. No noise. Just a
+                    reminder to actually look somewhere else. Press Esc twice to bail early.
                   </p>
                 </div>
 
                 <div className="overflow-hidden rounded-xl border border-stone-200 shadow-xl shadow-stone-200/40">
                   <ScreenAsset
-                    gifSrc="/screens/break.gif"
-                    src="/screens/break.png"
-                    alt="Break screen — fullscreen dim overlay with countdown"
+                    src="/assets/screens/break.webp"
+                    alt="Break screen countdown overlay"
                     aspectClass="aspect-video"
                   />
                 </div>
@@ -261,9 +239,9 @@ export default function App() {
                 <div className="order-2 lg:order-1">
                   <AppWindow label="Settings">
                     <ScreenAsset
-                      src="/screens/settings.png"
-                      alt="Settings window — schedule, shortcuts, about"
-                      aspectClass="aspect-[4/3]"
+                      src="/assets/screens/settings.webp"
+                      alt="Settings window"
+                      aspectClass="aspect-full"
                     />
                   </AppWindow>
                 </div>
@@ -276,11 +254,11 @@ export default function App() {
                     </span>
                   </div>
                   <h3 className="mb-3 text-2xl font-semibold tracking-tight">
-                    Your schedule, your way.
+                    Change it whenever.
                   </h3>
                   <p className="text-base leading-relaxed text-stone-500">
-                    Adjust work and break intervals, browse keyboard shortcuts, or check the live
-                    countdown — all from a clean settings window that stays out of your way.
+                    Work interval too short? Break too long? Fix it in settings. You can also
+                    see the live countdown and browse keyboard shortcuts from here.
                   </p>
                 </div>
               </motion.div>
