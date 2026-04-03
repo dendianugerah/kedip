@@ -13,9 +13,6 @@ export default function App() {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-stone-100 bg-white/90 px-6 backdrop-blur-md md:px-10">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between">
           <a href="/" className="flex items-center gap-2">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-stone-900">
-              <Eye className="h-3.5 w-3.5 text-white" />
-            </div>
             <span className="text-sm font-semibold tracking-tight">Kedip</span>
           </a>
 
@@ -93,7 +90,7 @@ export default function App() {
                 <span className="ml-3 font-mono text-xs text-stone-400">Kedip</span>
               </div>
               <video
-                src="/demo.webm"
+                src="/assets/demo.webm"
                 autoPlay
                 loop
                 muted
@@ -133,9 +130,8 @@ export default function App() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2"
               >
-                <div>
+                <div className="mb-10">
                   <div className="mb-4 flex items-center gap-3">
                     <span className="font-mono text-xs text-stone-300">01</span>
                     <span className="rounded-full border border-stone-200 px-2.5 py-0.5 text-[11px] font-medium text-stone-500">
@@ -145,27 +141,27 @@ export default function App() {
                   <h3 className="mb-3 text-2xl font-semibold tracking-tight">
                     Up and running in seconds.
                   </h3>
-                  <p className="text-base leading-relaxed text-stone-500">
-                    A three-step setup — pick your work duration, set your break length, then watch
+                  <p className="max-w-lg text-base leading-relaxed text-stone-500">
+                    A three-step setup, pick your work duration, set your break length, then watch
                     a quick demo so you know exactly what to expect before the real timer starts.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-3 items-end gap-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   {[
-                    { src: "/screens/onboarding-1.png", alt: "Onboarding step 1 — intro" },
-                    { src: "/screens/onboarding-2.png", alt: "Onboarding step 2 — set rhythm" },
-                    { src: "/screens/onboarding-3.png", alt: "Onboarding step 3 — demo" },
-                  ].map(({ src, alt }, i) => (
+                    { src: "/assets/screens/onboarding-1.webp", alt: "Step 1 — intro", label: "Welcome" },
+                    { src: "/assets/screens/onboarding-2.webp", alt: "Step 2 — set rhythm", label: "Set your rhythm" },
+                    { src: "/assets/screens/onboarding-3.webp", alt: "Step 3 — demo", label: "Quick demo" },
+                  ].map(({ src, alt, label }, i) => (
                     <motion.div
                       key={src}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 12 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ duration: 0.4, delay: i * 0.07, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ duration: 0.4, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
                     >
-                      <AppWindow>
-                        <ScreenAsset src={src} alt={alt} aspectClass="aspect-[3/4]" />
+                      <AppWindow label={label}>
+                        <ScreenAsset src={src} alt={alt} aspectClass="aspect-[4/3]" />
                       </AppWindow>
                     </motion.div>
                   ))}
@@ -300,9 +296,6 @@ export default function App() {
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="mx-auto flex max-w-xl flex-col items-center gap-6 text-center"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
-              <Eye className="h-6 w-6 text-white/60" />
-            </div>
             <div>
               <h2 className="mb-3 text-4xl font-semibold tracking-tight text-white">
                 Start today.
@@ -337,9 +330,6 @@ export default function App() {
       <footer className="border-t border-stone-100 px-6 py-6 md:px-10">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-2">
-            <div className="flex h-5 w-5 items-center justify-center rounded-md bg-stone-900">
-              <Eye className="h-3 w-3 text-white" />
-            </div>
             <span className="text-xs font-semibold">Kedip</span>
             <span className="mx-1 text-stone-300">·</span>
             <span className="text-xs text-stone-400">MIT License</span>
