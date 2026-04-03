@@ -28,7 +28,7 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
     <div className="space-y-5">
       {/* Timer hero */}
       <div>
-        <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
+        <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.22em] mb-3">
           Active
         </p>
         <div className="bg-white/[0.06] border border-white/[0.06] rounded-xl p-5">
@@ -38,7 +38,7 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
           <p className="text-[52px] font-light text-white tabular-nums tracking-tight leading-none mt-2">
             {formatTime(timerState.time_remaining_ms)}
           </p>
-          <p className="text-[12px] text-white/20 mt-2">
+          <p className="text-[12px] text-white/30 mt-2">
             {timerState.phase === "Working" ? "until next break" : "remaining in break"}
           </p>
           <div className="mt-4 h-[2px] bg-white/[0.07] rounded-full overflow-hidden">
@@ -53,7 +53,7 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
 
       {/* Controls */}
       <div>
-        <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
+        <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.22em] mb-3">
           Controls
         </p>
         <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
@@ -71,7 +71,7 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
             className="w-full flex items-center justify-between px-4 py-3.5 bg-white/[0.06] text-left hover:bg-white/[0.09] transition-colors cursor-pointer"
           >
             <span className="text-[13px] text-white/75">Take a Break Now</span>
-            <span className="text-[13px] text-white/20">→</span>
+            <span className="text-[13px] text-white/30">→</span>
           </button>
 
           <button
@@ -79,7 +79,7 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
             className="w-full flex items-center justify-between px-4 py-3.5 bg-white/[0.06] text-left hover:bg-white/[0.09] transition-colors cursor-pointer"
           >
             <span className="text-[13px] text-white/75">Reset Timer</span>
-            <span className="text-[13px] text-white/20">→</span>
+            <span className="text-[13px] text-white/30">→</span>
           </button>
         </div>
       </div>

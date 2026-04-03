@@ -30,7 +30,7 @@ export function TimerSettings({
     <div className="space-y-5">
       {/* Presets */}
       <div>
-        <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
+        <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.22em] mb-3">
           Preset
         </p>
         <div className="flex gap-2">
@@ -55,7 +55,7 @@ export function TimerSettings({
 
       {/* Durations */}
       <div>
-        <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.22em] mb-3">
+        <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.22em] mb-3">
           Duration
         </p>
         <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">

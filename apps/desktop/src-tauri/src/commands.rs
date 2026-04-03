@@ -8,6 +8,8 @@ use tauri_plugin_store::StoreExt;
 use crate::state::{AppState, TimerPhase, TimerState};
 use crate::windows;
 
+const DEMO_COUNTDOWN_MS: u64 = 40_000;
+
 #[tauri::command]
 pub fn get_timer_state(state: tauri::State<'_, Arc<AppState>>) -> TimerState {
     state.timer.lock().unwrap().clone()
@@ -120,7 +122,7 @@ pub fn complete_onboarding(
         timer.work_duration_ms = work_duration_ms;
         timer.break_duration_ms = break_duration_ms;
         if timer.phase == TimerPhase::Working {
-            timer.time_remaining_ms = work_duration_ms;
+            timer.time_remaining_ms = DEMO_COUNTDOWN_MS;
         }
     }
 
