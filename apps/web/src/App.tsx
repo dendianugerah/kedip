@@ -93,7 +93,7 @@ export default function App() {
                 <span className="ml-3 font-mono text-xs text-stone-400">Kedip</span>
               </div>
               <video
-                src="/demo.mp4"
+                src="/demo.webm"
                 autoPlay
                 loop
                 muted
@@ -101,7 +101,6 @@ export default function App() {
                 className="w-full"
                 poster="/demo-poster.png"
               >
-                <img src="/demo.gif" alt="Kedip demo" className="w-full" />
               </video>
             </div>
             <p className="mt-3 text-center text-xs text-stone-300">
