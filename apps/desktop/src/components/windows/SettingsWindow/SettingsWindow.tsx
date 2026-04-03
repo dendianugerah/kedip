@@ -81,9 +81,7 @@ export function SettingsWindow() {
       <div className="flex flex-1 min-h-0 overflow-hidden pt-10">
         {/* Sidebar */}
         <aside className="w-[168px] flex-shrink-0 border-r border-white/[0.06] flex flex-col pb-5 pt-3 px-2.5">
-          <p className="text-[10px] font-bold tracking-[0.22em] uppercase px-2 mb-4">
-            Kedip
-          </p>
+          <p className="text-[10px] font-bold tracking-[0.22em] uppercase px-2 mb-4">Kedip</p>
           <nav className="flex flex-col gap-0.5">
             {NAV.map(({ id, label, icon: Icon }) => {
               const active = page === id;
@@ -137,7 +135,6 @@ export function SettingsWindow() {
                 transition={{ duration: 0.1 }}
                 className="p-8 space-y-6"
               >
-
                 {page === "overview" && timerState && (
                   <StatusCard
                     timerState={timerState}

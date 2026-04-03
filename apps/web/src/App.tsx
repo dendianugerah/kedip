@@ -1,45 +1,11 @@
 import { motion } from "motion/react"
-import { Eye, ArrowRight, Bell, Lock, Cpu, MonitorSmartphone, Timer } from "lucide-react"
+import { Eye, ArrowRight } from "lucide-react"
 import { GithubIcon } from "./components/ui/GithubIcon"
 import { AppWindow } from "./components/ui/AppWindow"
 import { ScreenAsset } from "./components/ui/ScreenAsset"
 
 const GITHUB_URL = "https://github.com/dendianugerah/kedip"
 const RELEASES_URL = `${GITHUB_URL}/releases`
-
-const FEATURES = [
-  {
-    icon: Timer,
-    title: "20-20-20 rule",
-    desc: "Every 20 minutes, look 20 feet away for 20 seconds. Kedip handles all the timing.",
-  },
-  {
-    icon: MonitorSmartphone,
-    title: "Fullscreen break",
-    desc: "A calm, distraction-free overlay so your eyes actually rest — not a toast you dismiss without thinking.",
-  },
-  {
-    icon: Bell,
-    title: "Floating pill",
-    desc: "Snooze or skip from a small floating notification. It's never in your way.",
-  },
-  {
-    icon: Cpu,
-    title: "Native & tiny",
-    desc: "Built with Tauri + Rust. Under 5 MB. Uses less RAM than a single browser tab.",
-  },
-  {
-    icon: Lock,
-    title: "Fully offline",
-    desc: "No account. No cloud. No telemetry. Everything stays on your machine.",
-  },
-  {
-    icon: Eye,
-    title: "Open source",
-    desc: "MIT licensed. Read the code, fork it, contribute — no surprises.",
-  },
-]
-
 
 export default function App() {
   return (
@@ -323,46 +289,6 @@ export default function App() {
                   </p>
                 </div>
               </motion.div>
-            </div>
-          </div>
-        </section>
-
-        <section className="px-6 py-24 md:px-10" id="features">
-          <div className="mx-auto max-w-5xl">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-14"
-            >
-              <p className="mb-3 text-xs font-medium tracking-widest text-stone-400 uppercase">
-                Features
-              </p>
-              <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
-                Simple by design.
-              </h2>
-            </motion.div>
-
-            <div className="grid grid-cols-1 gap-px bg-stone-100 sm:grid-cols-2 lg:grid-cols-3">
-              {FEATURES.map(({ icon: Icon, title, desc }, i) => (
-                <motion.div
-                  key={title}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-40px" }}
-                  transition={{ duration: 0.4, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex flex-col gap-4 bg-white p-7"
-                >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-stone-100 bg-stone-50">
-                    <Icon className="h-4 w-4 text-stone-600" />
-                  </div>
-                  <div>
-                    <p className="mb-1.5 text-sm font-semibold text-stone-900">{title}</p>
-                    <p className="text-sm leading-relaxed text-stone-500">{desc}</p>
-                  </div>
-                </motion.div>
-              ))}
             </div>
           </div>
         </section>
