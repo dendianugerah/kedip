@@ -1,5 +1,6 @@
 import { useEffect, useState, type ElementType } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { listen } from "@tauri-apps/api/event";
 import { AnimatePresence, motion } from "motion/react";
 import { LayoutDashboard, Timer, Info, Keyboard } from "lucide-react";
@@ -20,6 +21,8 @@ const NAV: { id: Page; label: string; icon: ElementType }[] = [
 const NAV_BOTTOM: { id: Page; label: string; icon: ElementType }[] = [
   { id: "about", label: "About", icon: Info },
 ];
+
+const GITHUB_URL = "https://github.com/dendianugerah/kedip";
 
 export function SettingsWindow() {
   const [timerState, setTimerState] = useState<TimerState | null>(null);
@@ -78,7 +81,7 @@ export function SettingsWindow() {
       <div className="flex flex-1 min-h-0 overflow-hidden pt-10">
         {/* Sidebar */}
         <aside className="w-[168px] flex-shrink-0 border-r border-white/[0.06] flex flex-col pb-5 pt-3 px-2.5">
-          <p className="text-[10px] font-bold text-white/25 tracking-[0.22em] uppercase px-2 mb-4">
+          <p className="text-[10px] font-bold tracking-[0.22em] uppercase px-2 mb-4">
             Kedip
           </p>
           <nav className="flex flex-col gap-0.5">
@@ -134,6 +137,7 @@ export function SettingsWindow() {
                 transition={{ duration: 0.1 }}
                 className="p-8 space-y-6"
               >
+
                 {page === "overview" && timerState && (
                   <StatusCard
                     timerState={timerState}
@@ -192,6 +196,18 @@ export function SettingsWindow() {
                         Kedip is a gentle eye care reminder. Every 20 minutes, look at something 20
                         feet away for 20 seconds — the 20-20-20 rule.
                       </p>
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.22em] mb-3">
+                        Source
+                      </p>
+                      <button
+                        onClick={() => openUrl(GITHUB_URL)}
+                        className="text-[13px] text-white/50 hover:text-white/80 transition-colors cursor-pointer underline underline-offset-2 decoration-white/20 hover:decoration-white/50"
+                      >
+                        github.com/dendianugerah/kedip
+                      </button>
                     </div>
                   </div>
                 )}
