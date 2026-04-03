@@ -15,6 +15,9 @@ const NAV: { id: Page; label: string; icon: ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "schedule", label: "Schedule", icon: Timer },
   { id: "shortcuts", label: "Shortcuts", icon: Keyboard },
+];
+
+const NAV_BOTTOM: { id: Page; label: string; icon: ElementType }[] = [
   { id: "about", label: "About", icon: Info },
 ];
 
@@ -80,6 +83,26 @@ export function SettingsWindow() {
           </p>
           <nav className="flex flex-col gap-0.5">
             {NAV.map(({ id, label, icon: Icon }) => {
+              const active = page === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setPage(id)}
+                  className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer ${
+                    active
+                      ? "bg-white/[0.08] text-white"
+                      : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
+                  }`}
+                >
+                  <Icon className="w-[14px] h-[14px] flex-shrink-0" />
+                  {label}
+                </button>
+              );
+            })}
+          </nav>
+
+          <nav className="mt-auto flex flex-col gap-0.5">
+            {NAV_BOTTOM.map(({ id, label, icon: Icon }) => {
               const active = page === id;
               return (
                 <button
