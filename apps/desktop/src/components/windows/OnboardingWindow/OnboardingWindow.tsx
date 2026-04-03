@@ -39,7 +39,7 @@ export function OnboardingWindow() {
     breakSeconds >= 60 ? `${Math.floor(breakSeconds / 60)} min` : `${breakSeconds}s`;
 
   return (
-    <div className="w-full h-full bg-[#0A0A0A] flex flex-col font-sans select-none overflow-hidden text-white">
+    <div className="w-full h-full bg-[#0A0A0A] flex flex-col font-sans select-none overflow-hidden text-white pt-10">
       <AnimatePresence mode="wait" initial={false}>
         {step === 1 && (
           <motion.div
@@ -51,7 +51,7 @@ export function OnboardingWindow() {
             transition={{ duration: 0.2, ease: "easeInOut" }}
           >
             {/* Left — headline */}
-            <div className="flex-1 flex flex-col justify-between px-10 py-9">
+            <div className="flex-1 flex flex-col justify-between px-10 pb-9 pt-4">
               <p className="text-[10px] font-semibold text-white/20 uppercase tracking-[0.25em]">
                 Kedip
               </p>
@@ -102,7 +102,7 @@ export function OnboardingWindow() {
         {step === 2 && (
           <motion.div
             key="step2"
-            className="flex-1 flex flex-col px-10 py-7"
+            className="flex-1 flex flex-col px-10 pb-7 pt-4"
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -24 }}
@@ -192,7 +192,7 @@ export function OnboardingWindow() {
         {step === 3 && (
           <motion.div
             key="step3"
-            className="flex-1 flex flex-col px-10 py-7"
+            className="flex-1 flex flex-col px-10 pb-7 pt-4"
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -24 }}

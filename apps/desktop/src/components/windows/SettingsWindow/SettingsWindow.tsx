@@ -74,7 +74,7 @@ export function SettingsWindow() {
     >
       <div className="flex flex-1 min-h-0 overflow-hidden pt-10">
         {/* Sidebar */}
-        <aside className="w-[168px] flex-shrink-0 border-r border-white/[0.06] flex flex-col pb-5 px-2.5">
+        <aside className="w-[168px] flex-shrink-0 border-r border-white/[0.06] flex flex-col pb-5 pt-3 px-2.5">
           <p className="text-[10px] font-bold text-white/25 tracking-[0.22em] uppercase px-2 mb-4">
             Kedip
           </p>
