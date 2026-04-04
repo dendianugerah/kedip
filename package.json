@@ -1,7 +1,7 @@
 {
   "name": "kedip",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.3",
   "workspaces": ["apps/*"],
   "scripts": {
     "desktop:dev": "bun run --cwd apps/desktop tauri dev",

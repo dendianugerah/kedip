@@ -1,5 +1,6 @@
 import { useEffect, useState, type ElementType } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { getVersion } from "@tauri-apps/api/app";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { listen } from "@tauri-apps/api/event";
 import { AnimatePresence, motion } from "motion/react";
@@ -32,6 +33,11 @@ export function SettingsWindow() {
   const [page, setPage] = useState<Page>("overview");
   const [selectedPreset, setSelectedPreset] = useState("20-20-20");
   const [saved, setSaved] = useState(false);
+  const [appVersion, setAppVersion] = useState("");
+
+  useEffect(() => {
+    getVersion().then(setAppVersion);
+  }, []);
 
   useEffect(() => {
     invoke<TimerState>("get_timer_state").then((state) => {
@@ -169,7 +175,7 @@ export function SettingsWindow() {
                       <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
                         {(
                           [
-                            ["Version", "0.1.0"],
+                            ["Version", appVersion ? `v${appVersion}` : "..."],
                             ["License", "Open source · MIT"],
                             ["Platform", "macOS · Windows · Linux"],
                           ] as [string, string][]
