@@ -13,6 +13,7 @@ export default function App() {
       <header className="fixed inset-x-0 top-0 z-50 border-b border-stone-100 bg-white/90 px-6 backdrop-blur-md md:px-10">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between">
           <a href="/" className="flex items-center gap-2">
+            <img src="/logo.svg" alt="Kedip" className="h-6 w-6" />
             <span className="text-sm font-semibold tracking-tight">Kedip</span>
           </a>
 
@@ -309,8 +310,6 @@ export default function App() {
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold">Kedip</span>
-            <span className="mx-1 text-stone-300">·</span>
-            <span className="text-xs text-stone-400">MIT License</span>
           </div>
           <div className="flex items-center gap-5 text-xs text-stone-400">
             <a
