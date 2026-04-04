@@ -20,6 +20,10 @@ Every 20 minutes, look 20 feet away for 20 seconds. Kedip keeps track so you don
 
 ---
 
+> **Early development notice** — Kedip is actively developed and tested on macOS. Windows and Linux builds are provided but may have rough edges or visual issues. If you run into problems, please [open an issue](https://github.com/dendianugerah/kedip/issues).
+
+---
+
 ## Download
 
 Grab the latest binary from the [**Releases**](https://github.com/dendianugerah/kedip/releases) page.
