@@ -21,7 +21,16 @@ Every 20 minutes, look 20 feet away for 20 seconds. Kedip keeps track so you don
 
 ---
 
-## Download
+## Install
+
+### Homebrew (macOS, recommended)
+
+```bash
+brew tap dendianugerah/tap
+brew install --cask kedip
+```
+
+### Direct download
 
 Grab the latest binary from the [**Releases**](https://github.com/dendianugerah/kedip/releases) page.
 
@@ -31,7 +40,13 @@ Grab the latest binary from the [**Releases**](https://github.com/dendianugerah/
 | Windows | `.msi` / `.exe` |
 | Linux | `.AppImage` / `.deb` |
 
-> **macOS:** If you see "damaged and can't be opened", run `xattr -cr /Applications/kedip.app` in Terminal. The app is unsigned but safe.
+> **macOS (direct download):** The app is not notarized yet. If macOS says "damaged and can't be opened", run this in Terminal:
+> ```
+> xattr -cr /Applications/kedip.app
+> ```
+> Or right-click the app → Open → Open to bypass once.
+>
+> **Windows:** SmartScreen may warn you. Click **"More info" → "Run anyway"** — the app is open source and safe.
 
 ---
 

@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react"
 import { GithubIcon } from "./components/ui/GithubIcon"
 import { AppWindow } from "./components/ui/AppWindow"
 import { ScreenAsset } from "./components/ui/ScreenAsset"
+import { CopyCommand } from "./components/ui/CopyCommand"
 
 const GITHUB_URL = "https://github.com/dendianugerah/kedip"
 const RELEASES_URL = `${GITHUB_URL}/releases`
@@ -56,25 +57,16 @@ export default function App() {
               Kedip is a menu bar app that reminds you to follow the 20-20-20 rule. Tiny, fast,
               private.
             </p>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col gap-2">
+              <CopyCommand command="brew tap dendianugerah/tap && brew install --cask kedip" className="max-w-lg" />
               <a
                 href={RELEASES_URL}
-                className="group inline-flex items-center gap-2 rounded-lg bg-stone-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-stone-700 active:scale-95"
+                className="inline-flex items-center gap-1.5 text-sm text-stone-400 transition-colors hover:text-stone-700 mt-1"
               >
-                Download
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-              </a>
-              <a
-                href={GITHUB_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-stone-200 px-6 py-3 text-sm font-medium text-stone-600 transition-colors hover:border-stone-400 hover:text-stone-900"
-              >
-                <GithubIcon className="h-4 w-4" />
-                View on GitHub
+                other platforms
+                <ArrowRight className="h-3.5 w-3.5" />
               </a>
             </div>
-            <p className="mt-4 text-xs text-stone-400">macOS · Windows · Linux</p>
           </motion.div>
 
           <motion.div
@@ -301,7 +293,10 @@ export default function App() {
                 Source code
               </a>
             </div>
-            <p className="text-xs text-stone-600">macOS · Windows · Linux · MIT License</p>
+            <div className="flex flex-col items-center gap-1.5">
+              <p className="text-xs text-stone-600">macOS · Windows · Linux · MIT License</p>
+              <p className="font-mono text-xs text-stone-600">brew tap dendianugerah/tap &amp;&amp; brew install --cask kedip</p>
+            </div>
           </motion.div>
         </section>
       </main>
