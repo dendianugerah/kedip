@@ -2,9 +2,6 @@
 
 Every 20 minutes, look 20 feet away for 20 seconds. Kedip keeps track so you don't have to.
 
-[![Release](https://img.shields.io/github/v/release/dendianugerah/kedip?style=flat-square)](https://github.com/dendianugerah/kedip/releases)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
-
 ---
 
 <table>

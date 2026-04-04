@@ -60,7 +60,7 @@ export default function App() {
                 href={RELEASES_URL}
                 className="group inline-flex items-center gap-2 rounded-lg bg-stone-900 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-stone-700 active:scale-95"
               >
-                Download v0.1.0
+                Download
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </a>
               <a
@@ -287,7 +287,7 @@ export default function App() {
                 href={RELEASES_URL}
                 className="group inline-flex items-center gap-2 rounded-lg bg-white px-7 py-3 text-sm font-semibold text-stone-900 transition-colors hover:bg-stone-100 active:scale-95"
               >
-                Download v0.1.0
+                Download
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </a>
               <a
