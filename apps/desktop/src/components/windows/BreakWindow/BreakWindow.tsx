@@ -8,8 +8,23 @@ import { formatSeconds } from "@/lib/format";
 import type { TimerState } from "@/types/timer";
 import { Button } from "@/components/ui/button";
 
+function SecondaryBreakWindow() {
+  return (
+    <motion.div
+      className="fixed inset-0 bg-black/70 backdrop-blur-2xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.7, ease: "easeOut" }}
+    />
+  );
+}
+
 export function BreakWindow() {
-  const [timeRemaining, setTimeRemaining] = useState(20);
+  const params = new URLSearchParams(window.location.search);
+  const isPrimary = params.get("primary") !== "false";
+  const initialTime = Math.floor(parseInt(params.get("time") || "20000") / 1000);
+
+  const [timeRemaining, setTimeRemaining] = useState(initialTime);
   const [isComplete, setIsComplete] = useState(false);
   const [isIdle, setIsIdle] = useState(false);
   const [escCount, setEscCount] = useState(0);
@@ -29,6 +44,8 @@ export function BreakWindow() {
   }, [isIdle]);
 
   useEffect(() => {
+    if (!isPrimary) return;
+
     resetIdleTimer();
 
     const events = ["mousemove", "mousedown"];
@@ -38,12 +55,10 @@ export function BreakWindow() {
       events.forEach((e) => window.removeEventListener(e, resetIdleTimer));
       if (idleTimer.current) clearTimeout(idleTimer.current);
     };
-  }, [resetIdleTimer]);
+  }, [resetIdleTimer, isPrimary]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const time = parseInt(params.get("time") || "20000");
-    setTimeRemaining(Math.floor(time / 1000));
+    if (!isPrimary) return;
 
     const unlisten = listen<TimerState>("timer-update", (event) => {
       if (event.payload.phase === "Break") {
@@ -56,9 +71,11 @@ export function BreakWindow() {
     return () => {
       unlisten.then((fn) => fn());
     };
-  }, []);
+  }, [isPrimary]);
 
   useEffect(() => {
+    if (!isPrimary) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         if (isIdleRef.current) {
@@ -84,10 +101,14 @@ export function BreakWindow() {
       window.removeEventListener("keydown", handleKeyDown);
       if (escTimer.current) clearTimeout(escTimer.current);
     };
-  }, [resetIdleTimer]);
+  }, [resetIdleTimer, isPrimary]);
 
   const handleAddTime = () => invoke("add_break_time", { extraMs: 60000 });
   const handleSkip = () => invoke("skip_break");
+
+  if (!isPrimary) {
+    return <SecondaryBreakWindow />;
+  }
 
   if (isComplete) {
     return (

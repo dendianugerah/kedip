@@ -6,7 +6,7 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 use objc2::rc::Retained;
 #[cfg(target_os = "macos")]
 use objc2_app_kit::{
-    NSApplication, NSApplicationPresentationOptions, NSScreen, NSWindow, NSWindowCollectionBehavior,
+    NSApplication, NSApplicationPresentationOptions, NSWindow, NSWindowCollectionBehavior,
 };
 #[cfg(target_os = "macos")]
 use objc2_foundation::MainThreadMarker;
@@ -75,42 +75,69 @@ pub fn close_notification(app: &AppHandle) {
 
 pub fn show_break(app: &AppHandle, time_remaining: u64) {
     close_notification(app);
+    close_all_break_windows(app);
 
-    if let Some(window) = app.get_webview_window("break") {
-        let _ = window.destroy();
-    }
+    let monitors: Vec<_> = app
+        .available_monitors()
+        .ok()
+        .map(|m| m.into_iter().collect())
+        .unwrap_or_default();
 
-    let url = format!("index.html?window=break&time={}", time_remaining);
+    let primary_monitor_name = app
+        .primary_monitor()
+        .ok()
+        .flatten()
+        .and_then(|m| m.name().map(|n| n.to_string()));
 
-    let monitors = app.available_monitors().ok();
-    let (width, height) = monitors
-        .and_then(|m| m.into_iter().next())
-        .map(|m| {
-            let s = m.size();
-            (s.width as f64, s.height as f64)
-        })
-        .unwrap_or((1920.0, 1080.0));
+    for (index, monitor) in monitors.iter().enumerate() {
+        let scale = monitor.scale_factor();
+        let width = monitor.size().width as f64 / scale;
+        let height = monitor.size().height as f64 / scale;
+        let x = monitor.position().x as f64 / scale;
+        let y = monitor.position().y as f64 / scale;
 
-    if let Ok(window) = WebviewWindowBuilder::new(app, "break", WebviewUrl::App(url.into()))
-        .title("")
-        .decorations(false)
-        .transparent(true)
-        .always_on_top(true)
-        .resizable(false)
-        .skip_taskbar(true)
-        .focused(true)
-        .visible_on_all_workspaces(true)
-        .inner_size(width, height)
-        .position(0.0, 0.0)
-        .build()
-    {
-        let _ = window.show();
-        let _ = window.set_focus();
+        let is_primary = match (&primary_monitor_name, monitor.name()) {
+            (Some(primary), Some(name)) => primary == name,
+            _ => index == 0,
+        };
 
-        #[cfg(target_os = "macos")]
+        let label = format!("break_{}", index);
+        let url = format!(
+            "index.html?window=break&time={}&primary={}",
+            time_remaining, is_primary
+        );
+
+        if let Ok(window) = WebviewWindowBuilder::new(app, &label, WebviewUrl::App(url.into()))
+            .title("")
+            .decorations(false)
+            .transparent(true)
+            .always_on_top(true)
+            .resizable(false)
+            .skip_taskbar(true)
+            .focused(is_primary)
+            .visible_on_all_workspaces(true)
+            .inner_size(width, height)
+            .position(x, y)
+            .build()
         {
-            let _ = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None);
-            apply_macos_lock_behavior(&window);
+            let _ = window.show();
+            if is_primary {
+                let _ = window.set_focus();
+            }
+
+            #[cfg(target_os = "macos")]
+            {
+                let _ = apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None);
+                apply_macos_lock_behavior(&window);
+            }
+        }
+    }
+}
+
+fn close_all_break_windows(app: &AppHandle) {
+    for (label, window) in app.webview_windows() {
+        if label.starts_with("break") {
+            let _ = window.destroy();
         }
     }
 }
@@ -131,11 +158,6 @@ fn apply_macos_lock_behavior(window: &tauri::WebviewWindow) {
         let Some(ns_window) = Retained::retain(ns_window_ptr as *mut NSWindow) else {
             return;
         };
-
-        if let Some(screen) = NSScreen::mainScreen(mtm) {
-            let frame = screen.frame();
-            ns_window.setFrame_display(frame, true);
-        }
 
         ns_window.setHasShadow(false);
         ns_window.setLevel(SHIELDING_WINDOW_LEVEL);
@@ -163,9 +185,7 @@ pub fn close_break(app: &AppHandle) {
     #[cfg(target_os = "macos")]
     restore_macos_presentation();
 
-    if let Some(window) = app.get_webview_window("break") {
-        let _ = window.destroy();
-    }
+    close_all_break_windows(app);
 
     if let Some(window) = app.get_webview_window("settings") {
         let _ = window.hide();
