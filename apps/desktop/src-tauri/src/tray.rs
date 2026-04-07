@@ -3,7 +3,7 @@
 use std::sync::Arc;
 use std::time::Instant;
 use tauri::{
-    menu::{Menu, MenuItem},
+    menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     App,
 };
@@ -17,6 +17,7 @@ pub fn setup(app: &App, state: Arc<AppState>) -> Result<(), Box<dyn std::error::
     let pause_item = MenuItem::with_id(app, "pause", "Pause", true, None::<&str>)?;
     let skip_item = MenuItem::with_id(app, "skip", "Skip This Break", true, None::<&str>)?;
     let break_now_item = MenuItem::with_id(app, "break_now", "Take Break Now", true, None::<&str>)?;
+    let separator = PredefinedMenuItem::separator(app)?;
 
     let menu = Menu::with_items(
         app,
@@ -25,6 +26,7 @@ pub fn setup(app: &App, state: Arc<AppState>) -> Result<(), Box<dyn std::error::
             &skip_item,
             &pause_item,
             &settings_item,
+            &separator,
             &quit_item,
         ],
     )?;
@@ -37,6 +39,7 @@ pub fn setup(app: &App, state: Arc<AppState>) -> Result<(), Box<dyn std::error::
     TrayIconBuilder::with_id("main-tray")
         .icon(icon)
         .title("20:00")
+        .tooltip("Kedip – Click to open, right-click to quit")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_tray_icon_event(|tray, event| {
@@ -61,7 +64,7 @@ pub fn setup(app: &App, state: Arc<AppState>) -> Result<(), Box<dyn std::error::
 fn handle_menu_event(app: &tauri::AppHandle, event_id: &str, state: &Arc<AppState>) {
     match event_id {
         "quit" => {
-            app.exit(0);
+            std::process::exit(0);
         }
         "settings" => {
             windows::show_settings(app);

@@ -235,5 +235,15 @@ pub fn show_settings(app: &AppHandle) {
     if let Ok(window) = builder.build() {
         let _ = window.show();
         let _ = window.set_focus();
+
+        // Intercept the close button so the app keeps running in the tray.
+        // Destroying the window frees all associated WebKit processes.
+        let w = window.clone();
+        window.on_window_event(move |event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = w.destroy();
+            }
+        });
     }
 }

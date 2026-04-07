@@ -61,8 +61,15 @@ pub fn run() {
             commands::is_onboarding_complete,
             commands::complete_onboarding,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|_app, event| {
+            // Keep the app alive in the tray when all windows are closed.
+            // The tray "Quit" item calls app.exit(0) which bypasses this.
+            if let tauri::RunEvent::ExitRequested { api, .. } = event {
+                api.prevent_exit();
+            }
+        });
 }
 
 async fn check_for_update(app: tauri::AppHandle) {
