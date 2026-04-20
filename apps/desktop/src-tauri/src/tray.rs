@@ -92,7 +92,15 @@ fn handle_menu_event(app: &tauri::AppHandle, event_id: &str, state: &Arc<AppStat
             timer.time_remaining_ms = timer.break_duration_ms;
             *state.notification_shown.lock().unwrap() = false;
             *state.last_tick.lock().unwrap() = Instant::now();
-            windows::show_break(app, timer.time_remaining_ms);
+
+            let break_duration = timer.time_remaining_ms;
+            drop(timer);
+
+            let app_clone = app.clone();
+            let app_for_thread = app.clone();
+            let _ = app_clone.run_on_main_thread(move || {
+                windows::show_break(&app_for_thread, break_duration);
+            });
         }
         _ => {}
     }

@@ -52,7 +52,13 @@ pub fn start_break_now(app: AppHandle, state: tauri::State<'_, Arc<AppState>>) {
     *state.notification_shown.lock().unwrap() = false;
     *state.last_tick.lock().unwrap() = Instant::now();
 
-    windows::show_break(&app, timer.time_remaining_ms);
+    let break_duration = timer.time_remaining_ms;
+    drop(timer);
+
+    let app_clone = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        windows::show_break(&app_clone, break_duration);
+    });
 }
 
 #[tauri::command]
