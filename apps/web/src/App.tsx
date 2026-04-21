@@ -13,7 +13,7 @@ export default function App() {
     <div className="min-h-screen overflow-x-hidden bg-white font-sans text-stone-900 antialiased">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-stone-100 bg-white/90 px-6 backdrop-blur-md md:px-10">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
+          <a href="/" className="flex items-center gap-2 scale-press rounded-sm transition-opacity hover:opacity-80">
             <img src="/logo.svg" alt="Kedip" className="h-6 w-6" />
             <span className="text-sm font-semibold tracking-tight">Kedip</span>
           </a>
@@ -23,13 +23,13 @@ export default function App() {
               href={GITHUB_URL}
               target="_blank"
               rel="noreferrer"
-              className="text-stone-400 transition-colors hover:text-stone-800"
+              className="scale-press rounded-sm p-1 text-stone-400 transition-colors hover:text-stone-800"
             >
               <GithubIcon className="h-4 w-4" />
             </a>
             <a
               href={RELEASES_URL}
-              className="inline-flex items-center gap-1.5 rounded-md bg-stone-900 px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-stone-700 active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-md bg-stone-900 px-3.5 py-1.5 text-xs font-medium text-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-colors hover:bg-stone-800 active:scale-95"
             >
               Download
               <ArrowRight className="h-3 w-3" />
@@ -49,11 +49,11 @@ export default function App() {
             <p className="mb-6 text-xs font-medium tracking-widest text-stone-400 uppercase">
               Free · Open source · MIT License
             </p>
-            <h1 className="mb-8 max-w-2xl text-5xl leading-[1.05] font-semibold tracking-tighter md:text-7xl">
+            <h1 className="mb-8 max-w-2xl text-5xl leading-[1.05] font-semibold tracking-tighter md:text-7xl text-wrap-balance">
               Your eyes need
               <span className="text-stone-400"> a break.</span>
             </h1>
-            <p className="mb-10 max-w-xl text-lg leading-relaxed font-light text-stone-500">
+            <p className="mb-10 max-w-xl text-lg leading-relaxed font-light text-stone-500 text-wrap-pretty">
               Kedip is a menu bar app that reminds you to follow the 20-20-20 rule. Tiny, fast,
               private.
             </p>
@@ -61,7 +61,7 @@ export default function App() {
               <CopyCommand command="brew tap dendianugerah/tap && brew install --cask kedip" className="max-w-lg" />
               <a
                 href={RELEASES_URL}
-                className="inline-flex items-center gap-1.5 text-sm text-stone-400 transition-colors hover:text-stone-700 mt-1"
+                className="inline-flex items-center gap-1.5 text-sm text-stone-400 transition-colors hover:text-stone-700 mt-1 scale-press rounded-sm"
               >
                 other platforms
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -75,11 +75,11 @@ export default function App() {
             transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             className="mt-16"
           >
-            <div className="overflow-hidden rounded-xl border border-stone-200 shadow-2xl shadow-stone-300/30">
-              <div className="flex items-center gap-2 border-b border-stone-200 bg-stone-100 px-4 py-3">
-                <div className="h-3 w-3 rounded-full bg-red-400" />
-                <div className="h-3 w-3 rounded-full bg-yellow-400" />
-                <div className="h-3 w-3 rounded-full bg-green-400" />
+            <div className="overflow-hidden rounded-2xl border border-stone-200 shadow-[0_8px_40px_rgba(0,0,0,0.1),0_2px_8px_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.05)]">
+              <div className="flex items-center gap-2 border-b border-stone-200 bg-stone-100 px-4 py-3 shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)]">
+                <div className="h-3 w-3 rounded-full bg-red-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]" />
+                <div className="h-3 w-3 rounded-full bg-yellow-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]" />
+                <div className="h-3 w-3 rounded-full bg-green-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]" />
                 <span className="ml-3 font-mono text-xs text-stone-400">Kedip</span>
               </div>
               <video
@@ -110,7 +110,7 @@ export default function App() {
               <p className="mb-3 text-xs font-medium tracking-widest text-stone-400 uppercase">
                 In action
               </p>
-              <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
+              <h2 className="text-3xl font-semibold tracking-tight md:text-4xl text-wrap-balance">
                 Every screen, no surprises.
               </h2>
             </motion.div>
@@ -129,7 +129,7 @@ export default function App() {
                       Onboarding
                     </span>
                   </div>
-                  <h3 className="mb-3 text-2xl font-semibold tracking-tight">
+                  <h3 className="mb-3 text-2xl font-semibold tracking-tight text-wrap-balance">
                     Up and running in seconds.
                   </h3>
                   <p className="max-w-lg text-base leading-relaxed text-stone-500">
@@ -166,7 +166,7 @@ export default function App() {
                 transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
                 className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2"
               >
-                <div className="order-2 overflow-hidden rounded-xl border border-stone-200 shadow-xl shadow-stone-200/40 lg:order-1">
+                <div className="order-2 overflow-hidden rounded-xl border border-stone-200 shadow-[0_4px_24px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.04)] lg:order-1">
                   <ScreenAsset
                     src="/assets/screens/notification.webp"
                     alt="Notification pill: break now, snooze, or skip"
@@ -180,7 +180,7 @@ export default function App() {
                       Notification
                     </span>
                   </div>
-                  <h3 className="mb-3 text-2xl font-semibold tracking-tight">
+                  <h3 className="mb-3 text-2xl font-semibold tracking-tight text-wrap-balance">
                     A nudge, not a popup.
                   </h3>
                   <p className="text-base leading-relaxed text-stone-500">
@@ -204,7 +204,7 @@ export default function App() {
                       Break screen
                     </span>
                   </div>
-                  <h3 className="mb-3 text-2xl font-semibold tracking-tight">
+                  <h3 className="mb-3 text-2xl font-semibold tracking-tight text-wrap-balance">
                     20 seconds. Look away.
                   </h3>
                   <p className="text-base leading-relaxed text-stone-500">
@@ -213,7 +213,7 @@ export default function App() {
                   </p>
                 </div>
 
-                <div className="overflow-hidden rounded-xl border border-stone-200 shadow-xl shadow-stone-200/40">
+                <div className="overflow-hidden rounded-xl border border-stone-200 shadow-[0_4px_24px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.04)]">
                   <ScreenAsset
                     src="/assets/screens/break.webp"
                     alt="Break screen countdown overlay"
@@ -246,7 +246,7 @@ export default function App() {
                       Settings
                     </span>
                   </div>
-                  <h3 className="mb-3 text-2xl font-semibold tracking-tight">
+                  <h3 className="mb-3 text-2xl font-semibold tracking-tight text-wrap-balance">
                     Change it whenever.
                   </h3>
                   <p className="text-base leading-relaxed text-stone-500">
@@ -268,17 +268,17 @@ export default function App() {
             className="mx-auto flex max-w-xl flex-col items-center gap-6 text-center"
           >
             <div>
-              <h2 className="mb-3 text-4xl font-semibold tracking-tight text-white">
+              <h2 className="mb-3 text-4xl font-semibold tracking-tight text-white text-wrap-balance">
                 Start today.
               </h2>
-              <p className="leading-relaxed text-stone-500">
+              <p className="leading-relaxed text-stone-400">
                 Free, open source, under 5 MB. No setup required.
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-3">
               <a
                 href={RELEASES_URL}
-                className="group inline-flex items-center gap-2 rounded-lg bg-white px-7 py-3 text-sm font-semibold text-stone-900 transition-colors hover:bg-stone-100 active:scale-95"
+                className="group inline-flex items-center gap-2 rounded-lg bg-white px-7 py-3 text-sm font-semibold text-stone-900 shadow-[0_4px_16px_rgba(255,255,255,0.15),0_1px_3px_rgba(0,0,0,0.2)] transition-colors hover:bg-stone-100 active:scale-[0.97] scale-press"
               >
                 Download
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -287,7 +287,7 @@ export default function App() {
                 href={GITHUB_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-7 py-3 text-sm font-medium text-stone-400 transition-colors hover:border-white/20 hover:text-white"
+                className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-7 py-3 text-sm font-medium text-stone-400 transition-colors hover:border-white/20 hover:text-white scale-press"
               >
                 <GithubIcon className="h-4 w-4" />
                 Source code
@@ -311,19 +311,19 @@ export default function App() {
               href={GITHUB_URL}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 transition-colors hover:text-stone-900"
+              className="flex items-center gap-1.5 transition-colors hover:text-stone-900 scale-press rounded-sm"
             >
               <GithubIcon className="h-3.5 w-3.5" />
               GitHub
             </a>
-            <a href={RELEASES_URL} className="transition-colors hover:text-stone-900">
+            <a href={RELEASES_URL} className="transition-colors hover:text-stone-900 scale-press rounded-sm">
               Releases
             </a>
             <a
               href={`${GITHUB_URL}/blob/main/LICENSE`}
               target="_blank"
               rel="noreferrer"
-              className="transition-colors hover:text-stone-900"
+              className="transition-colors hover:text-stone-900 scale-press rounded-sm"
             >
               License
             </a>

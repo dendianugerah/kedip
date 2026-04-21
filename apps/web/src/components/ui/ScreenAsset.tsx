@@ -25,10 +25,10 @@ export function ScreenAsset({
     )
   }
   if (gifSrc) {
-    return <img src={gifSrc} alt={alt} className={`w-full bg-stone-50 ${aspectClass} object-cover`} />
+    return <img src={gifSrc} alt={alt} className={`w-full bg-stone-50 ${aspectClass} object-cover img-outline-light`} />
   }
   if (src) {
-    return <img src={src} alt={alt} className={`w-full bg-stone-50 ${aspectClass} object-cover`} />
+    return <img src={src} alt={alt} className={`w-full bg-stone-50 ${aspectClass} object-cover img-outline-light`} />
   }
   return (
     <div className={`flex w-full flex-col items-center justify-center gap-1.5 bg-stone-50 ${aspectClass}`}>
