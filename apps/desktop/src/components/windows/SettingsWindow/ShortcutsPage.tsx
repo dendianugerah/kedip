@@ -49,7 +49,7 @@ export function ShortcutsPage() {
           <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.22em] mb-3">
             {group.label}
           </p>
-          <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
+          <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06] shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
             {group.shortcuts.map((shortcut) => (
               <ShortcutRow
                 key={shortcut.description}

@@ -11,6 +11,17 @@ import { StatusCard } from "./StatusCard";
 import { TimerSettings } from "./TimerSettings";
 import { ShortcutsPage } from "./ShortcutsPage";
 
+const pageVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+};
+
+const pageTransition = {
+  duration: 0.18,
+  ease: [0.2, 0, 0, 1] as [number, number, number, number],
+};
+
 type Page = "overview" | "schedule" | "shortcuts" | "about";
 
 const NAV: { id: Page; label: string; icon: ElementType }[] = [
@@ -95,7 +106,7 @@ export function SettingsWindow() {
                 <button
                   key={id}
                   onClick={() => setPage(id)}
-                  className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer scale-press ${
                     active
                       ? "bg-white/[0.08] text-white"
                       : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
@@ -115,7 +126,7 @@ export function SettingsWindow() {
                 <button
                   key={id}
                   onClick={() => setPage(id)}
-                  className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer scale-press ${
                     active
                       ? "bg-white/[0.08] text-white"
                       : "text-white/45 hover:text-white/75 hover:bg-white/[0.04]"
@@ -135,10 +146,11 @@ export function SettingsWindow() {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={page}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.1 }}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={pageVariants}
+                transition={pageTransition}
                 className="p-8 space-y-6"
               >
                 {page === "overview" && timerState && (
@@ -172,7 +184,7 @@ export function SettingsWindow() {
                       <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.22em] mb-3">
                         App
                       </p>
-                      <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
+                      <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06] shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
                         {(
                           [
                             ["Version", appVersion ? `v${appVersion}` : "..."],
@@ -207,7 +219,7 @@ export function SettingsWindow() {
                       </p>
                       <button
                         onClick={() => openUrl(GITHUB_URL)}
-                        className="text-[13px] text-white/50 hover:text-white/80 transition-colors cursor-pointer underline underline-offset-2 decoration-white/20 hover:decoration-white/50"
+                        className="text-[13px] text-white/50 hover:text-white/80 transition-colors cursor-pointer underline underline-offset-2 decoration-white/20 hover:decoration-white/50 scale-press"
                       >
                         github.com/dendianugerah/kedip
                       </button>

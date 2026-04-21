@@ -119,7 +119,7 @@ export function BreakWindow() {
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className="text-center">
-          <p className="text-5xl font-semibold text-white/90 tracking-tight">Done</p>
+          <p className="text-5xl font-semibold text-white tracking-tight">Done</p>
           <p className="text-lg font-light text-white/50 mt-4">Your eyes are refreshed</p>
         </div>
       </motion.div>
@@ -156,14 +156,14 @@ export function BreakWindow() {
             <Button
               variant="ghost"
               onClick={handleAddTime}
-              className="px-5 py-2.5 h-auto rounded-full bg-white/10 hover:bg-white/20 text-white/80 text-sm font-medium"
+              className="px-5 py-2.5 h-auto rounded-full bg-white/10 hover:bg-white/20 text-white/80 text-sm font-medium scale-press transition-colors"
             >
               <Plus className="w-4 h-4" />1 min
             </Button>
             <Button
               variant="ghost"
               onClick={handleSkip}
-              className="px-5 py-2.5 h-auto rounded-full bg-white/5 hover:bg-white/10 text-white/60 text-sm font-medium border border-white/10 hover:border-white/10"
+              className="px-5 py-2.5 h-auto rounded-full bg-white/5 hover:bg-white/10 text-white/60 text-sm font-medium border border-white/10 hover:border-white/10 scale-press transition-colors"
             >
               <X className="w-4 h-4" />
               Skip

@@ -50,7 +50,7 @@ export function OnboardingWindow() {
               </p>
 
               <div>
-                <h1 className="text-[52px] font-semibold tracking-tight leading-[1.05] text-white">
+                <h1 className="text-[52px] font-semibold tracking-tight leading-[1.05] text-white text-wrap-balance">
                   Look up,
                   <br />
                   every 20
@@ -65,7 +65,7 @@ export function OnboardingWindow() {
               <Button
                 variant="white"
                 onClick={() => setStep(2)}
-                className="w-full py-3 text-[13px] font-semibold"
+                className="w-full py-3 text-[13px] font-semibold scale-press shadow-[0_2px_12px_rgba(255,255,255,0.15)]"
               >
                 Get Started →
               </Button>
@@ -107,7 +107,7 @@ export function OnboardingWindow() {
           >
             <div className="flex flex-col gap-6">
               <div>
-                <h2 className="text-[28px] font-semibold tracking-tight leading-tight">
+                <h2 className="text-[28px] font-semibold tracking-tight leading-tight text-wrap-balance">
                   Set your rhythm
                 </h2>
                 <p className="text-[13px] text-white/30 mt-1.5">
@@ -126,9 +126,9 @@ export function OnboardingWindow() {
                         key={opt.value}
                         variant={workMinutes === opt.value ? "white" : "ghost"}
                         onClick={() => setWorkMinutes(opt.value)}
-                        className={`flex-1 py-3 h-auto rounded-xl text-[13px] font-medium ${
+                        className={`flex-1 py-3 h-auto rounded-xl text-[13px] font-medium scale-press ${
                           workMinutes === opt.value
-                            ? ""
+                            ? "shadow-[0_1px_4px_rgba(0,0,0,0.25)]"
                             : "bg-white/[0.05] text-white/35 hover:bg-white/10 hover:text-white/70"
                         }`}
                       >
@@ -148,9 +148,9 @@ export function OnboardingWindow() {
                         key={opt.value}
                         variant={breakSeconds === opt.value ? "white" : "ghost"}
                         onClick={() => setBreakSeconds(opt.value)}
-                        className={`flex-1 py-3 h-auto rounded-xl text-[13px] font-medium ${
+                        className={`flex-1 py-3 h-auto rounded-xl text-[13px] font-medium scale-press ${
                           breakSeconds === opt.value
-                            ? ""
+                            ? "shadow-[0_1px_4px_rgba(0,0,0,0.25)]"
                             : "bg-white/[0.05] text-white/35 hover:bg-white/10 hover:text-white/70"
                         }`}
                       >

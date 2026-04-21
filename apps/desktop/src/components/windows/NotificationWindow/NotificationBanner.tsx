@@ -35,11 +35,12 @@ export function NotificationBanner({
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="fixed inset-0 rounded-2xl bg-neutral-900/95 backdrop-blur-xl shadow-2xl flex flex-col gap-2.5 px-4 pt-3.5 pb-3.5 select-none font-sans overflow-hidden"
-          initial={{ opacity: 0, y: -140 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -40, transition: { duration: 0.16, ease: "easeIn" } }}
-          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          className="fixed inset-0 rounded-2xl bg-neutral-900/95 backdrop-blur-xl flex flex-col gap-2.5 px-4 pt-3.5 pb-3.5 select-none font-sans overflow-hidden"
+          initial={{ opacity: 0, y: -16, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.16, ease: [0.2, 0, 0, 1] } }}
+          transition={{ type: "spring", stiffness: 400, damping: 32 }}
+          style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)" }}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
@@ -72,21 +73,21 @@ export function NotificationBanner({
             <Button
               variant="white"
               onClick={onStartNow}
-              className="flex-1 py-2 text-[12px] font-semibold h-auto rounded-xl"
+              className="flex-1 py-2 text-[12px] font-semibold h-auto rounded-xl scale-press"
             >
               Break now
             </Button>
             <Button
               variant="ghost"
               onClick={() => onSnooze(5)}
-              className="px-4 py-2 text-[12px] font-medium h-auto rounded-xl bg-white/10 hover:bg-white/20 text-white/75 hover:text-white/75"
+              className="px-4 py-2 text-[12px] font-medium h-auto rounded-xl bg-white/10 hover:bg-white/20 text-white/75 hover:text-white/75 scale-press"
             >
               +5m
             </Button>
             <Button
               variant="ghost"
               onClick={onSkip}
-              className="px-3 py-2 text-[12px] font-medium h-auto rounded-xl text-white/30 hover:text-white/60 hover:bg-transparent"
+              className="px-3 py-2 text-[12px] font-medium h-auto rounded-xl text-white/30 hover:text-white/60 hover:bg-transparent scale-press"
             >
               Skip
             </Button>

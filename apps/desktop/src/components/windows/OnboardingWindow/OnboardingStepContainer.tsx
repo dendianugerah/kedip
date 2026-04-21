@@ -29,10 +29,10 @@ export function OnboardingStepContainer({
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, x: 24 }}
+      initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -24 }}
-      transition={{ duration: 0.2, ease: "easeInOut" }}
+      exit={{ opacity: 0, x: -16, transition: { duration: 0.14, ease: [0.2, 0, 0, 1] } }}
+      transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
     >
       {hasFooter ? (
         <>
@@ -42,7 +42,7 @@ export function OnboardingStepContainer({
             <Button
               variant="ghost"
               onClick={onBack}
-              className="text-[12px] text-white/25 hover:text-white/50 hover:bg-transparent px-3 py-2 h-auto flex-shrink-0"
+              className="text-[12px] text-white/25 hover:text-white/50 hover:bg-transparent px-3 py-2 h-auto flex-shrink-0 scale-press"
             >
               ← Back
             </Button>
@@ -55,7 +55,7 @@ export function OnboardingStepContainer({
               variant="white"
               onClick={onPrimary}
               disabled={primaryDisabled}
-              className="px-6 py-2.5 h-auto text-[13px] font-semibold flex-shrink-0"
+              className="px-6 py-2.5 h-auto text-[13px] font-semibold flex-shrink-0 scale-press shadow-[0_2px_12px_rgba(255,255,255,0.15)]"
             >
               {primaryLabel}
             </Button>

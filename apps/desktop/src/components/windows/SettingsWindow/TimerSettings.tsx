@@ -40,9 +40,9 @@ export function TimerSettings({
               <button
                 key={preset.name}
                 onClick={() => onPreset(preset)}
-                className={`flex-1 py-2 rounded-[9px] text-[12px] font-medium transition-colors cursor-pointer ${
+                className={`flex-1 py-2 rounded-[9px] text-[12px] font-medium transition-colors cursor-pointer scale-press ${
                   active
-                    ? "bg-white text-black"
+                    ? "bg-white text-black shadow-[0_1px_4px_rgba(0,0,0,0.25)]"
                     : "bg-white/[0.06] text-zinc-400 hover:bg-white/[0.10] hover:text-zinc-200"
                 }`}
               >
@@ -58,7 +58,7 @@ export function TimerSettings({
         <p className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.22em] mb-3">
           Duration
         </p>
-        <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06]">
+        <div className="border border-white/[0.06] rounded-xl overflow-hidden divide-y divide-white/[0.06] shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
           <div className="px-4 py-4 bg-white/[0.06]">
             <div className="flex items-center justify-between mb-3.5">
               <span className="text-[13px] text-white/75">Work</span>
@@ -90,7 +90,7 @@ export function TimerSettings({
 
       <button
         onClick={onSave}
-        className="w-full py-2.5 rounded-xl text-[13px] font-semibold bg-blue-500 hover:bg-blue-400 text-white transition-colors overflow-hidden cursor-pointer"
+        className="w-full py-2.5 rounded-xl text-[13px] font-semibold bg-blue-500 hover:bg-blue-400 text-white transition-colors overflow-hidden cursor-pointer scale-press shadow-[0_2px_12px_rgba(59,130,246,0.35)]"
       >
         <AnimatePresence mode="wait" initial={false}>
           {saved ? (
