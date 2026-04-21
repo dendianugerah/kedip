@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 function SecondaryBreakWindow() {
   return (
     <motion.div
-      className="fixed inset-0 bg-black/70 backdrop-blur-2xl"
+      className="fixed inset-0 bg-black/85 backdrop-blur-2xl"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.7, ease: "easeOut" }}
@@ -113,7 +113,7 @@ export function BreakWindow() {
   if (isComplete) {
     return (
       <motion.div
-        className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center select-none"
+        className="fixed inset-0 bg-black/90 backdrop-blur-xl flex items-center justify-center select-none"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -128,7 +128,7 @@ export function BreakWindow() {
 
   return (
     <motion.div
-      className={`fixed inset-0 bg-black/70 backdrop-blur-2xl flex items-center justify-center select-none transition-[cursor] duration-300 ${isIdle ? "cursor-none" : ""}`}
+      className={`fixed inset-0 bg-black/85 backdrop-blur-2xl flex items-center justify-center select-none transition-[cursor] duration-300 ${isIdle ? "cursor-none" : ""}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.7, ease: "easeOut" }}
