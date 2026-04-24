@@ -1,5 +1,3 @@
-import { motion } from "motion/react";
-
 import { formatTime } from "@/lib/format";
 import type { TimerState } from "@/types/timer";
 import { Switch } from "@/components/ui/switch";
@@ -42,10 +40,9 @@ export function StatusCard({ timerState, isPaused, onTogglePause, onBreakNow, on
             {timerState.phase === "Working" ? "until next break" : "remaining in break"}
           </p>
           <div className="mt-4 h-[2px] bg-white/[0.06] rounded-full overflow-hidden shadow-[inset_0_1px_1px_rgba(0,0,0,0.3)]">
-            <motion.div
+            <div
               className="h-full bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.4)]"
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
+              style={{ width: `${progress}%` }}
             />
           </div>
         </div>

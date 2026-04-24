@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { motion } from "motion/react";
@@ -33,11 +33,11 @@ export function BreakWindow() {
   const escTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isIdleRef = useRef(isIdle);
 
-  const resetIdleTimer = useCallback(() => {
+  const resetIdleTimerRef = useRef<() => void>(() => {
     setIsIdle(false);
     if (idleTimer.current) clearTimeout(idleTimer.current);
     idleTimer.current = setTimeout(() => setIsIdle(true), 3000);
-  }, []);
+  });
 
   useEffect(() => {
     isIdleRef.current = isIdle;
@@ -46,16 +46,17 @@ export function BreakWindow() {
   useEffect(() => {
     if (!isPrimary) return;
 
-    resetIdleTimer();
+    resetIdleTimerRef.current();
 
+    const handler = () => resetIdleTimerRef.current();
     const events = ["mousemove", "mousedown"];
-    events.forEach((e) => window.addEventListener(e, resetIdleTimer));
+    events.forEach((e) => window.addEventListener(e, handler));
 
     return () => {
-      events.forEach((e) => window.removeEventListener(e, resetIdleTimer));
+      events.forEach((e) => window.removeEventListener(e, handler));
       if (idleTimer.current) clearTimeout(idleTimer.current);
     };
-  }, [resetIdleTimer, isPrimary]);
+  }, [isPrimary]);
 
   useEffect(() => {
     if (!isPrimary) return;
@@ -79,7 +80,7 @@ export function BreakWindow() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         if (isIdleRef.current) {
-          resetIdleTimer();
+          resetIdleTimerRef.current();
           return;
         }
 
@@ -101,7 +102,7 @@ export function BreakWindow() {
       window.removeEventListener("keydown", handleKeyDown);
       if (escTimer.current) clearTimeout(escTimer.current);
     };
-  }, [resetIdleTimer, isPrimary]);
+  }, [isPrimary]);
 
   const handleAddTime = () => invoke("add_break_time", { extraMs: 60000 });
   const handleSkip = () => invoke("skip_break");
