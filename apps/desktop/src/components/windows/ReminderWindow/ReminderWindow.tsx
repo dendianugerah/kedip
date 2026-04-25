@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { ReminderBanner } from "./ReminderBanner";
 
@@ -13,7 +13,8 @@ function decode(str: string) {
 export function ReminderWindow() {
   const [name, setName] = useState("Reminder");
   const [message, setMessage] = useState("");
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
+  const mirrorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -21,33 +22,57 @@ export function ReminderWindow() {
     setMessage(decode(params.get("message") || ""));
   }, []);
 
-  // Resize window to fit content after render
+  // Measure content height before showing the banner
   useEffect(() => {
     if (!name && !message) return;
-    const timer = setTimeout(() => {
-      // Measure the inner content element, not the window body
-      const el = document.getElementById("reminder-content");
-      if (!el) return;
-      const h = el.scrollHeight;
-      // Short text fills the window (136), long text grows
-      const height = Math.max(h, 136);
+
+    // Give React time to render the mirror element
+    requestAnimationFrame(() => {
+      if (!mirrorRef.current) return;
+
+      const h = mirrorRef.current.getBoundingClientRect().height;
+      const height = Math.max(Math.ceil(h), 136);
       invoke("resize_reminder_window", { height }).catch(() => {});
-    }, 50);
-    return () => clearTimeout(timer);
+      setVisible(true);
+    });
   }, [name, message]);
 
+  // Auto-dismiss after 3 seconds
   useEffect(() => {
+    if (!visible) return;
     const timer = setTimeout(() => {
       setVisible(false);
       setTimeout(() => window.close(), 220);
     }, 3000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [visible]);
 
   const dismiss = () => {
     setVisible(false);
-    setTimeout(() => window.close(), 220);
+    setTimeout(() => {
+      window.close();
+    }, 220);
   };
 
-  return <ReminderBanner name={name} message={message} visible={visible} onDismiss={dismiss} />;
+  return (
+    <>
+      {/* Hidden mirror to measure natural content height */}
+      <div
+        ref={mirrorRef}
+        className="fixed rounded-2xl bg-neutral-900/95 flex flex-col gap-2.5 px-4 pt-3.5 pb-3.5 font-sans pointer-events-none opacity-0 select-none"
+        style={{ width: 320 }}
+      >
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-widest">
+            {name}
+          </span>
+        </div>
+        <p className="text-[22px] font-bold text-white leading-snug tracking-tight whitespace-normal break-words">
+          {message}
+        </p>
+      </div>
+
+      <ReminderBanner name={name} message={message} visible={visible} onDismiss={dismiss} />
+    </>
+  );
 }

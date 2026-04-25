@@ -104,6 +104,7 @@ pub fn run() {
             commands::update_reminder,
             commands::delete_reminder,
             commands::toggle_reminder,
+            commands::close_reminder_window,
             commands::resize_reminder_window,
         ])
         .build(tauri::generate_context!())

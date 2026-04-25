@@ -235,6 +235,11 @@ fn reset_reminder_elapsed(state: &Arc<AppState>) {
 }
 
 #[tauri::command]
+pub fn close_reminder_window(app: AppHandle) {
+    windows::close_reminder(&app);
+}
+
+#[tauri::command]
 pub fn resize_reminder_window(app: AppHandle, height: f64) {
     if let Some(window) = app.get_webview_window("reminder") {
         let _ = window.set_size(tauri::Size::Physical(tauri::PhysicalSize {

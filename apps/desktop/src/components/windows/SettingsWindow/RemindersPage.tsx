@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { motion, AnimatePresence } from "motion/react";
-import { Plus, Trash2, Bell, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { Plus, Trash2, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 
@@ -53,7 +53,6 @@ function EditModal({ initial, onSave, onClose }: EditModalProps) {
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-
       <motion.div
         className="relative w-full max-w-sm rounded-2xl overflow-hidden"
         style={{
@@ -77,7 +76,6 @@ function EditModal({ initial, onSave, onClose }: EditModalProps) {
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
-
         <div className="px-5 pb-5 space-y-4">
           <div>
             <label className="text-[10px] font-semibold text-white/30 uppercase tracking-widest block mb-1.5">
@@ -108,12 +106,12 @@ function EditModal({ initial, onSave, onClose }: EditModalProps) {
             <label className="text-[10px] font-semibold text-white/30 uppercase tracking-widest block mb-1.5">
               Interval
             </label>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex gap-2">
               {INTERVAL_OPTIONS.map((opt) => (
                 <button
                   key={opt}
                   onClick={() => setInterval(opt)}
-                  className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
+                  className={`flex-1 py-1.5 rounded-[9px] text-[11px] font-medium transition-colors cursor-pointer scale-press ${
                     interval === opt
                       ? "bg-white text-black shadow-[0_1px_3px_rgba(0,0,0,0.2)]"
                       : "bg-white/[0.06] text-white/45 hover:bg-white/[0.10] hover:text-white/70"
@@ -212,9 +210,9 @@ export function RemindersPage() {
           Add
         </Button>
       </div>
+
       {reminders.length === 0 && !showAdd ? (
         <div className="text-center py-10">
-          <Bell className="w-7 h-7 text-white/10 mx-auto mb-3" />
           <p className="text-[13px] text-white/25">No reminders yet</p>
         </div>
       ) : (
@@ -230,42 +228,31 @@ export function RemindersPage() {
                 onCheckedChange={() => handleToggle(r.id)}
                 className="data-unchecked:bg-zinc-600 data-checked:bg-blue-500 data-checked:border-blue-500 cursor-pointer shrink-0"
               />
-
               <div className="flex-1 min-w-0">
                 <p
-                  className={`text-[13px] font-medium truncate ${
-                    r.enabled ? "text-white" : "text-white/35"
-                  }`}
+                  className={`text-[13px] font-medium truncate ${r.enabled ? "text-white" : "text-white/35"}`}
                 >
                   {r.name || "Untitled"}
                 </p>
                 <p
-                  className={`text-[11px] mt-0.5 truncate ${
-                    r.enabled ? "text-white/35" : "text-white/20"
-                  }`}
+                  className={`text-[11px] mt-0.5 truncate ${r.enabled ? "text-white/35" : "text-white/20"}`}
                 >
                   {r.message || "No message"}
                 </p>
               </div>
-
-              {/* Interval pill */}
               <span
                 className={`text-[10px] font-semibold px-2 py-0.5 rounded-md shrink-0 tabular-nums ${
-                  r.enabled ? "bg-white/10 text-white/50" : "bg-white/5 text-white/25"
+                  r.enabled ? "bg-white/[0.10] text-white/50" : "bg-white/[0.05] text-white/25"
                 }`}
               >
                 {formatInterval(r.interval_min)}
               </span>
-
-              {/* Edit */}
               <button
                 onClick={() => setEditId(r.id)}
                 className="text-[11px] text-white/25 hover:text-white/50 px-1.5 py-1 rounded-md hover:bg-white/[0.06] transition-colors cursor-pointer shrink-0"
               >
                 Edit
               </button>
-
-              {/* Delete */}
               <button
                 onClick={() => handleDelete(r.id)}
                 className="w-6 h-6 rounded-md flex items-center justify-center text-white/20 hover:text-red-400/70 hover:bg-red-400/10 transition-colors cursor-pointer shrink-0"
@@ -287,18 +274,12 @@ export function RemindersPage() {
         {editId !== null && (
           <EditModal
             initial={reminders.find((r) => r.id === editId)}
-            onSave={(data) =>
-              handleSave({
-                id: editId,
-                ...data,
-              })
-            }
+            onSave={(data) => handleSave({ id: editId, ...data, message: data.message })}
             onClose={() => setEditId(null)}
           />
         )}
       </AnimatePresence>
 
-      {/* Add modal */}
       <AnimatePresence>
         {showAdd && <EditModal onSave={handleAdd} onClose={() => setShowAdd(false)} />}
       </AnimatePresence>
