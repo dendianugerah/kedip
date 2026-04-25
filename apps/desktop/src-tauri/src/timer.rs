@@ -58,13 +58,10 @@ pub fn start_loop(app: AppHandle, state: Arc<AppState>) {
 
         let paused = *state.is_paused.lock().unwrap();
 
-        // Track whether a phase transition occurred this tick, so we can
-        // close the reminder window after releasing the timer lock.
         let mut phase_just_transitioned = false;
 
         let current_state: Option<crate::state::TimerState> = 'tick: {
             let mut timer = state.timer.lock().unwrap();
-            // Capture the phase before any modifications.
             let phase_before_tick = timer.phase;
 
             if !paused {
@@ -105,14 +102,12 @@ pub fn start_loop(app: AppHandle, state: Arc<AppState>) {
                 let phase_now_inner = timer.phase;
                 drop(timer);
                 check_reminders(&app, &state, elapsed);
-                // Re-acquire the lock and re-sync.
                 let timer = state.timer.lock().unwrap();
                 let phase_after = timer.phase;
                 let time_after = timer.time_remaining_ms;
                 drop(timer);
-                // If state changed while we dropped the lock, skip the notification.
+                // If state changed while we dropped the lock, skip the rest.
                 if phase_after != phase_now_inner || time_after != time_now {
-                    // Still close reminder if a phase transition occurred.
                     if phase_just_transitioned {
                         let a = app.clone();
                         let _ = a.clone().run_on_main_thread(move || {
@@ -122,7 +117,6 @@ pub fn start_loop(app: AppHandle, state: Arc<AppState>) {
                     }
                     break 'tick None;
                 }
-                // Re-acquire timer for the notification check.
                 let timer_guard = state.timer.lock().unwrap();
                 let timer_val = timer_guard.clone();
 

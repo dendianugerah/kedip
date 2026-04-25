@@ -50,8 +50,6 @@ impl Reminder {
 pub struct ReminderState {
     pub reminders: Mutex<Vec<Reminder>>,
     pub next_id: Mutex<u32>,
-    /// Tracks elapsed work time in ms since the last break/skip.
-    /// Reset to 0 when a break ends or the user skips a break.
     pub elapsed_work_ms: Mutex<u64>,
 }
 

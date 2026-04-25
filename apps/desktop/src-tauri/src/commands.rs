@@ -234,6 +234,19 @@ fn reset_reminder_elapsed(state: &Arc<AppState>) {
     *state.reminder.elapsed_work_ms.lock().unwrap() = 0;
 }
 
+#[tauri::command]
+pub fn resize_reminder_window(app: AppHandle, height: f64) {
+    if let Some(window) = app.get_webview_window("reminder") {
+        let h = height.ceil() as u32;
+        // Clamp to notification minimum height so short text still looks good
+        let h = h.max(136);
+        let _ = window.set_size(tauri::Size::Physical(tauri::PhysicalSize {
+            width: 320,
+            height: h,
+        }));
+    }
+}
+
 fn drop_reminders_to_store(app: &AppHandle, state: &Arc<AppState>) {
     let reminders = state.reminder.reminders.lock().unwrap();
     if let Ok(store) = app.store("kedip.json") {

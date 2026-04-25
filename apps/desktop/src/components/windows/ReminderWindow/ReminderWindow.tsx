@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { ReminderBanner } from "./ReminderBanner";
 
 function decode(str: string) {
@@ -20,7 +21,15 @@ export function ReminderWindow() {
     setMessage(decode(params.get("message") || ""));
   }, []);
 
-  // Auto-dismiss after 3 seconds
+  useEffect(() => {
+    if (!name && !message) return;
+    const timer = setTimeout(() => {
+      const height = document.body.scrollHeight;
+      invoke("resize_reminder_window", { height }).catch(() => {});
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [name, message]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);

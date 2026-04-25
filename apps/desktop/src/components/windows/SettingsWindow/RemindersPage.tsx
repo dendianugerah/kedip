@@ -52,10 +52,8 @@ function EditModal({ initial, onSave, onClose }: EditModalProps) {
       transition={{ duration: 0.15 }}
       onClick={onClose}
     >
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
-      {/* Modal */}
       <motion.div
         className="relative w-full max-w-sm rounded-2xl overflow-hidden"
         style={{
@@ -68,7 +66,6 @@ function EditModal({ initial, onSave, onClose }: EditModalProps) {
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-3">
           <p className="text-[13px] font-semibold text-white">
             {initial ? "Edit reminder" : "New reminder"}
@@ -198,7 +195,6 @@ export function RemindersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <p className="text-[10px] font-semibold text-white/30 uppercase tracking-widest">
@@ -216,8 +212,6 @@ export function RemindersPage() {
           Add
         </Button>
       </div>
-
-      {/* Reminder list */}
       {reminders.length === 0 && !showAdd ? (
         <div className="text-center py-10">
           <Bell className="w-7 h-7 text-white/10 mx-auto mb-3" />
@@ -230,7 +224,6 @@ export function RemindersPage() {
               key={r.id}
               className="flex items-center gap-3 px-4 py-3 bg-white/[0.04] hover:bg-white/[0.06] transition-colors"
             >
-              {/* Toggle */}
               <Switch
                 checked={r.enabled}
                 size="sm"
@@ -238,7 +231,6 @@ export function RemindersPage() {
                 className="data-unchecked:bg-zinc-600 data-checked:bg-blue-500 data-checked:border-blue-500 cursor-pointer shrink-0"
               />
 
-              {/* Info */}
               <div className="flex-1 min-w-0">
                 <p
                   className={`text-[13px] font-medium truncate ${
@@ -285,14 +277,12 @@ export function RemindersPage() {
         </div>
       )}
 
-      {/* Info note */}
       {reminders.length > 0 && (
         <p className="text-[11px] text-white/20 leading-relaxed">
           Resets when a break ends or is skipped.
         </p>
       )}
 
-      {/* Edit modal */}
       <AnimatePresence>
         {editId !== null && (
           <EditModal

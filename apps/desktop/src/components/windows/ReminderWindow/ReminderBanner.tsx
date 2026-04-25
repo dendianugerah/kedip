@@ -29,13 +29,11 @@ export function ReminderBanner({ name, message, visible, onDismiss }: Props) {
           }}
           onClick={onDismiss}
         >
-          <div className="flex items-center justify-between px-4 pt-3.5">
-            <div className="flex items-center gap-1.5">
-              <Bell className="w-3.5 h-3.5 text-white/30" />
-              <span className="text-[10px] font-semibold text-white/30 uppercase tracking-widest">
-                {name}
-              </span>
-            </div>
+          <div className="flex items-center gap-1.5 px-4 pt-3.5">
+            <Bell className="w-3.5 h-3.5 text-white/30" />
+            <span className="text-[10px] font-semibold text-white/30 uppercase tracking-widest">
+              {name}
+            </span>
           </div>
 
           <div className="flex-1 flex items-center px-4 pb-3.5">
