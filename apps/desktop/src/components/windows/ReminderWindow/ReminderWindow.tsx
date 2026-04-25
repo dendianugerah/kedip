@@ -21,10 +21,16 @@ export function ReminderWindow() {
     setMessage(decode(params.get("message") || ""));
   }, []);
 
+  // Resize window to fit content after render
   useEffect(() => {
     if (!name && !message) return;
     const timer = setTimeout(() => {
-      const height = document.body.scrollHeight;
+      // Measure the inner content element, not the window body
+      const el = document.getElementById("reminder-content");
+      if (!el) return;
+      const h = el.scrollHeight;
+      // Short text fills the window (136), long text grows
+      const height = Math.max(h, 136);
       invoke("resize_reminder_window", { height }).catch(() => {});
     }, 50);
     return () => clearTimeout(timer);

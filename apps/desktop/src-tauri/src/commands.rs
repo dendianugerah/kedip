@@ -237,12 +237,9 @@ fn reset_reminder_elapsed(state: &Arc<AppState>) {
 #[tauri::command]
 pub fn resize_reminder_window(app: AppHandle, height: f64) {
     if let Some(window) = app.get_webview_window("reminder") {
-        let h = height.ceil() as u32;
-        // Clamp to notification minimum height so short text still looks good
-        let h = h.max(136);
         let _ = window.set_size(tauri::Size::Physical(tauri::PhysicalSize {
             width: 320,
-            height: h,
+            height: height.ceil() as u32,
         }));
     }
 }

@@ -13,7 +13,7 @@ export function ReminderBanner({ name, message, visible, onDismiss }: Props) {
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="fixed inset-0 rounded-2xl bg-neutral-900/95 backdrop-blur-xl flex flex-col select-none font-sans overflow-hidden cursor-pointer"
+          className="fixed inset-0 rounded-2xl bg-neutral-900/95 backdrop-blur-xl flex flex-col gap-2.5 px-4 pt-3.5 pb-3.5 select-none font-sans overflow-hidden cursor-pointer"
           initial={{ opacity: 0, y: -16, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{
@@ -29,18 +29,15 @@ export function ReminderBanner({ name, message, visible, onDismiss }: Props) {
           }}
           onClick={onDismiss}
         >
-          <div className="flex items-center gap-1.5 px-4 pt-3.5">
+          <div className="flex items-center gap-1.5">
             <Bell className="w-3.5 h-3.5 text-white/30" />
             <span className="text-[10px] font-semibold text-white/30 uppercase tracking-widest">
               {name}
             </span>
           </div>
 
-          <div className="flex-1 flex items-center px-4 pb-3.5">
-            <p
-              className="text-[22px] font-bold text-white leading-snug tracking-tight whitespace-normal break-words line-clamp-3"
-              style={{ textShadow: "0 2px 16px rgba(0,0,0,0.4)" }}
-            >
+          <div id="reminder-content" className="flex-1 flex items-center">
+            <p className="text-[22px] font-bold text-white leading-snug tracking-tight whitespace-normal break-words">
               {message}
             </p>
           </div>
