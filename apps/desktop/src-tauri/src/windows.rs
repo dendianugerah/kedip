@@ -1,26 +1,7 @@
 //! Window management.
 
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
-
-/// Percent-encodes a string for use in a URL query parameter.
-fn encode_url_param(s: &str) -> String {
-    let mut out = String::with_capacity(s.len() * 3);
-    for b in s.bytes() {
-        match b {
-            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
-                out.push(b as char);
-            }
-            _ => {
-                out.push('%');
-                out.push(HEX_CHARS[(b >> 4) as usize] as char);
-                out.push(HEX_CHARS[(b & 0xF) as usize] as char);
-            }
-        }
-    }
-    out
-}
-
-const HEX_CHARS: &[u8; 16] = b"0123456789ABCDEF";
+use urlencoding::encode;
 
 #[cfg(target_os = "macos")]
 use objc2::rc::Retained;
@@ -42,8 +23,8 @@ const NOTIFICATION_MARGIN: f64 = 20.0;
 const NOTIFICATION_FALLBACK_X: f64 = 1560.0;
 const NOTIFICATION_FALLBACK_Y: f64 = 20.0;
 
-const REMINDER_WIDTH: f64 = 360.0;
-const REMINDER_HEIGHT: f64 = 180.0;
+const REMINDER_WIDTH: f64 = 320.0;
+const REMINDER_HEIGHT: f64 = 90.0;
 
 const APP_WINDOW_WIDTH: f64 = 660.0;
 const APP_WINDOW_HEIGHT: f64 = 520.0;
@@ -293,8 +274,8 @@ pub fn show_reminder(app: &AppHandle, name: &str, message: &str) {
 
     let url = format!(
         "index.html?window=reminder&name={}&message={}",
-        encode_url_param(name),
-        encode_url_param(message)
+        encode(name),
+        encode(message)
     );
 
     if let Ok(window) = WebviewWindowBuilder::new(app, "reminder", WebviewUrl::App(url.into()))
