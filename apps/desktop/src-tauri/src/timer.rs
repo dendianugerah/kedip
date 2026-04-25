@@ -4,7 +4,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter};
 
-use crate::state::{AppState, TimerPhase};
+use crate::state::{AppState, Reminder, TimerPhase};
 use crate::windows;
 
 const WARNING_THRESHOLD_MS: u64 = 30_000;
@@ -30,14 +30,42 @@ pub fn update_tray_title(app: &AppHandle, paused: bool, phase: TimerPhase, time_
     }
 }
 
+fn check_reminders(app: &AppHandle, _state: &Arc<AppState>, elapsed_ms: u64) {
+    let reminders: Vec<Reminder> = _state.reminder.reminders.lock().unwrap().clone();
+    for reminder in reminders {
+        if !reminder.enabled {
+            continue;
+        }
+        let interval_ms = reminder.interval_ms();
+        if interval_ms == 0 {
+            continue;
+        }
+        // Fire when elapsed time has reached and is a multiple of the interval.
+        if elapsed_ms >= interval_ms && elapsed_ms % interval_ms == 0 {
+            let name = reminder.name.clone();
+            let message = reminder.message.clone();
+            let closure_app = app.clone();
+            let _ = app.clone().run_on_main_thread(move || {
+                windows::show_reminder(&closure_app, &name, &message);
+            });
+        }
+    }
+}
+
 pub fn start_loop(app: AppHandle, state: Arc<AppState>) {
     std::thread::spawn(move || loop {
         std::thread::sleep(Duration::from_millis(1000));
 
         let paused = *state.is_paused.lock().unwrap();
 
-        let current_state = {
+        // Track whether a phase transition occurred this tick, so we can
+        // close the reminder window after releasing the timer lock.
+        let mut phase_just_transitioned = false;
+
+        let current_state: Option<crate::state::TimerState> = 'tick: {
             let mut timer = state.timer.lock().unwrap();
+            // Capture the phase before any modifications.
+            let phase_before_tick = timer.phase;
 
             if !paused {
                 if timer.time_remaining_ms >= 1000 {
@@ -45,23 +73,13 @@ pub fn start_loop(app: AppHandle, state: Arc<AppState>) {
                 } else {
                     timer.time_remaining_ms = 0;
                 }
-            }
 
-            if !paused
-                && timer.phase == TimerPhase::Working
-                && timer.time_remaining_ms <= WARNING_THRESHOLD_MS
-            {
-                let mut shown = state.notification_shown.lock().unwrap();
-                if !*shown {
-                    *shown = true;
-                    let app_clone = app.clone();
-                    let time = timer.time_remaining_ms;
-                    let _ = app.run_on_main_thread(move || {
-                        windows::show_notification(&app_clone, time);
-                    });
+                if timer.phase == TimerPhase::Working {
+                    *state.reminder.elapsed_work_ms.lock().unwrap() += 1000;
                 }
             }
 
+            // Phase transitions happen when the timer hits zero.
             if timer.time_remaining_ms == 0 {
                 match timer.phase {
                     TimerPhase::Working => {
@@ -70,31 +88,87 @@ pub fn start_loop(app: AppHandle, state: Arc<AppState>) {
                         timer.time_remaining_ms = timer.break_duration_ms;
                     }
                     TimerPhase::Break => {
+                        *state.reminder.elapsed_work_ms.lock().unwrap() = 0;
                         timer.phase = TimerPhase::Working;
                         timer.time_remaining_ms = timer.work_duration_ms;
                     }
                 }
+                phase_just_transitioned = phase_before_tick != timer.phase;
             }
 
-            timer.clone()
+            let phase_now = timer.phase;
+
+            // Check enabled reminders every tick during Working phase.
+            if !paused && phase_now == TimerPhase::Working {
+                let elapsed = *state.reminder.elapsed_work_ms.lock().unwrap();
+                let time_now = timer.time_remaining_ms;
+                let phase_now_inner = timer.phase;
+                drop(timer);
+                check_reminders(&app, &state, elapsed);
+                // Re-acquire the lock and re-sync.
+                let timer = state.timer.lock().unwrap();
+                let phase_after = timer.phase;
+                let time_after = timer.time_remaining_ms;
+                drop(timer);
+                // If state changed while we dropped the lock, skip the notification.
+                if phase_after != phase_now_inner || time_after != time_now {
+                    // Still close reminder if a phase transition occurred.
+                    if phase_just_transitioned {
+                        let a = app.clone();
+                        let _ = a.clone().run_on_main_thread(move || {
+                            let handle = a.clone();
+                            windows::close_reminder(&handle);
+                        });
+                    }
+                    break 'tick None;
+                }
+                // Re-acquire timer for the notification check.
+                let timer_guard = state.timer.lock().unwrap();
+                let timer_val = timer_guard.clone();
+
+                // Show pre-break warning notification.
+                if timer_guard.time_remaining_ms <= WARNING_THRESHOLD_MS {
+                    let mut shown = state.notification_shown.lock().unwrap();
+                    if !*shown {
+                        *shown = true;
+                        let a = app.clone();
+                        let time = timer_guard.time_remaining_ms;
+                        drop(timer_guard);
+                        drop(shown);
+                        let _ = a.clone().run_on_main_thread(move || {
+                            let handle = a.clone();
+                            windows::show_notification(&handle, time);
+                        });
+                    }
+                }
+
+                break 'tick Some(timer_val);
+            }
+
+            break 'tick Some(timer.clone());
         };
 
-        let _ = app.emit("timer-update", &current_state);
+        // If we returned early above (state changed mid-tick), go to next iteration.
+        let Some(timer_state) = current_state else {
+            continue;
+        };
 
-        if current_state.time_remaining_ms == 0 {
-            let app_for_closure = app.clone();
-            match current_state.phase {
+        let _ = app.emit("timer-update", &timer_state);
+
+        if timer_state.time_remaining_ms == 0 {
+            let a = app.clone();
+            match timer_state.phase {
                 TimerPhase::Break => {
-                    let a = app_for_closure.clone();
-                    let _ = app_for_closure.run_on_main_thread(move || {
-                        windows::close_notification(&a);
-                        windows::show_break(&a, current_state.break_duration_ms);
+                    let _ = a.clone().run_on_main_thread(move || {
+                        let handle = a.clone();
+                        windows::close_notification(&handle);
+                        windows::show_break(&handle, timer_state.break_duration_ms);
                     });
                 }
                 TimerPhase::Working => {
-                    let a = app_for_closure.clone();
-                    let _ = app_for_closure.run_on_main_thread(move || {
-                        windows::close_break(&a);
+                    let _ = a.clone().run_on_main_thread(move || {
+                        let handle = a.clone();
+                        windows::close_break(&handle);
                     });
                 }
             }
@@ -103,8 +177,8 @@ pub fn start_loop(app: AppHandle, state: Arc<AppState>) {
         update_tray_title(
             &app,
             paused,
-            current_state.phase,
-            current_state.time_remaining_ms,
+            timer_state.phase,
+            timer_state.time_remaining_ms,
         );
     });
 }

@@ -2,6 +2,26 @@
 
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
+/// Percent-encodes a string for use in a URL query parameter.
+fn encode_url_param(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() * 3);
+    for b in s.bytes() {
+        match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                out.push(b as char);
+            }
+            _ => {
+                out.push('%');
+                out.push(HEX_CHARS[(b >> 4) as usize] as char);
+                out.push(HEX_CHARS[(b & 0xF) as usize] as char);
+            }
+        }
+    }
+    out
+}
+
+const HEX_CHARS: &[u8; 16] = b"0123456789ABCDEF";
+
 #[cfg(target_os = "macos")]
 use objc2::rc::Retained;
 #[cfg(target_os = "macos")]
@@ -21,6 +41,9 @@ const NOTIFICATION_HEIGHT: f64 = 136.0;
 const NOTIFICATION_MARGIN: f64 = 20.0;
 const NOTIFICATION_FALLBACK_X: f64 = 1560.0;
 const NOTIFICATION_FALLBACK_Y: f64 = 20.0;
+
+const REMINDER_WIDTH: f64 = 360.0;
+const REMINDER_HEIGHT: f64 = 180.0;
 
 const APP_WINDOW_WIDTH: f64 = 660.0;
 const APP_WINDOW_HEIGHT: f64 = 520.0;
@@ -245,5 +268,54 @@ pub fn show_settings(app: &AppHandle) {
                 let _ = w.destroy();
             }
         });
+    }
+}
+
+pub fn show_reminder(app: &AppHandle, name: &str, message: &str) {
+    if let Some(window) = app.get_webview_window("reminder") {
+        let _ = window.destroy();
+    }
+
+    let (x, y) = app
+        .primary_monitor()
+        .ok()
+        .flatten()
+        .map(|m| {
+            let scale = m.scale_factor();
+            let logical_width = m.size().width as f64 / scale;
+            let logical_x = m.position().x as f64 / scale;
+            (
+                logical_x + logical_width - REMINDER_WIDTH - NOTIFICATION_MARGIN,
+                NOTIFICATION_MARGIN,
+            )
+        })
+        .unwrap_or((NOTIFICATION_FALLBACK_X, NOTIFICATION_FALLBACK_Y));
+
+    let url = format!(
+        "index.html?window=reminder&name={}&message={}",
+        encode_url_param(name),
+        encode_url_param(message)
+    );
+
+    if let Ok(window) = WebviewWindowBuilder::new(app, "reminder", WebviewUrl::App(url.into()))
+        .title("")
+        .inner_size(REMINDER_WIDTH, REMINDER_HEIGHT)
+        .position(x, y)
+        .decorations(false)
+        .transparent(true)
+        .always_on_top(true)
+        .resizable(false)
+        .skip_taskbar(true)
+        .accept_first_mouse(true)
+        .shadow(false)
+        .build()
+    {
+        let _ = window.show();
+    }
+}
+
+pub fn close_reminder(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("reminder") {
+        let _ = window.destroy();
     }
 }

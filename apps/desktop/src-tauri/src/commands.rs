@@ -5,7 +5,7 @@ use std::time::Instant;
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_store::StoreExt;
 
-use crate::state::{AppState, TimerPhase, TimerState};
+use crate::state::{AppState, Reminder, TimerPhase, TimerState};
 use crate::windows;
 
 const DEMO_COUNTDOWN_MS: u64 = 40_000;
@@ -21,11 +21,15 @@ pub fn skip_break(app: AppHandle, state: tauri::State<'_, Arc<AppState>>) {
 
     windows::close_break(&app);
     windows::close_notification(&app);
+    windows::close_reminder(&app);
 
     timer.phase = TimerPhase::Working;
     timer.time_remaining_ms = timer.work_duration_ms;
     *state.notification_shown.lock().unwrap() = false;
     *state.last_tick.lock().unwrap() = Instant::now();
+    drop(timer);
+
+    reset_reminder_elapsed(&state);
 }
 
 #[tauri::command]
@@ -142,5 +146,102 @@ pub fn complete_onboarding(
     // Tell the frontend to switch views — no window operations needed.
     if let Some(window) = app.get_webview_window("settings") {
         let _ = window.emit("onboarding-complete", ());
+    }
+}
+
+#[tauri::command]
+pub fn get_reminders(state: tauri::State<'_, Arc<AppState>>) -> Vec<Reminder> {
+    state.reminder.reminders.lock().unwrap().clone()
+}
+
+#[tauri::command]
+pub fn add_reminder(
+    app: AppHandle,
+    state: tauri::State<'_, Arc<AppState>>,
+    name: String,
+    message: String,
+    interval_min: u32,
+) -> Reminder {
+    let id = {
+        let mut next_id = state.reminder.next_id.lock().unwrap();
+        let id = *next_id;
+        *next_id += 1;
+        id
+    };
+
+    let reminder = Reminder {
+        id,
+        name,
+        message,
+        interval_min,
+        enabled: true,
+    };
+
+    state
+        .reminder
+        .reminders
+        .lock()
+        .unwrap()
+        .push(reminder.clone());
+    drop_reminders_to_store(&app, &state);
+    reminder
+}
+
+#[tauri::command]
+pub fn update_reminder(
+    app: AppHandle,
+    state: tauri::State<'_, Arc<AppState>>,
+    id: u32,
+    name: String,
+    message: String,
+    interval_min: u32,
+    enabled: bool,
+) {
+    let mut reminders = state.reminder.reminders.lock().unwrap();
+    if let Some(r) = reminders.iter_mut().find(|r| r.id == id) {
+        r.name = name;
+        r.message = message;
+        r.interval_min = interval_min;
+        r.enabled = enabled;
+    }
+    drop(reminders);
+    drop_reminders_to_store(&app, &state);
+}
+
+#[tauri::command]
+pub fn delete_reminder(app: AppHandle, state: tauri::State<'_, Arc<AppState>>, id: u32) {
+    let mut reminders = state.reminder.reminders.lock().unwrap();
+    reminders.retain(|r| r.id != id);
+    drop(reminders);
+    drop_reminders_to_store(&app, &state);
+}
+
+#[tauri::command]
+pub fn toggle_reminder(app: AppHandle, state: tauri::State<'_, Arc<AppState>>, id: u32) -> bool {
+    let mut reminders = state.reminder.reminders.lock().unwrap();
+    let enabled = if let Some(r) = reminders.iter_mut().find(|r| r.id == id) {
+        r.enabled = !r.enabled;
+        r.enabled
+    } else {
+        return false;
+    };
+    drop(reminders);
+    drop_reminders_to_store(&app, &state);
+    enabled
+}
+
+fn reset_reminder_elapsed(state: &Arc<AppState>) {
+    *state.reminder.elapsed_work_ms.lock().unwrap() = 0;
+}
+
+fn drop_reminders_to_store(app: &AppHandle, state: &Arc<AppState>) {
+    let reminders = state.reminder.reminders.lock().unwrap();
+    if let Ok(store) = app.store("kedip.json") {
+        let json: Vec<serde_json::Value> = reminders
+            .iter()
+            .map(|r| serde_json::to_value(r).unwrap())
+            .collect();
+        store.set("reminders", serde_json::json!(json));
+        let _ = store.save();
     }
 }

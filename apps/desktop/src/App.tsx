@@ -1,4 +1,4 @@
-import { NotificationWindow, BreakWindow, MainApp } from "@/components/windows";
+import { NotificationWindow, BreakWindow, MainApp, ReminderWindow } from "@/components/windows";
 
 function App() {
   const params = new URLSearchParams(window.location.search);
@@ -9,6 +9,8 @@ function App() {
       return <NotificationWindow />;
     case "break":
       return <BreakWindow />;
+    case "reminder":
+      return <ReminderWindow />;
     case "settings":
     case "onboarding":
     default:
