@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Plus, Trash2, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { formatInterval } from "@/lib/format";
 
 export interface Reminder {
   id: number;
@@ -14,13 +15,6 @@ export interface Reminder {
 }
 
 const INTERVAL_OPTIONS = [1, 2, 5, 10, 15, 20, 30, 45, 60];
-
-function formatInterval(min: number): string {
-  if (min < 60) return `${min}m`;
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return m === 0 ? `${h}h` : `${h}h${m}m`;
-}
 
 interface EditModalProps {
   initial?: Reminder;

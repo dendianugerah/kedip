@@ -292,6 +292,13 @@ pub fn show_reminder(app: &AppHandle, name: &str, message: &str) {
         .shadow(false)
         .build()
     {
+        let w = window.clone();
+        window.on_window_event(move |event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = w.destroy();
+            }
+        });
         let _ = window.show();
     }
 }

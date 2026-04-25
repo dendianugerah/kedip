@@ -50,6 +50,7 @@ export function ReminderWindow() {
   const dismiss = () => {
     setVisible(false);
     setTimeout(() => {
+      invoke("close_reminder_window").catch(() => {});
       window.close();
     }, 220);
   };
