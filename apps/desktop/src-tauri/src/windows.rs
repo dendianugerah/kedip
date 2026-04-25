@@ -24,8 +24,7 @@ const NOTIFICATION_FALLBACK_X: f64 = 1560.0;
 const NOTIFICATION_FALLBACK_Y: f64 = 20.0;
 
 const REMINDER_WIDTH: f64 = 320.0;
-// Start tall so the mirror div can measure full content height
-const REMINDER_INITIAL_HEIGHT: f64 = 400.0;
+const REMINDER_HEIGHT: f64 = 136.0;
 
 const APP_WINDOW_WIDTH: f64 = 660.0;
 const APP_WINDOW_HEIGHT: f64 = 520.0;
@@ -281,7 +280,7 @@ pub fn show_reminder(app: &AppHandle, name: &str, message: &str) {
 
     if let Ok(window) = WebviewWindowBuilder::new(app, "reminder", WebviewUrl::App(url.into()))
         .title("")
-        .inner_size(REMINDER_WIDTH, REMINDER_INITIAL_HEIGHT)
+        .inner_size(REMINDER_WIDTH, REMINDER_HEIGHT)
         .position(x, y)
         .decorations(false)
         .transparent(true)

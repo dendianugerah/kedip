@@ -239,16 +239,6 @@ pub fn close_reminder_window(app: AppHandle) {
     windows::close_reminder(&app);
 }
 
-#[tauri::command]
-pub fn resize_reminder_window(app: AppHandle, height: f64) {
-    if let Some(window) = app.get_webview_window("reminder") {
-        let _ = window.set_size(tauri::Size::Physical(tauri::PhysicalSize {
-            width: 320,
-            height: height.ceil() as u32,
-        }));
-    }
-}
-
 fn drop_reminders_to_store(app: &AppHandle, state: &Arc<AppState>) {
     let reminders = state.reminder.reminders.lock().unwrap();
     if let Ok(store) = app.store("kedip.json") {
