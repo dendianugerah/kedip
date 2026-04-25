@@ -5,14 +5,7 @@ import { Plus, Trash2, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { formatInterval } from "@/lib/format";
-
-export interface Reminder {
-  id: number;
-  name: string;
-  message: string;
-  interval_min: number;
-  enabled: boolean;
-}
+import type { Reminder } from "@/types";
 
 const INTERVAL_OPTIONS = [1, 2, 5, 10, 15, 20, 30, 45, 60];
 

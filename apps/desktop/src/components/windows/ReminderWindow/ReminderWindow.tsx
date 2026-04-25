@@ -51,7 +51,6 @@ export function ReminderWindow() {
     setVisible(false);
     setTimeout(() => {
       invoke("close_reminder_window").catch(() => {});
-      window.close();
     }, 220);
   };
 

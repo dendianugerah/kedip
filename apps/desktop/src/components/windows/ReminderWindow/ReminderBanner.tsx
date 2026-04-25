@@ -36,7 +36,7 @@ export function ReminderBanner({ name, message, visible, onDismiss }: Props) {
             </span>
           </div>
 
-          <div id="reminder-content" className="flex items-center">
+          <div className="flex-1 flex items-center">
             <p className="text-[22px] font-bold text-white leading-snug tracking-tight whitespace-normal break-words">
               {message}
             </p>

@@ -14,3 +14,11 @@ export interface Preset {
   breakMs: number;
   desc: string;
 }
+
+export interface Reminder {
+  id: number;
+  name: string;
+  message: string;
+  interval_min: number;
+  enabled: boolean;
+}
