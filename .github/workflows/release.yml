@@ -29,6 +29,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set version from tag
+        run: |
+          VERSION="${TAG_NAME#v}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+          # Update package.json
+          bun run --cwd . pkg set version=$VERSION
+
+          # Update Cargo.toml
+          sed -i 's/^version = ".*"/version = "'"$VERSION"'"/' apps/desktop/src-tauri/Cargo.toml
+
+          # Update tauri.conf.json
+          sed -i 's/"version": ".*"/"version": "'"$VERSION"'"/' apps/desktop/src-tauri/tauri.conf.json
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
