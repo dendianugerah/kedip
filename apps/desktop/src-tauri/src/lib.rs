@@ -10,7 +10,7 @@ mod windows;
 use std::sync::Arc;
 use tauri_plugin_store::StoreExt;
 
-pub use state::{AppState, TimerPhase, TimerState};
+pub use state::{AppState, Reminder, TimerPhase, TimerState};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -30,6 +30,45 @@ pub fn run() {
                 }
                 if let Some(ms) = store.get("break_duration_ms").and_then(|v| v.as_u64()) {
                     timer.break_duration_ms = ms;
+                }
+                // Load reminders from store
+                if let Some(arr) = store.get("reminders").and_then(|v| v.as_array().cloned()) {
+                    let reminders: Vec<Reminder> = arr
+                        .iter()
+                        .filter_map(|v| serde_json::from_value(v.clone()).ok())
+                        .collect();
+                    let count = reminders.len() as u32;
+                    *app_state.reminder.reminders.lock().unwrap() = reminders;
+                    *app_state.reminder.next_id.lock().unwrap() = count;
+                }
+
+                // Seed default reminders if none exist
+                if app_state.reminder.reminders.lock().unwrap().is_empty() {
+                    let defaults = [
+                        Reminder {
+                            id: 0,
+                            name: "Blink".into(),
+                            message: "Blink your eyes — look away from the screen".into(),
+                            interval_min: 20,
+                            enabled: true,
+                        },
+                        Reminder {
+                            id: 1,
+                            name: "Rest".into(),
+                            message: "Rest your eyes for a moment".into(),
+                            interval_min: 5,
+                            enabled: false,
+                        },
+                    ];
+                    *app_state.reminder.reminders.lock().unwrap() = defaults.to_vec();
+                    *app_state.reminder.next_id.lock().unwrap() = 2;
+                    // Persist defaults to store
+                    let json: Vec<serde_json::Value> = defaults
+                        .iter()
+                        .map(|r| serde_json::to_value(r).unwrap())
+                        .collect();
+                    store.set("reminders", serde_json::json!(json));
+                    let _ = store.save();
                 }
                 store
                     .get("onboarding_complete")
@@ -60,6 +99,12 @@ pub fn run() {
             commands::add_break_time,
             commands::is_onboarding_complete,
             commands::complete_onboarding,
+            commands::get_reminders,
+            commands::add_reminder,
+            commands::update_reminder,
+            commands::delete_reminder,
+            commands::toggle_reminder,
+            commands::close_reminder_window,
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")

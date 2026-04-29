@@ -1,6 +1,7 @@
 //! Window management.
 
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
+use urlencoding::encode;
 
 #[cfg(target_os = "macos")]
 use objc2::rc::Retained;
@@ -21,6 +22,9 @@ const NOTIFICATION_HEIGHT: f64 = 136.0;
 const NOTIFICATION_MARGIN: f64 = 20.0;
 const NOTIFICATION_FALLBACK_X: f64 = 1560.0;
 const NOTIFICATION_FALLBACK_Y: f64 = 20.0;
+
+const REMINDER_WIDTH: f64 = 320.0;
+const REMINDER_HEIGHT: f64 = 136.0;
 
 const APP_WINDOW_WIDTH: f64 = 660.0;
 const APP_WINDOW_HEIGHT: f64 = 520.0;
@@ -245,5 +249,61 @@ pub fn show_settings(app: &AppHandle) {
                 let _ = w.destroy();
             }
         });
+    }
+}
+
+pub fn show_reminder(app: &AppHandle, name: &str, message: &str) {
+    if let Some(window) = app.get_webview_window("reminder") {
+        let _ = window.destroy();
+    }
+
+    let (x, y) = app
+        .primary_monitor()
+        .ok()
+        .flatten()
+        .map(|m| {
+            let scale = m.scale_factor();
+            let logical_width = m.size().width as f64 / scale;
+            let logical_x = m.position().x as f64 / scale;
+            (
+                logical_x + logical_width - REMINDER_WIDTH - NOTIFICATION_MARGIN,
+                NOTIFICATION_MARGIN,
+            )
+        })
+        .unwrap_or((NOTIFICATION_FALLBACK_X, NOTIFICATION_FALLBACK_Y));
+
+    let url = format!(
+        "index.html?window=reminder&name={}&message={}",
+        encode(name),
+        encode(message)
+    );
+
+    if let Ok(window) = WebviewWindowBuilder::new(app, "reminder", WebviewUrl::App(url.into()))
+        .title("")
+        .inner_size(REMINDER_WIDTH, REMINDER_HEIGHT)
+        .position(x, y)
+        .decorations(false)
+        .transparent(true)
+        .always_on_top(true)
+        .resizable(false)
+        .skip_taskbar(true)
+        .accept_first_mouse(true)
+        .shadow(false)
+        .build()
+    {
+        let w = window.clone();
+        window.on_window_event(move |event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = w.destroy();
+            }
+        });
+        let _ = window.show();
+    }
+}
+
+pub fn close_reminder(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("reminder") {
+        let _ = window.destroy();
     }
 }

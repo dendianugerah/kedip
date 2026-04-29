@@ -32,11 +32,43 @@ impl Default for TimerState {
     }
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Reminder {
+    pub id: u32,
+    pub name: String,
+    pub message: String,
+    pub interval_min: u32,
+    pub enabled: bool,
+}
+
+impl Reminder {
+    pub fn interval_ms(&self) -> u64 {
+        (self.interval_min as u64) * 60 * 1000
+    }
+}
+
+pub struct ReminderState {
+    pub reminders: Mutex<Vec<Reminder>>,
+    pub next_id: Mutex<u32>,
+    pub elapsed_work_ms: Mutex<u64>,
+}
+
+impl Default for ReminderState {
+    fn default() -> Self {
+        Self {
+            reminders: Mutex::new(Vec::new()),
+            next_id: Mutex::new(0),
+            elapsed_work_ms: Mutex::new(0),
+        }
+    }
+}
+
 pub struct AppState {
     pub timer: Mutex<TimerState>,
     pub last_tick: Mutex<Instant>,
     pub is_paused: Mutex<bool>,
     pub notification_shown: Mutex<bool>,
+    pub reminder: ReminderState,
 }
 
 impl Default for AppState {
@@ -46,6 +78,7 @@ impl Default for AppState {
             last_tick: Mutex::new(Instant::now()),
             is_paused: Mutex::new(false),
             notification_shown: Mutex::new(false),
+            reminder: ReminderState::default(),
         }
     }
 }

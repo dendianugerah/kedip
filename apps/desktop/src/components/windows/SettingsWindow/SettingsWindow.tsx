@@ -4,12 +4,13 @@ import { getVersion } from "@tauri-apps/api/app";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { listen } from "@tauri-apps/api/event";
 import { AnimatePresence, motion } from "motion/react";
-import { LayoutDashboard, Timer, Info, Keyboard } from "lucide-react";
+import { LayoutDashboard, Timer, Info, Keyboard, Bell } from "lucide-react";
 
 import type { TimerState, Preset } from "@/types/timer";
 import { StatusCard } from "./StatusCard";
 import { TimerSettings } from "./TimerSettings";
 import { ShortcutsPage } from "./ShortcutsPage";
+import { RemindersPage } from "./RemindersPage";
 
 const pageVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -22,11 +23,12 @@ const pageTransition = {
   ease: [0.2, 0, 0, 1] as [number, number, number, number],
 };
 
-type Page = "overview" | "schedule" | "shortcuts" | "about";
+type Page = "overview" | "schedule" | "reminders" | "shortcuts" | "about";
 
 const NAV: { id: Page; label: string; icon: ElementType }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "schedule", label: "Schedule", icon: Timer },
+  { id: "reminders", label: "Reminders", icon: Bell },
   { id: "shortcuts", label: "Shortcuts", icon: Keyboard },
 ];
 
@@ -177,6 +179,8 @@ export function SettingsWindow() {
                 )}
 
                 {page === "shortcuts" && <ShortcutsPage />}
+
+                {page === "reminders" && <RemindersPage />}
 
                 {page === "about" && (
                   <div className="space-y-6">
