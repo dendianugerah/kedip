@@ -1,331 +1,305 @@
-import { motion } from "motion/react"
-import { ArrowRight } from "lucide-react"
+import {
+  ArrowDown,
+  ArrowUpRight,
+  Bell,
+  Clock3,
+  Laptop,
+  Monitor,
+  SlidersHorizontal,
+  Terminal,
+} from "lucide-react"
+import { Button } from "./components/ui/button"
 import { GithubIcon } from "./components/ui/GithubIcon"
-import { AppWindow } from "./components/ui/AppWindow"
-import { ScreenAsset } from "./components/ui/ScreenAsset"
-import { CopyCommand } from "./components/ui/CopyCommand"
 
 const GITHUB_URL = "https://github.com/dendianugerah/kedip"
-const RELEASES_URL = `${GITHUB_URL}/releases`
+const RELEASES_URL = `${GITHUB_URL}/releases/latest`
+const INSTALL_URL = `${GITHUB_URL}#install`
+
+const steps = [
+  {
+    title: "Work as usual",
+    description: "Kedip runs in your menu bar or system tray and keeps time.",
+  },
+  {
+    title: "Get a heads-up",
+    description: "Every 20 minutes, Kedip reminds you to take a short break.",
+  },
+  {
+    title: "Look into the distance",
+    description: "Focus on something 20 feet (6 meters) away for 20 seconds.",
+  },
+]
+
+const features = [
+  { icon: SlidersHorizontal, label: "Adjustable schedule" },
+  { icon: Clock3, label: "Pause, snooze, or skip" },
+  { icon: GithubIcon, label: "Free and open source" },
+]
+
+const platforms = [
+  { icon: Laptop, name: "macOS", files: ".dmg" },
+  { icon: Monitor, name: "Windows", files: ".msi or .exe" },
+  { icon: Terminal, name: "Linux", files: ".AppImage or .deb" },
+]
+
+const frame = "mx-auto max-w-5xl border-x px-5 sm:px-10 lg:px-14"
+const meta = "font-mono text-xs tracking-[0.15em] uppercase text-ink-muted"
+const sectionTitle = "text-4xl font-semibold tracking-[-0.055em] sm:text-5xl"
+
+function ReminderPreview() {
+  return (
+    <figure className="min-w-0">
+      <div className="overflow-hidden rounded-xl border bg-paper shadow-[0_12px_28px_-20px_#3c3a32]">
+        <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
+          <span className="flex items-center gap-2 text-xs font-medium">
+            <img src="/logo.svg" alt="" width="16" height="16" />
+            Kedip
+          </span>
+          <span className={meta}>Reminder</span>
+        </div>
+        <div className="grid place-items-center bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] bg-[size:12px_12px] px-3 py-8 sm:px-6 sm:py-10">
+          <div className="w-full max-w-72 rounded-lg border bg-surface p-4 shadow-sm sm:p-5">
+            <Bell className="mb-4 size-4 text-ink-muted" aria-hidden="true" />
+            <p className="text-xl font-semibold tracking-tight">
+              Your break starts soon
+            </p>
+            <p className="mt-1 text-sm text-ink-muted">
+              Starting in 30 seconds
+            </p>
+            <div
+              className="mt-4 h-1 overflow-hidden rounded-full bg-border"
+              aria-hidden="true"
+            >
+              <div className="h-full w-2/3 rounded-full bg-signal" />
+            </div>
+            <div
+              className="mt-4 flex flex-wrap gap-2 text-xs font-medium"
+              aria-hidden="true"
+            >
+              <span className="rounded-md bg-foreground px-2.5 py-1.5 text-paper">
+                Break now
+              </span>
+              <span className="rounded-md border px-2.5 py-1.5">
+                Snooze 5 min
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption className={`${meta} mt-3 text-right`}>
+        A preview of the break reminder
+      </figcaption>
+    </figure>
+  )
+}
 
 export default function App() {
   return (
-    <div className="min-h-screen overflow-x-hidden bg-white font-sans text-stone-900 antialiased">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-stone-100 bg-white/90 px-6 backdrop-blur-md md:px-10">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between">
-          <a href="/" className="flex items-center gap-2 scale-press rounded-sm transition-opacity hover:opacity-80">
-            <img src="/logo.svg" alt="Kedip" className="h-6 w-6" />
-            <span className="text-sm font-semibold tracking-tight">Kedip</span>
+    <div className="min-h-screen bg-paper text-foreground">
+      <header className="border-b">
+        <div
+          className={`${frame} flex min-h-16 items-center justify-between gap-3`}
+        >
+          <a href="/" className="flex items-center gap-2 font-semibold">
+            <img src="/logo.svg" alt="" width="26" height="26" />
+            Kedip
           </a>
-
-          <div className="flex items-center gap-3">
+          <nav
+            aria-label="Main"
+            className="flex items-center gap-4 text-sm sm:gap-6"
+          >
+            <a
+              href="#how-it-works"
+              className="hidden hover:underline sm:inline"
+            >
+              How it works
+            </a>
             <a
               href={GITHUB_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="scale-press rounded-sm p-1 text-stone-400 transition-colors hover:text-stone-800"
+              className="inline-flex items-center gap-1 hover:underline"
             >
-              <GithubIcon className="h-4 w-4" />
+              GitHub <ArrowUpRight className="size-3" aria-hidden="true" />
             </a>
-            <a
-              href={RELEASES_URL}
-              className="inline-flex items-center gap-1.5 rounded-md bg-stone-900 px-3.5 py-1.5 text-xs font-medium text-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-colors hover:bg-stone-800 active:scale-95"
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="rounded-md bg-surface"
             >
-              Download
-              <ArrowRight className="h-3 w-3" />
-            </a>
-          </div>
+              <a href="#download">Download</a>
+            </Button>
+          </nav>
         </div>
       </header>
 
       <main>
-        <section className="px-6 pt-32 pb-20 md:px-10">
-          <div className="mx-auto max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <p className="mb-6 text-xs font-medium tracking-widest text-stone-400 uppercase">
-              Free · Open source · MIT License
-            </p>
-            <h1 className="mb-8 max-w-2xl text-5xl leading-[1.05] font-semibold tracking-tighter md:text-7xl text-wrap-balance">
-              Your eyes need
-              <span className="text-stone-400"> a break.</span>
-            </h1>
-            <p className="mb-10 max-w-xl text-lg leading-relaxed font-light text-stone-500 text-wrap-pretty">
-              Kedip is a menu bar app that reminds you to follow the 20-20-20 rule. Tiny, fast,
-              private.
-            </p>
-            <div className="flex flex-col gap-2">
-              <CopyCommand command="brew tap dendianugerah/tap && brew install --cask kedip" className="max-w-lg" />
-              <a
-                href={RELEASES_URL}
-                className="inline-flex items-center gap-1.5 text-sm text-stone-400 transition-colors hover:text-stone-700 mt-1 scale-press rounded-sm"
-              >
-                other platforms
-                <ArrowRight className="h-3.5 w-3.5" />
-              </a>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-16"
-          >
-            <div className="overflow-hidden rounded-2xl border border-stone-200 shadow-[0_8px_40px_rgba(0,0,0,0.1),0_2px_8px_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.05)]">
-              <div className="flex items-center gap-2 border-b border-stone-200 bg-stone-100 px-4 py-3 shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)]">
-                <div className="h-3 w-3 rounded-full bg-red-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]" />
-                <div className="h-3 w-3 rounded-full bg-yellow-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]" />
-                <div className="h-3 w-3 rounded-full bg-green-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]" />
-                <span className="ml-3 font-mono text-xs text-stone-400">Kedip</span>
-              </div>
-              <video
-                src="/assets/demo.webm"
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full"
+        <section aria-labelledby="hero-title" className="border-b">
+          <div className={`${frame} pt-14 pb-5 text-center sm:pt-20`}>
+            <p className={`${meta} flex items-center justify-center gap-2`}>
+              <span
+                aria-hidden="true"
+                className="size-2 rounded-full bg-signal"
               />
-            </div>
-            <p className="mt-3 text-center text-xs text-stone-300">
-              Notification → break overlay → back to work
+              The 20-20-20 rule
             </p>
-          </motion.div>
-          </div>
-        </section>
-
-        <section className="px-6 py-24 md:px-10" id="screens">
-          <div className="mx-auto max-w-5xl">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-20"
+            <h1
+              id="hero-title"
+              className="mx-auto mt-5 max-w-3xl text-[clamp(2.8rem,8vw,5.5rem)] leading-[0.98] font-semibold tracking-[-0.075em] text-balance"
             >
-              <p className="mb-3 text-xs font-medium tracking-widest text-stone-400 uppercase">
-                In action
-              </p>
-              <h2 className="text-3xl font-semibold tracking-tight md:text-4xl text-wrap-balance">
-                Every screen, no surprises.
-              </h2>
-            </motion.div>
-
-            <div className="flex flex-col gap-28">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              A little break for your eyes.
+            </h1>
+            <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-pretty text-ink-muted sm:text-lg">
+              Kedip is a free, open-source desktop app that reminds you to look
+              away from your screen.
+            </p>
+            <div className="mt-7 flex flex-wrap justify-center gap-2.5">
+              <Button asChild size="lg" className="rounded-md">
+                <a href="#download">
+                  Download Kedip <ArrowDown aria-hidden="true" />
+                </a>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="rounded-md bg-surface"
               >
-                <div className="mb-10">
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="font-mono text-xs text-stone-300">01</span>
-                    <span className="rounded-full border border-stone-200 px-2.5 py-0.5 text-[11px] font-medium text-stone-500">
-                      Onboarding
-                    </span>
-                  </div>
-                  <h3 className="mb-3 text-2xl font-semibold tracking-tight text-wrap-balance">
-                    Up and running in seconds.
-                  </h3>
-                  <p className="max-w-lg text-base leading-relaxed text-stone-500">
-                    Three steps. Pick how long you want to work, pick your break length, then sit
-                    through a quick demo so the first real notification isn't a surprise.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  {[
-                    { src: "/assets/screens/onboarding-1.webp", alt: "Step 1: intro", label: "Welcome" },
-                    { src: "/assets/screens/onboarding-2.webp", alt: "Step 2: set rhythm", label: "Set your rhythm" },
-                    { src: "/assets/screens/onboarding-3.webp", alt: "Step 3: demo", label: "Quick demo" },
-                  ].map(({ src, alt, label }, i) => (
-                    <motion.div
-                      key={src}
-                      initial={{ opacity: 0, y: 12 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.4, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                    >
-                      <AppWindow label={label}>
-                        <ScreenAsset src={src} alt={alt} aspectClass="aspect-[4/3]" />
-                      </AppWindow>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2"
-              >
-                <div className="order-2 overflow-hidden rounded-xl border border-stone-200 shadow-[0_4px_24px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.04)] lg:order-1">
-                  <ScreenAsset
-                    src="/assets/screens/notification.webp"
-                    alt="Notification pill: break now, snooze, or skip"
-                  />
-                </div>
-
-                <div className="order-1 lg:order-2">
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="font-mono text-xs text-stone-300">02</span>
-                    <span className="rounded-full border border-stone-200 px-2.5 py-0.5 text-[11px] font-medium text-stone-500">
-                      Notification
-                    </span>
-                  </div>
-                  <h3 className="mb-3 text-2xl font-semibold tracking-tight text-wrap-balance">
-                    A nudge, not a popup.
-                  </h3>
-                  <p className="text-base leading-relaxed text-stone-500">
-                    When time's up, a small pill drops down. Hit Space to start your break, S
-                    to snooze 5 minutes, or Esc to skip. No mouse needed.
-                  </p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2"
-              >
-                <div>
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="font-mono text-xs text-stone-300">03</span>
-                    <span className="rounded-full border border-stone-200 px-2.5 py-0.5 text-[11px] font-medium text-stone-500">
-                      Break screen
-                    </span>
-                  </div>
-                  <h3 className="mb-3 text-2xl font-semibold tracking-tight text-wrap-balance">
-                    20 seconds. Look away.
-                  </h3>
-                  <p className="text-base leading-relaxed text-stone-500">
-                    The screen goes dark with a countdown. No noise. Just a
-                    reminder to actually look somewhere else. Press Esc twice to bail early.
-                  </p>
-                </div>
-
-                <div className="overflow-hidden rounded-xl border border-stone-200 shadow-[0_4px_24px_rgba(0,0,0,0.08),0_1px_4px_rgba(0,0,0,0.04)]">
-                  <ScreenAsset
-                    src="/assets/screens/break.webp"
-                    alt="Break screen countdown overlay"
-                    aspectClass="aspect-video"
-                  />
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2"
-              >
-                <div className="order-2 lg:order-1">
-                  <AppWindow label="Settings">
-                    <ScreenAsset
-                      src="/assets/screens/settings.webp"
-                      alt="Settings window"
-                      aspectClass="aspect-full"
-                    />
-                  </AppWindow>
-                </div>
-
-                <div className="order-1 lg:order-2">
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="font-mono text-xs text-stone-300">04</span>
-                    <span className="rounded-full border border-stone-200 px-2.5 py-0.5 text-[11px] font-medium text-stone-500">
-                      Settings
-                    </span>
-                  </div>
-                  <h3 className="mb-3 text-2xl font-semibold tracking-tight text-wrap-balance">
-                    Change it whenever.
-                  </h3>
-                  <p className="text-base leading-relaxed text-stone-500">
-                    Work interval too short? Break too long? Fix it in settings. You can also
-                    see the live countdown and browse keyboard shortcuts from here.
-                  </p>
-                </div>
-              </motion.div>
+                <a href={GITHUB_URL}>
+                  <GithubIcon className="size-4" /> View source
+                </a>
+              </Button>
             </div>
+            <img
+              src="/kedip-eye-stack.svg"
+              alt=""
+              width="560"
+              height="360"
+              className="mx-auto mt-5 h-auto w-full max-w-[430px]"
+            />
           </div>
         </section>
 
-        <section className="bg-stone-950 px-6 py-28 md:px-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="mx-auto flex max-w-xl flex-col items-center gap-6 text-center"
+        <section
+          id="how-it-works"
+          aria-labelledby="how-title"
+          className="border-b"
+        >
+          <div
+            className={`${frame} grid items-center gap-8 py-11 sm:py-16 md:grid-cols-2 md:gap-12`}
           >
             <div>
-              <h2 className="mb-3 text-4xl font-semibold tracking-tight text-white text-wrap-balance">
-                Start today.
+              <p className={meta}>How it works</p>
+              <h2 id="how-title" className={`${sectionTitle} mt-3`}>
+                Look up. Look away.
               </h2>
-              <p className="leading-relaxed text-stone-400">
-                Free, open source, under 5 MB. No setup required.
-              </p>
+              <ol className="mt-6 border-t">
+                {steps.map(({ title, description }, index) => (
+                  <li
+                    key={title}
+                    className="grid grid-cols-[2.25rem_1fr] border-b py-3.5"
+                  >
+                    <span aria-hidden="true" className={`${meta} pt-1`}>
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <h3 className="text-sm font-semibold">{title}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-ink-muted">
+                        {description}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
             </div>
-            <div className="flex flex-wrap justify-center gap-3">
+            <ReminderPreview />
+          </div>
+        </section>
+
+        <section aria-labelledby="features-title" className="border-b">
+          <div className={`${frame} py-6`}>
+            <h2 id="features-title" className="sr-only">
+              Features
+            </h2>
+            <ul className="grid gap-4 sm:grid-cols-3">
+              {features.map(({ icon: Icon, label }) => (
+                <li
+                  key={label}
+                  className={`${meta} flex items-center gap-2.5 sm:justify-center`}
+                >
+                  <Icon className="size-4 shrink-0" aria-hidden="true" />
+                  {label}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section
+          id="download"
+          aria-labelledby="download-title"
+          className="border-b"
+        >
+          <div className={`${frame} py-12 sm:py-16`}>
+            <p className={meta}>Download</p>
+            <h2 id="download-title" className={`${sectionTitle} mt-3`}>
+              Get Kedip
+            </h2>
+            <p className="mt-3 text-ink-muted">
+              Pick an installer under Assets on the latest GitHub release.
+            </p>
+            <ul className="mt-6 grid gap-2.5 sm:grid-cols-3">
+              {platforms.map(({ icon: Icon, name, files }) => (
+                <li key={name}>
+                  <a
+                    href={RELEASES_URL}
+                    className="flex h-full items-center gap-3 rounded-md border bg-surface p-3 hover:border-ink-muted sm:p-4"
+                  >
+                    <Icon className="size-5 shrink-0" aria-hidden="true" />
+                    <span className="flex flex-1 flex-col gap-1">
+                      <span className="text-sm font-semibold">{name}</span>
+                      <span className="font-mono text-xs text-ink-muted">
+                        {files}
+                      </span>
+                    </span>
+                    <ArrowUpRight
+                      className="size-4 shrink-0"
+                      aria-hidden="true"
+                    />
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 text-sm text-ink-muted">
+              Using Homebrew or need a hand?{" "}
               <a
-                href={RELEASES_URL}
-                className="group inline-flex items-center gap-2 rounded-lg bg-white px-7 py-3 text-sm font-semibold text-stone-900 shadow-[0_4px_16px_rgba(255,255,255,0.15),0_1px_3px_rgba(0,0,0,0.2)] transition-colors hover:bg-stone-100 active:scale-[0.97] scale-press"
+                href={INSTALL_URL}
+                className="underline underline-offset-4 hover:text-foreground"
               >
-                Download
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                Read the installation guide
               </a>
-              <a
-                href={GITHUB_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-7 py-3 text-sm font-medium text-stone-400 transition-colors hover:border-white/20 hover:text-white scale-press"
-              >
-                <GithubIcon className="h-4 w-4" />
-                Source code
-              </a>
-            </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <p className="text-xs text-stone-600">macOS · Windows · Linux · MIT License</p>
-              <p className="font-mono text-xs text-stone-600">brew tap dendianugerah/tap &amp;&amp; brew install --cask kedip</p>
-            </div>
-          </motion.div>
+              .
+            </p>
+          </div>
         </section>
       </main>
 
-      <footer className="border-t border-stone-100 px-6 py-6 md:px-10">
-        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold">Kedip</span>
-          </div>
-          <div className="flex items-center gap-5 text-xs text-stone-400">
-            <a
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 transition-colors hover:text-stone-900 scale-press rounded-sm"
-            >
-              <GithubIcon className="h-3.5 w-3.5" />
+      <footer>
+        <div
+          className={`${frame} flex flex-wrap items-center justify-between gap-4 py-5 text-sm`}
+        >
+          <p className="font-semibold">Kedip</p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-ink-muted">
+            <a href={GITHUB_URL} className="hover:underline">
               GitHub
             </a>
-            <a href={RELEASES_URL} className="transition-colors hover:text-stone-900 scale-press rounded-sm">
-              Releases
+            <a href={`${GITHUB_URL}/issues`} className="hover:underline">
+              Report an issue
             </a>
             <a
               href={`${GITHUB_URL}/blob/main/LICENSE`}
-              target="_blank"
-              rel="noreferrer"
-              className="transition-colors hover:text-stone-900 scale-press rounded-sm"
+              className="hover:underline"
             >
-              License
+              MIT License
             </a>
           </div>
         </div>
@@ -333,4 +307,3 @@ export default function App() {
     </div>
   )
 }
-
