@@ -228,14 +228,27 @@ pub fn close_break(app: &AppHandle) {
     close_all_break_windows(app);
 
     #[cfg(target_os = "macos")]
-    let _ = app.run_on_main_thread(restore_macos_presentation);
+    {
+        let handle = app.clone();
+        let _ = app.run_on_main_thread(move || restore_macos_presentation(&handle));
+    }
 }
 
 #[cfg(target_os = "macos")]
-fn restore_macos_presentation() {
+fn restore_macos_presentation(handle: &AppHandle) {
     if let Some(mtm) = MainThreadMarker::new() {
         let app = NSApplication::sharedApplication(mtm);
         app.setPresentationOptions(NSApplicationPresentationOptions::empty());
+
+        if app.isActive()
+            && !handle.webview_windows().iter().any(|(label, window)| {
+                !label.starts_with("break_")
+                    && window.is_visible().unwrap_or(true)
+                    && !window.is_minimized().unwrap_or(false)
+            })
+        {
+            app.deactivate();
+        }
     }
 }
 
