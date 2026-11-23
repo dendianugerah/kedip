@@ -7,7 +7,7 @@ use tauri::{
 };
 
 #[cfg(target_os = "linux")]
-use gtk::prelude::GtkWindowExt;
+use gtk::prelude::{GtkWindowExt, WidgetExt};
 #[cfg(target_os = "macos")]
 use objc2::rc::Retained;
 #[cfg(target_os = "macos")]
@@ -166,7 +166,8 @@ fn show_break_window(
         .always_on_top(true)
         .resizable(false)
         .skip_taskbar(true)
-        .focused(false)
+        .focusable(primary || !cfg!(target_os = "linux"))
+        .focused(primary && cfg!(target_os = "linux"))
         .visible(false)
         .visible_on_all_workspaces(true)
         .build()
@@ -182,9 +183,24 @@ fn show_break_window(
         } else {
             let _ = window.set_fullscreen(true);
         }
-        let _ = window.show();
-        if primary {
-            let _ = window.set_focus();
+        #[cfg(target_os = "linux")]
+        {
+            let overlay = window.clone();
+            let _ = window.run_on_main_thread(move || {
+                if primary {
+                    if let Ok(gtk_window) = overlay.gtk_window() {
+                        gtk_window.connect_map(|window| window.present());
+                    }
+                }
+                let _ = overlay.show();
+            });
+        }
+        #[cfg(not(target_os = "linux"))]
+        {
+            let _ = window.show();
+            if primary {
+                let _ = window.set_focus();
+            }
         }
 
         #[cfg(target_os = "macos")]
