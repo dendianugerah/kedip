@@ -2,7 +2,8 @@
 
 use std::sync::mpsc;
 use tauri::{
-    AppHandle, Manager, Monitor, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder,
+    AppHandle, Manager, Monitor, PhysicalPosition, PhysicalSize, Position, Size, WebviewUrl,
+    WebviewWindowBuilder,
 };
 
 #[cfg(target_os = "macos")]
@@ -158,8 +159,13 @@ fn show_break_window(
         .build()
     {
         if let Some(monitor) = monitor {
-            let _ = window.set_position(*monitor.position());
-            let _ = window.set_size(*monitor.size());
+            let (position, size) = break_bounds(
+                *monitor.position(),
+                *monitor.size(),
+                cfg!(target_os = "macos").then(|| monitor.scale_factor()),
+            );
+            let _ = window.set_position(position);
+            let _ = window.set_size(size);
         } else {
             let _ = window.set_fullscreen(true);
         }
@@ -176,6 +182,22 @@ fn show_break_window(
                 apply_macos_lock_behavior(&overlay, primary);
             });
         }
+    }
+}
+
+fn break_bounds(
+    position: PhysicalPosition<i32>,
+    size: PhysicalSize<u32>,
+    macos_target_scale: Option<f64>,
+) -> (Position, Size) {
+    if let Some(scale) = macos_target_scale {
+        // AppKit uses points; Tao otherwise converts using the overlay's initial screen.
+        (
+            position.to_logical::<f64>(scale).into(),
+            size.to_logical::<f64>(scale).into(),
+        )
+    } else {
+        (position.into(), size.into())
     }
 }
 
@@ -287,6 +309,27 @@ pub fn show_settings(app: &AppHandle) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn macos_break_uses_target_screen_points() {
+        let (position, size) = break_bounds(
+            PhysicalPosition::new(3840, -100),
+            PhysicalSize::new(2880, 1800),
+            Some(2.0),
+        );
+        assert_eq!(position, tauri::LogicalPosition::new(1920.0, -50.0).into());
+        assert_eq!(size, tauri::LogicalSize::new(1440.0, 900.0).into());
+    }
+
+    #[test]
+    fn break_bounds_keep_physical_pixels_off_macos() {
+        let position = PhysicalPosition::new(-2560, 0);
+        let size = PhysicalSize::new(2560, 1440);
+        assert_eq!(
+            break_bounds(position, size, None),
+            (position.into(), size.into())
+        );
+    }
 
     #[test]
     fn notification_uses_physical_work_area_origin_and_scaled_size() {
