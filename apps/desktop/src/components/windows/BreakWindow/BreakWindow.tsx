@@ -1,193 +1,116 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
-import { motion } from "motion/react";
-import { Plus, X } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
+import { Eye, Plus, X } from "lucide-react";
 
-import { formatSeconds } from "@/lib/format";
-import type { TimerState } from "@/types/timer";
 import { Button } from "@/components/ui/button";
+import { formatTime } from "@/lib/format";
+import { useTimerState } from "@/lib/useTimerState";
 
-function SecondaryBreakWindow() {
-  return (
-    <motion.div
-      className="fixed inset-0 bg-black/85 backdrop-blur-2xl"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.7, ease: "easeOut" }}
-    />
-  );
-}
+const IDLE_MS = 3000;
+const ESC_WINDOW_MS = 800;
 
 export function BreakWindow() {
-  const params = new URLSearchParams(window.location.search);
-  const isPrimary = params.get("primary") !== "false";
-  const initialTime = Math.floor(parseInt(params.get("time") || "20000") / 1000);
-
-  const [timeRemaining, setTimeRemaining] = useState(initialTime);
-  const [isComplete, setIsComplete] = useState(false);
-  const [isIdle, setIsIdle] = useState(false);
-  const [escCount, setEscCount] = useState(0);
-
-  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const escTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isIdleRef = useRef(isIdle);
-
-  const resetIdleTimerRef = useRef<() => void>(() => {
-    setIsIdle(false);
-    if (idleTimer.current) clearTimeout(idleTimer.current);
-    idleTimer.current = setTimeout(() => setIsIdle(true), 3000);
-  });
+  const initialTime = Number(new URLSearchParams(window.location.search).get("time") ?? 20_000);
+  const timer = useTimerState();
+  const timeRemaining = timer?.phase === "Break" ? timer.time_remaining_ms : initialTime;
+  const reducedMotion = useReducedMotion();
+  const [idle, setIdle] = useState(false);
+  const [escapePending, setEscapePending] = useState(false);
 
   useEffect(() => {
-    isIdleRef.current = isIdle;
-  }, [isIdle]);
+    let lastActivity = performance.now();
+    let firstEscape: number | undefined;
+    let escapeTimer: ReturnType<typeof setTimeout> | undefined;
+    let idleTimer: ReturnType<typeof setTimeout> | undefined;
 
-  useEffect(() => {
-    if (!isPrimary) return;
-
-    resetIdleTimerRef.current();
-
-    const handler = () => resetIdleTimerRef.current();
-    const events = ["mousemove", "mousedown"];
-    events.forEach((e) => window.addEventListener(e, handler));
-
-    return () => {
-      events.forEach((e) => window.removeEventListener(e, handler));
-      if (idleTimer.current) clearTimeout(idleTimer.current);
-    };
-  }, [isPrimary]);
-
-  useEffect(() => {
-    if (!isPrimary) return;
-
-    const unlisten = listen<TimerState>("timer-update", (event) => {
-      if (event.payload.phase === "Break") {
-        const seconds = Math.floor(event.payload.time_remaining_ms / 1000);
-        setTimeRemaining(seconds);
-        if (seconds <= 0) setIsComplete(true);
+    const checkIdle = () => {
+      const delay = IDLE_MS - (performance.now() - lastActivity);
+      if (delay > 0) {
+        idleTimer = setTimeout(checkIdle, delay);
+      } else {
+        idleTimer = undefined;
+        setIdle(true);
       }
-    });
-
-    return () => {
-      unlisten.then((fn) => fn());
     };
-  }, [isPrimary]);
-
-  useEffect(() => {
-    if (!isPrimary) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (isIdleRef.current) {
-          resetIdleTimerRef.current();
-          return;
-        }
-
-        setEscCount((prev) => {
-          const next = prev + 1;
-          if (next >= 2) {
-            invoke("skip_break");
-            return 0;
-          }
-          if (escTimer.current) clearTimeout(escTimer.current);
-          escTimer.current = setTimeout(() => setEscCount(0), 800);
-          return next;
-        });
+    const activity = () => {
+      lastActivity = performance.now();
+      if (idleTimer === undefined) {
+        setIdle(false);
+        idleTimer = setTimeout(checkIdle, IDLE_MS);
+      }
+    };
+    const keyDown = (event: KeyboardEvent) => {
+      activity();
+      if (event.key !== "Escape" || event.repeat) return;
+      const now = performance.now();
+      if (firstEscape !== undefined && now - firstEscape <= ESC_WINDOW_MS) {
+        firstEscape = undefined;
+        clearTimeout(escapeTimer);
+        setEscapePending(false);
+        void invoke("skip_break").catch(console.error);
+      } else {
+        firstEscape = now;
+        setEscapePending(true);
+        clearTimeout(escapeTimer);
+        escapeTimer = setTimeout(() => setEscapePending(false), ESC_WINDOW_MS);
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    activity();
+    window.addEventListener("pointermove", activity);
+    window.addEventListener("pointerdown", activity);
+    window.addEventListener("keydown", keyDown);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      if (escTimer.current) clearTimeout(escTimer.current);
+      window.removeEventListener("pointermove", activity);
+      window.removeEventListener("pointerdown", activity);
+      window.removeEventListener("keydown", keyDown);
+      clearTimeout(idleTimer);
+      clearTimeout(escapeTimer);
     };
-  }, [isPrimary]);
-
-  const handleAddTime = () => invoke("add_break_time", { extraMs: 60000 });
-  const handleSkip = () => invoke("skip_break");
-
-  if (!isPrimary) {
-    return <SecondaryBreakWindow />;
-  }
-
-  if (isComplete) {
-    return (
-      <motion.div
-        className="fixed inset-0 bg-black/90 backdrop-blur-xl flex items-center justify-center select-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-      >
-        <div className="text-center">
-          <p className="text-5xl font-semibold text-white tracking-tight">Done</p>
-          <p className="text-lg font-light text-white/50 mt-4">Your eyes are refreshed</p>
-        </div>
-      </motion.div>
-    );
-  }
+  }, []);
 
   return (
-    <motion.div
-      className={`fixed inset-0 bg-black/85 backdrop-blur-2xl flex items-center justify-center select-none transition-[cursor] duration-300 ${isIdle ? "cursor-none" : ""}`}
-      initial={{ opacity: 0 }}
+    <motion.main
+      className={`break-surface fixed inset-0 flex items-center justify-center select-none text-white ${idle ? "cursor-none" : ""}`}
+      initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.7, ease: "easeOut" }}
+      transition={{ duration: 0.35 }}
     >
-      <div
-        className={`flex flex-col items-center text-center transition-transform duration-700 ease-out origin-center ${isIdle ? "scale-110" : "scale-100"}`}
-      >
-        <div className="mb-8">
-          <h1 className="text-4xl font-semibold text-white tracking-tight">Screen Break!</h1>
-          <p className="mt-3 text-lg font-light text-white/60 max-w-md">
-            Your eyes have been working overtime. Give them a quick mini-vacation.
-          </p>
-        </div>
-
-        <div>
-          <p className="text-[120px] font-extralight text-white tabular-nums tracking-tighter leading-none">
-            {formatSeconds(timeRemaining)}
-          </p>
-        </div>
-
+      <div className="flex flex-col items-center text-center px-6">
+        <Eye aria-hidden="true" className="size-7 text-teal-200 mb-5" />
+        <h1 className="text-3xl sm:text-4xl font-medium tracking-tight">Time to look away</h1>
+        <p className="mt-3 text-base text-white/70 text-balance">
+          Relax your shoulders and look at something about 20 feet (6 meters) away.
+        </p>
+        <p className="mt-8 text-[clamp(4rem,12vw,7.5rem)] font-extralight text-teal-50 tabular-nums tracking-tighter leading-none">
+          {formatTime(timeRemaining)}
+        </p>
         <div
-          className={`mt-16 flex flex-col items-center transition-opacity duration-700 ease-out ${isIdle ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+          className={`mt-10 flex flex-col items-center motion-safe:transition-opacity motion-safe:duration-300 focus-within:opacity-100 focus-within:pointer-events-auto ${idle ? "opacity-0 pointer-events-none" : "opacity-100"}`}
         >
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
-              onClick={handleAddTime}
-              className="px-5 py-2.5 h-auto rounded-full bg-white/10 hover:bg-white/20 text-white/80 text-sm font-medium scale-press transition-colors"
+              onClick={() => invoke("add_break_time", { extraMs: 60_000 }).catch(console.error)}
+              className="px-5 py-2.5 h-auto rounded-full bg-white/10 hover:bg-white/20 text-white/90 text-sm font-medium"
             >
-              <Plus className="w-4 h-4" />1 min
+              <Plus /> Add 1 min
             </Button>
             <Button
               variant="ghost"
-              onClick={handleSkip}
-              className="px-5 py-2.5 h-auto rounded-full bg-white/5 hover:bg-white/10 text-white/60 text-sm font-medium border border-white/10 hover:border-white/10 scale-press transition-colors"
+              onClick={() => invoke("skip_break").catch(console.error)}
+              className="px-5 py-2.5 h-auto rounded-full bg-white/5 hover:bg-white/10 text-white/80 text-sm font-medium border border-white/10"
             >
-              <X className="w-4 h-4" />
-              Skip
+              <X /> End break
             </Button>
           </div>
-
-          <p
-            className={`mt-8 text-sm transition-colors duration-200 ${escCount > 0 ? "text-white/70" : "text-white/30"}`}
-          >
-            {escCount > 0 ? (
-              <>
-                Press <kbd className="mx-1 px-1.5 py-0.5 rounded bg-white/20 text-xs">ESC</kbd>{" "}
-                again to skip
-              </>
-            ) : (
-              <>
-                Press <kbd className="mx-1 px-1.5 py-0.5 rounded bg-white/10 text-xs">ESC</kbd>{" "}
-                twice to skip
-              </>
-            )}
+          <p className={`mt-6 text-sm ${escapePending ? "text-white/90" : "text-white/60"}`}>
+            Press <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-xs">Esc</kbd>
+            {escapePending ? " again to end the break" : " twice to end the break"}
           </p>
         </div>
       </div>
-    </motion.div>
+    </motion.main>
   );
 }

@@ -1,61 +1,49 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
 
-import type { TimerState } from "@/types/timer";
+import { useTimerState } from "@/lib/useTimerState";
 import { NotificationBanner } from "./NotificationBanner";
 
 export function NotificationWindow() {
-  const [timeRemaining, setTimeRemaining] = useState(30000);
-  const [visible, setVisible] = useState(true);
+  const initialTime = Number(new URLSearchParams(window.location.search).get("time") ?? 30_000);
+  const timer = useTimerState();
+  const timeRemaining = timer?.phase === "Working" ? timer.time_remaining_ms : initialTime;
+  const pending = useRef(false);
+  const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const time = parseInt(params.get("time") || "30000");
-    setTimeRemaining(time);
-
-    const unlisten = listen<TimerState>("timer-update", (event) => {
-      if (event.payload.phase === "Working") {
-        setTimeRemaining(event.payload.time_remaining_ms);
-      }
+  const act = useCallback((command: string, args?: { minutes: number }) => {
+    if (pending.current) return;
+    pending.current = true;
+    setBusy(true);
+    void invoke(command, args).catch(() => {
+      pending.current = false;
+      setBusy(false);
     });
-
-    return () => {
-      unlisten.then((fn) => fn());
-    };
   }, []);
-
-  const dismiss = (action: () => void) => {
-    setVisible(false);
-    setTimeout(action, 220);
-  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!visible) return;
-      if (e.code === "Space") {
+      if (e.repeat || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.code === "Space" && !(e.target instanceof HTMLButtonElement)) {
         e.preventDefault();
-        setVisible(false);
-        setTimeout(() => invoke("start_break_now"), 220);
-      } else if (e.key === "s" || e.key === "S") {
-        setVisible(false);
-        setTimeout(() => invoke("snooze_break", { minutes: 5 }), 220);
+        act("start_break_now");
+      } else if (e.key.toLowerCase() === "s") {
+        act("snooze_break", { minutes: 5 });
       } else if (e.key === "Escape") {
-        setVisible(false);
-        setTimeout(() => invoke("skip_break"), 220);
+        act("skip_break");
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [visible]);
+  }, [act]);
 
   return (
     <NotificationBanner
       timeRemaining={timeRemaining}
-      visible={visible}
-      onStartNow={() => dismiss(() => invoke("start_break_now"))}
-      onSnooze={(minutes) => dismiss(() => invoke("snooze_break", { minutes }))}
-      onSkip={() => dismiss(() => invoke("skip_break"))}
+      busy={busy}
+      onStartNow={() => act("start_break_now")}
+      onSnooze={(minutes) => act("snooze_break", { minutes })}
+      onSkip={() => act("skip_break")}
     />
   );
 }

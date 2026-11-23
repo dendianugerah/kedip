@@ -2,11 +2,11 @@ import { useEffect, useState, type ElementType } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getVersion } from "@tauri-apps/api/app";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { listen } from "@tauri-apps/api/event";
 import { AnimatePresence, motion } from "motion/react";
 import { LayoutDashboard, Timer, Info, Keyboard } from "lucide-react";
 
-import type { TimerState, Preset } from "@/types/timer";
+import { PRESETS } from "@/constants/presets";
+import { useTimerState } from "@/lib/useTimerState";
 import { StatusCard } from "./StatusCard";
 import { TimerSettings } from "./TimerSettings";
 import { ShortcutsPage } from "./ShortcutsPage";
@@ -37,57 +37,38 @@ const NAV_BOTTOM: { id: Page; label: string; icon: ElementType }[] = [
 const GITHUB_URL = "https://github.com/dendianugerah/kedip";
 
 export function SettingsWindow() {
-  const [timerState, setTimerState] = useState<TimerState | null>(null);
-  const [workMinutes, setWorkMinutes] = useState(20);
-  const [breakSeconds, setBreakSeconds] = useState(20);
-  const [isPaused, setIsPaused] = useState(false);
+  const timerState = useTimerState();
+  const [draft, setDraft] = useState<{ workMs: number; breakMs: number } | null>(null);
   const [page, setPage] = useState<Page>("overview");
-  const [selectedPreset, setSelectedPreset] = useState("20-20-20");
-  const [saved, setSaved] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [appVersion, setAppVersion] = useState("");
 
   useEffect(() => {
-    getVersion().then(setAppVersion);
+    void getVersion().then(setAppVersion).catch(console.error);
   }, []);
 
-  useEffect(() => {
-    invoke<TimerState>("get_timer_state").then((state) => {
-      setTimerState(state);
-      setWorkMinutes(Math.floor(state.work_duration_ms / 60000));
-      setBreakSeconds(Math.floor(state.break_duration_ms / 1000));
-    });
+  const workMs = draft?.workMs ?? timerState?.work_duration_ms ?? 1_200_000;
+  const breakMs = draft?.breakMs ?? timerState?.break_duration_ms ?? 20_000;
+  const selectedPreset = PRESETS.find(
+    (preset) => preset.workMs === workMs && preset.breakMs === breakMs
+  )?.name;
+  const dirty =
+    timerState !== null &&
+    (workMs !== timerState.work_duration_ms || breakMs !== timerState.break_duration_ms);
 
-    const unlisten = listen<TimerState>("timer-update", (event) => {
-      setTimerState(event.payload);
-    });
-
-    return () => {
-      unlisten.then((fn) => fn());
-    };
-  }, []);
-
-  const handleSave = () => {
-    invoke("update_settings", {
-      workDurationMs: workMinutes * 60 * 1000,
-      breakDurationMs: breakSeconds * 1000,
-    });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const editSchedule = (workMs: number, breakMs: number) => {
+    setDraft({ workMs, breakMs });
+    setSaveState("idle");
   };
 
-  const handlePreset = (preset: Preset) => {
-    setSelectedPreset(preset.name);
-    setWorkMinutes(Math.floor(preset.workMs / 60000));
-    setBreakSeconds(Math.floor(preset.breakMs / 1000));
-    invoke("update_settings", {
-      workDurationMs: preset.workMs,
-      breakDurationMs: preset.breakMs,
-    });
-  };
-
-  const handleTogglePause = async () => {
-    const paused = await invoke<boolean>("toggle_pause");
-    setIsPaused(paused);
+  const handleSave = async () => {
+    setSaveState("saving");
+    try {
+      await invoke("update_settings", { workDurationMs: workMs, breakDurationMs: breakMs });
+      setSaveState("saved");
+    } catch {
+      setSaveState("error");
+    }
   };
 
   return (
@@ -106,6 +87,7 @@ export function SettingsWindow() {
                 <button
                   key={id}
                   onClick={() => setPage(id)}
+                  aria-current={active ? "page" : undefined}
                   className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer scale-press ${
                     active
                       ? "bg-white/[0.08] text-white"
@@ -126,6 +108,7 @@ export function SettingsWindow() {
                 <button
                   key={id}
                   onClick={() => setPage(id)}
+                  aria-current={active ? "page" : undefined}
                   className={`flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer scale-press ${
                     active
                       ? "bg-white/[0.08] text-white"
@@ -156,8 +139,7 @@ export function SettingsWindow() {
                 {page === "overview" && timerState && (
                   <StatusCard
                     timerState={timerState}
-                    isPaused={isPaused}
-                    onTogglePause={handleTogglePause}
+                    onTogglePause={() => invoke("toggle_pause")}
                     onBreakNow={() => invoke("start_break_now")}
                     onReset={() => invoke("skip_break")}
                   />
@@ -165,13 +147,14 @@ export function SettingsWindow() {
 
                 {page === "schedule" && (
                   <TimerSettings
-                    workMinutes={workMinutes}
-                    breakSeconds={breakSeconds}
+                    workMinutes={Math.round(workMs / 60_000)}
+                    breakSeconds={Math.round(breakMs / 1000)}
                     selectedPreset={selectedPreset}
-                    saved={saved}
-                    onWorkChange={setWorkMinutes}
-                    onBreakChange={setBreakSeconds}
-                    onPreset={handlePreset}
+                    saveState={saveState}
+                    dirty={dirty}
+                    onWorkChange={(value) => editSchedule(value * 60_000, breakMs)}
+                    onBreakChange={(value) => editSchedule(workMs, value * 1000)}
+                    onPreset={(preset) => editSchedule(preset.workMs, preset.breakMs)}
                     onSave={handleSave}
                   />
                 )}

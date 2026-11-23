@@ -55,7 +55,7 @@ Grab the latest binary from the [**Releases**](https://github.com/dendianugerah/
 - Fullscreen break overlay with countdown
 - Floating pill notification, snooze, skip, or break now
 - Configurable work and break durations
-- Runs in the menu bar, out of your way
+- After setup, starts in the system tray (menu bar on macOS). Open Settings from the tray menu.
 - No account, no cloud, no telemetry. Fully offline.
 
 ---

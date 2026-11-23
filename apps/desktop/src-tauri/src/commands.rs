@@ -1,146 +1,107 @@
 //! Tauri command handlers.
 
-use std::sync::Arc;
-use std::time::Instant;
-use tauri::{AppHandle, Emitter, Manager};
+use std::time::{Duration, Instant};
+use tauri::{AppHandle, Manager};
 use tauri_plugin_store::StoreExt;
 
-use crate::state::{AppState, TimerPhase, TimerState};
-use crate::windows;
+use crate::state::{AppState, TimerState};
+use crate::timer::{self, Action};
 
-const DEMO_COUNTDOWN_MS: u64 = 40_000;
-
-#[tauri::command]
-pub fn get_timer_state(state: tauri::State<'_, Arc<AppState>>) -> TimerState {
-    state.timer.lock().unwrap().clone()
+pub fn setting_duration(ms: u64) -> Duration {
+    Duration::from_millis(ms.clamp(1_000, 86_400_000))
 }
 
 #[tauri::command]
-pub fn skip_break(app: AppHandle, state: tauri::State<'_, Arc<AppState>>) {
-    let mut timer = state.timer.lock().unwrap();
-
-    windows::close_break(&app);
-    windows::close_notification(&app);
-
-    timer.phase = TimerPhase::Working;
-    timer.time_remaining_ms = timer.work_duration_ms;
-    *state.notification_shown.lock().unwrap() = false;
-    *state.last_tick.lock().unwrap() = Instant::now();
+pub fn get_timer_state(state: tauri::State<'_, AppState>) -> TimerState {
+    TimerState::new(&state.clock.lock().unwrap(), Instant::now())
 }
 
 #[tauri::command]
-pub fn snooze_break(app: AppHandle, state: tauri::State<'_, Arc<AppState>>, minutes: Option<u64>) {
-    let mut timer = state.timer.lock().unwrap();
-
-    windows::close_notification(&app);
-
-    let snooze_ms = minutes.unwrap_or(5) * 60 * 1000;
-    timer.phase = TimerPhase::Working;
-    timer.time_remaining_ms = snooze_ms;
-    *state.notification_shown.lock().unwrap() = false;
-    *state.last_tick.lock().unwrap() = Instant::now();
+pub fn skip_break(app: AppHandle) {
+    timer::send(&app, Action::Skip);
 }
 
 #[tauri::command]
-pub fn start_break_now(app: AppHandle, state: tauri::State<'_, Arc<AppState>>) {
-    let mut timer = state.timer.lock().unwrap();
-
-    windows::close_notification(&app);
-
-    timer.phase = TimerPhase::Break;
-    timer.time_remaining_ms = timer.break_duration_ms;
-    *state.notification_shown.lock().unwrap() = false;
-    *state.last_tick.lock().unwrap() = Instant::now();
-
-    let break_duration = timer.time_remaining_ms;
-    drop(timer);
-
-    let app_clone = app.clone();
-    let _ = app.run_on_main_thread(move || {
-        windows::show_break(&app_clone, break_duration);
-    });
+pub fn snooze_break(app: AppHandle, minutes: Option<u64>) {
+    timer::send(
+        &app,
+        Action::Snooze(Duration::from_secs(minutes.unwrap_or(5).clamp(1, 60) * 60)),
+    );
 }
 
 #[tauri::command]
-pub fn toggle_pause(state: tauri::State<'_, Arc<AppState>>) -> bool {
-    let mut paused = state.is_paused.lock().unwrap();
-    *paused = !*paused;
-
-    if !*paused {
-        *state.last_tick.lock().unwrap() = Instant::now();
-    }
-
-    *paused
+pub fn start_break_now(app: AppHandle) {
+    timer::send(&app, Action::BreakNow);
 }
 
 #[tauri::command]
-pub fn update_settings(
-    app: AppHandle,
-    state: tauri::State<'_, Arc<AppState>>,
-    work_duration_ms: u64,
-    break_duration_ms: u64,
-) {
-    let mut timer = state.timer.lock().unwrap();
-    timer.work_duration_ms = work_duration_ms;
-    timer.break_duration_ms = break_duration_ms;
-    if timer.phase == TimerPhase::Working {
-        timer.time_remaining_ms = work_duration_ms;
-    }
-    drop(timer);
-
-    if let Ok(store) = app.store("kedip.json") {
-        store.set("work_duration_ms", serde_json::json!(work_duration_ms));
-        store.set("break_duration_ms", serde_json::json!(break_duration_ms));
-        let _ = store.save();
-    }
+pub fn toggle_pause(app: AppHandle) {
+    timer::send(&app, Action::TogglePause);
 }
 
 #[tauri::command]
-pub fn add_break_time(state: tauri::State<'_, Arc<AppState>>, extra_ms: u64) {
-    let mut timer = state.timer.lock().unwrap();
-
-    if timer.phase == TimerPhase::Break {
-        timer.time_remaining_ms += extra_ms;
-    }
+pub fn add_break_time(app: AppHandle, extra_ms: u64) {
+    timer::send(&app, Action::Extend(setting_duration(extra_ms)));
 }
 
 #[tauri::command]
 pub fn is_onboarding_complete(app: AppHandle) -> bool {
-    if let Ok(store) = app.store("kedip.json") {
-        store
-            .get("onboarding_complete")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(false)
-    } else {
-        false
+    app.store("kedip.json")
+        .ok()
+        .and_then(|store| store.get("onboarding_complete"))
+        .and_then(|value| value.as_bool())
+        .unwrap_or(false)
+}
+
+fn save_schedule(
+    app: &AppHandle,
+    work: Duration,
+    rest: Duration,
+    demo: bool,
+) -> Result<(), String> {
+    let store = app.store("kedip.json").map_err(|err| err.to_string())?;
+    store.set(
+        "work_duration_ms",
+        serde_json::json!(work.as_millis() as u64),
+    );
+    store.set(
+        "break_duration_ms",
+        serde_json::json!(rest.as_millis() as u64),
+    );
+    if demo {
+        store.set("onboarding_complete", serde_json::json!(true));
     }
+    store.save().map_err(|err| err.to_string())?;
+    app.state::<AppState>()
+        .actions
+        .send(Action::SetSchedule { work, rest, demo })
+        .map_err(|err| err.to_string())
 }
 
 #[tauri::command]
-pub fn complete_onboarding(
+pub async fn update_settings(
     app: AppHandle,
-    state: tauri::State<'_, Arc<AppState>>,
     work_duration_ms: u64,
     break_duration_ms: u64,
-) {
-    {
-        let mut timer = state.timer.lock().unwrap();
-        timer.work_duration_ms = work_duration_ms;
-        timer.break_duration_ms = break_duration_ms;
-        if timer.phase == TimerPhase::Working {
-            timer.time_remaining_ms = DEMO_COUNTDOWN_MS;
-        }
-    }
+) -> Result<(), String> {
+    save_schedule(
+        &app,
+        setting_duration(work_duration_ms),
+        setting_duration(break_duration_ms),
+        false,
+    )
+}
 
-    if let Ok(store) = app.store("kedip.json") {
-        store.set("work_duration_ms", serde_json::json!(work_duration_ms));
-        store.set("break_duration_ms", serde_json::json!(break_duration_ms));
-        store.set("onboarding_complete", serde_json::json!(true));
-        let _ = store.save();
-    }
-
-    // Tell the frontend to switch views — no window operations needed.
-    if let Some(window) = app.get_webview_window("settings") {
-        let _ = window.emit("onboarding-complete", ());
-    }
+#[tauri::command]
+pub async fn complete_onboarding(
+    app: AppHandle,
+    work_duration_ms: u64,
+    break_duration_ms: u64,
+) -> Result<(), String> {
+    save_schedule(
+        &app,
+        setting_duration(work_duration_ms),
+        setting_duration(break_duration_ms),
+        true,
+    )
 }

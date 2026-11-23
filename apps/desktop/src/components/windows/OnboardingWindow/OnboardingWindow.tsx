@@ -22,18 +22,26 @@ const BREAK_OPTIONS = [
   { label: "5m", value: 300 },
 ];
 
-export function OnboardingWindow() {
+export function OnboardingWindow({ onComplete }: { onComplete: () => void }) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [workMinutes, setWorkMinutes] = useState(20);
   const [breakSeconds, setBreakSeconds] = useState(20);
   const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const handleComplete = async () => {
     setLoading(true);
-    await invoke("complete_onboarding", {
-      workDurationMs: workMinutes * 60 * 1000,
-      breakDurationMs: breakSeconds * 1000,
-    });
+    setFailed(false);
+    try {
+      await invoke("complete_onboarding", {
+        workDurationMs: workMinutes * 60 * 1000,
+        breakDurationMs: breakSeconds * 1000,
+      });
+      onComplete();
+    } catch {
+      setFailed(true);
+      setLoading(false);
+    }
   };
 
   const breakLabel =
@@ -207,9 +215,9 @@ export function OnboardingWindow() {
                 <div className="flex flex-col gap-1.5">
                   {(
                     [
-                      ["Space", "Start break now"],
-                      ["S", "Snooze 5 minutes"],
-                      ["Esc", "Skip"],
+                      ["Space", "Start break now (banner focused)"],
+                      ["S", "Snooze 5 minutes (banner focused)"],
+                      ["Esc", "Skip (banner focused)"],
                     ] as [string, string][]
                   ).map(([key, label]) => (
                     <div key={key} className="flex items-center justify-between">
@@ -219,6 +227,11 @@ export function OnboardingWindow() {
                   ))}
                 </div>
               </div>
+              {failed && (
+                <p role="alert" className="text-sm text-red-300">
+                  Couldn’t save your schedule. Try again.
+                </p>
+              )}
             </div>
           </OnboardingStepContainer>
         )}

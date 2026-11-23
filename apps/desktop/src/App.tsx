@@ -1,19 +1,21 @@
-import { NotificationWindow, BreakWindow, MainApp } from "@/components/windows";
+import { lazy, StrictMode, Suspense } from "react";
+import { createRoot } from "react-dom/client";
+import { MotionConfig } from "motion/react";
 
-function App() {
-  const params = new URLSearchParams(window.location.search);
-  const windowType = params.get("window") || "settings";
-
-  switch (windowType) {
-    case "notification":
-      return <NotificationWindow />;
-    case "break":
-      return <BreakWindow />;
-    case "settings":
-    case "onboarding":
-    default:
-      return <MainApp />;
-  }
+export function mountApp(root: HTMLElement, windowType: string | null) {
+  const Window =
+    windowType === "notification"
+      ? lazy(() => import("./components/windows/NotificationWindow").then((m) => ({ default: m.NotificationWindow })))
+      : windowType === "break"
+        ? lazy(() => import("./components/windows/BreakWindow").then((m) => ({ default: m.BreakWindow })))
+        : lazy(() => import("./components/windows/MainApp").then((m) => ({ default: m.MainApp })));
+  createRoot(root).render(
+    <StrictMode>
+      <MotionConfig reducedMotion="user">
+        <Suspense fallback={null}>
+          <Window />
+        </Suspense>
+      </MotionConfig>
+    </StrictMode>,
+  );
 }
-
-export default App;

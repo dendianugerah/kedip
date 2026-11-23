@@ -49,6 +49,11 @@ body {
   background: transparent;
 }
 
+.break-surface,
+#root.break-surface {
+  background: radial-gradient(ellipse at 50% 30%, rgb(17 28 26 / 96%), rgb(9 12 14 / 96%));
+}
+
 /* Smooth font rendering */
 * {
   text-rendering: optimizeLegibility;
