@@ -6,6 +6,8 @@ use tauri::{
     WebviewWindowBuilder,
 };
 
+#[cfg(target_os = "linux")]
+use gtk::prelude::GtkWindowExt;
 #[cfg(target_os = "macos")]
 use objc2::rc::Retained;
 #[cfg(target_os = "macos")]
@@ -80,6 +82,17 @@ pub fn show_notification(app: &AppHandle, time_remaining: u64) {
             let _ = window.set_position(position);
             let _ = window.set_size(size);
         }
+        #[cfg(target_os = "linux")]
+        {
+            let reminder = window.clone();
+            let _ = window.run_on_main_thread(move || {
+                if let Ok(gtk_window) = reminder.gtk_window() {
+                    gtk_window.set_focus_on_map(false);
+                }
+                let _ = reminder.show();
+            });
+        }
+        #[cfg(not(target_os = "linux"))]
         let _ = window.show();
     }
 }
