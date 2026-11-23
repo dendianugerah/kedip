@@ -19,7 +19,13 @@ use timer::Action;
 pub fn run() {
     let (app_state, actions) = AppState::new();
 
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    #[cfg(target_os = "linux")]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _, _| {
+        timer::send(app, Action::OpenSettings);
+    }));
+
+    builder
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
@@ -47,11 +53,14 @@ pub fn run() {
                 false
             };
 
-            tray::setup(app)?;
+            let tray = tray::setup(app);
+            if let Err(error) = &tray {
+                eprintln!("Could not set up the Kedip tray icon: {error}");
+            }
             timer::start(app.handle().clone(), actions);
             timer::send(
                 app.handle(),
-                if onboarded {
+                if onboarded && tray.is_ok() {
                     Action::Refresh
                 } else {
                     Action::OpenSettings
