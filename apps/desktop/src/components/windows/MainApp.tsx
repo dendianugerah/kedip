@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
 
 import { OnboardingWindow } from "./OnboardingWindow";
 import { SettingsWindow } from "./SettingsWindow";
@@ -10,21 +9,25 @@ export function MainApp() {
   const [onboardingDone, setOnboardingDone] = useState(false);
 
   useEffect(() => {
-    invoke<boolean>("is_onboarding_complete").then((done) => {
-      setOnboardingDone(done);
-      setReady(true);
-    });
-
-    const unlisten = listen("onboarding-complete", () => {
-      setOnboardingDone(true);
-    });
-
+    let active = true;
+    void invoke<boolean>("is_onboarding_complete")
+      .then((done) => {
+        if (active) setOnboardingDone(done);
+      })
+      .catch(console.error)
+      .finally(() => {
+        if (active) setReady(true);
+      });
     return () => {
-      unlisten.then((fn) => fn());
+      active = false;
     };
   }, []);
 
   if (!ready) return null;
 
-  return onboardingDone ? <SettingsWindow /> : <OnboardingWindow />;
+  return onboardingDone ? (
+    <SettingsWindow />
+  ) : (
+    <OnboardingWindow onComplete={() => setOnboardingDone(true)} />
+  );
 }

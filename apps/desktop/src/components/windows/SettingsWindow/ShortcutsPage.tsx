@@ -28,7 +28,7 @@ interface ShortcutGroup {
 
 const SHORTCUT_GROUPS: ShortcutGroup[] = [
   {
-    label: "Notification",
+    label: "Notification (when focused)",
     shortcuts: [
       { keys: ["Space"], description: "Start break now" },
       { keys: ["S"], description: "Snooze 5 minutes" },

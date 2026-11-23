@@ -1,47 +1,71 @@
 //! Kedip - A gentle eye care reminder app.
 //!
 
+mod clock;
 mod commands;
 mod state;
 mod timer;
 mod tray;
 mod windows;
 
-use std::sync::Arc;
+use std::time::Instant;
+use tauri::{Manager, WindowEvent};
 use tauri_plugin_store::StoreExt;
 
-pub use state::{AppState, TimerPhase, TimerState};
+use state::AppState;
+use timer::Action;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let app_state = Arc::new(AppState::default());
+    let (app_state, actions) = AppState::new();
 
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    #[cfg(target_os = "linux")]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _, _| {
+        timer::send(app, Action::OpenSettings);
+    }));
+
+    builder
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
-        .manage(app_state.clone())
+        .manage(app_state)
         .setup(move |app| {
-            let _onboarding_complete = if let Ok(store) = app.store("kedip.json") {
-                let mut timer = app_state.timer.lock().unwrap();
+            let state = app.state::<AppState>();
+            let onboarded = if let Ok(store) = app.store("kedip.json") {
+                let mut clock = state.clock.lock().unwrap();
                 if let Some(ms) = store.get("work_duration_ms").and_then(|v| v.as_u64()) {
-                    timer.work_duration_ms = ms;
-                    timer.time_remaining_ms = ms;
+                    clock.work = commands::setting_duration(ms);
                 }
                 if let Some(ms) = store.get("break_duration_ms").and_then(|v| v.as_u64()) {
-                    timer.break_duration_ms = ms;
+                    clock.rest = commands::setting_duration(ms);
                 }
-                store
+                let complete = store
                     .get("onboarding_complete")
                     .and_then(|v| v.as_bool())
-                    .unwrap_or(false)
+                    .unwrap_or(false);
+                if complete {
+                    let work = clock.work;
+                    clock.activate(Instant::now(), work);
+                }
+                complete
             } else {
                 false
             };
 
-            tray::setup(app, app_state.clone())?;
-            timer::start_loop(app.handle().clone(), app_state.clone());
-            windows::show_settings(app.handle());
+            let tray = tray::setup(app);
+            if let Err(error) = &tray {
+                eprintln!("Could not set up the Kedip tray icon: {error}");
+            }
+            timer::start(app.handle().clone(), actions);
+            timer::send(
+                app.handle(),
+                if onboarded && tray.is_ok() {
+                    Action::Refresh
+                } else {
+                    Action::OpenSettings
+                },
+            );
 
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
@@ -49,6 +73,13 @@ pub fn run() {
             });
 
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if window.label() == "settings"
+                && matches!(event, WindowEvent::Focused(_) | WindowEvent::Destroyed)
+            {
+                timer::send(window.app_handle(), Action::Refresh);
+            }
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_timer_state,
@@ -63,12 +94,12 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
-        .run(|_app, event| {
-            // Keep the app alive in the tray when all windows are closed.
-            // The tray "Quit" item calls app.exit(0) which bypasses this.
-            if let tauri::RunEvent::ExitRequested { api, .. } = event {
-                api.prevent_exit();
-            }
+        .run(|app, event| match event {
+            tauri::RunEvent::ExitRequested {
+                api, code: None, ..
+            } => api.prevent_exit(),
+            tauri::RunEvent::Exit => timer::send(app, Action::Stop),
+            _ => {}
         });
 }
 
@@ -79,6 +110,7 @@ async fn check_for_update(app: tauri::AppHandle) {
     let Ok(Some(update)) = updater.check().await else {
         return;
     };
-    let _ = update.download_and_install(|_, _| {}, || {}).await;
-    app.restart();
+    if update.download_and_install(|_, _| {}, || {}).await.is_ok() {
+        app.restart();
+    }
 }

@@ -1,110 +1,139 @@
-//! Timer loop and phase transitions.
+//! Deadline scheduler and timer actions shared by the webviews and tray.
 
-use std::sync::Arc;
-use std::time::Duration;
-use tauri::{AppHandle, Emitter};
+use std::sync::mpsc::{Receiver, RecvTimeoutError};
+use std::time::{Duration, Instant};
+use tauri::{AppHandle, Manager};
 
-use crate::state::{AppState, TimerPhase};
-use crate::windows;
+use crate::clock::{TimerPhase, Transition};
+use crate::state::{AppState, TimerState};
+use crate::{tray, windows};
 
-const WARNING_THRESHOLD_MS: u64 = 30_000;
-
-fn format_time(ms: u64) -> String {
-    let total_seconds = ms / 1000;
-    let minutes = total_seconds / 60;
-    let seconds = total_seconds % 60;
-    format!("{:02}:{:02}", minutes, seconds)
+pub enum Action {
+    Refresh,
+    OpenSettings,
+    Skip,
+    Snooze(Duration),
+    BreakNow,
+    TogglePause,
+    SetSchedule {
+        work: Duration,
+        rest: Duration,
+        demo: bool,
+    },
+    Extend(Duration),
+    Stop,
 }
 
-pub fn update_tray_title(app: &AppHandle, paused: bool, phase: TimerPhase, time_remaining_ms: u64) {
-    if let Some(tray) = app.tray_by_id("main-tray") {
-        let title = if paused {
-            "⏸".to_string()
-        } else {
-            match phase {
-                TimerPhase::Working => format_time(time_remaining_ms),
-                TimerPhase::Break => format!("😌 {}", format_time(time_remaining_ms)),
+pub fn send(app: &AppHandle, action: Action) {
+    let _ = app.state::<AppState>().actions.send(action);
+}
+
+pub fn start(app: AppHandle, actions: Receiver<Action>) {
+    std::thread::spawn(move || {
+        let mut wake = None::<Instant>;
+        let mut tray_status = None;
+        loop {
+            let action = match wake {
+                Some(at) => {
+                    match actions.recv_timeout(at.saturating_duration_since(Instant::now())) {
+                        Ok(action) => action,
+                        Err(RecvTimeoutError::Timeout) => Action::Refresh,
+                        Err(RecvTimeoutError::Disconnected) => break,
+                    }
+                }
+                None => match actions.recv() {
+                    Ok(action) => action,
+                    Err(_) => break,
+                },
+            };
+            if matches!(action, Action::Stop) {
+                break;
             }
-        };
-        let _ = tray.set_title(Some(&title));
+            wake = apply(&app, action, &mut tray_status);
+        }
+    });
+}
+
+fn apply(
+    app: &AppHandle,
+    action: Action,
+    tray_status: &mut Option<tray::Status>,
+) -> Option<Instant> {
+    let state = app.state::<AppState>();
+    let now = Instant::now();
+    let (snapshot, remaining, phase, paused, warning, show_warning, show_break, close_break) = {
+        let mut clock = state.clock.lock().unwrap();
+        let was_break = clock.phase == TimerPhase::Break;
+        let was_warning = clock.warning;
+        match action {
+            Action::Skip => clock.reset(now),
+            Action::Snooze(duration) if was_warning => clock.postpone(now, duration),
+            Action::BreakNow if !was_break => clock.take_break(now),
+            Action::TogglePause => clock.toggle_pause(now),
+            Action::SetSchedule { work, rest, demo } => {
+                clock.work = work;
+                clock.rest = rest;
+                if demo {
+                    clock.activate(now, Duration::from_secs(40));
+                } else if !was_break {
+                    clock.reset(now);
+                }
+            }
+            Action::Extend(duration) => clock.add_time(now, duration),
+            _ => {}
+        }
+        let transition = clock.advance(now);
+        let is_break = clock.phase == TimerPhase::Break;
+        (
+            TimerState::new(&clock, now),
+            clock.remaining(now),
+            clock.phase,
+            clock.paused,
+            clock.warning,
+            transition == Some(Transition::Warn),
+            is_break && !was_break,
+            !is_break && was_break,
+        )
+    };
+
+    if !warning {
+        windows::close_notification(app);
     }
-}
+    if close_break {
+        windows::close_break(app);
+    }
+    if show_break {
+        windows::show_break(app, remaining.as_millis() as u64);
+    } else if show_warning {
+        windows::show_notification(app, remaining.as_millis() as u64);
+    }
+    if matches!(action, Action::OpenSettings) {
+        windows::show_settings(app);
+    }
 
-pub fn start_loop(app: AppHandle, state: Arc<AppState>) {
-    std::thread::spawn(move || loop {
-        std::thread::sleep(Duration::from_millis(1000));
-
-        let paused = *state.is_paused.lock().unwrap();
-
-        let current_state = {
-            let mut timer = state.timer.lock().unwrap();
-
-            if !paused {
-                if timer.time_remaining_ms >= 1000 {
-                    timer.time_remaining_ms -= 1000;
-                } else {
-                    timer.time_remaining_ms = 0;
-                }
-            }
-
-            if !paused
-                && timer.phase == TimerPhase::Working
-                && timer.time_remaining_ms <= WARNING_THRESHOLD_MS
-            {
-                let mut shown = state.notification_shown.lock().unwrap();
-                if !*shown {
-                    *shown = true;
-                    let app_clone = app.clone();
-                    let time = timer.time_remaining_ms;
-                    let _ = app.run_on_main_thread(move || {
-                        windows::show_notification(&app_clone, time);
-                    });
-                }
-            }
-
-            if timer.time_remaining_ms == 0 {
-                match timer.phase {
-                    TimerPhase::Working => {
-                        *state.notification_shown.lock().unwrap() = false;
-                        timer.phase = TimerPhase::Break;
-                        timer.time_remaining_ms = timer.break_duration_ms;
-                    }
-                    TimerPhase::Break => {
-                        timer.phase = TimerPhase::Working;
-                        timer.time_remaining_ms = timer.work_duration_ms;
-                    }
-                }
-            }
-
-            timer.clone()
-        };
-
-        let _ = app.emit("timer-update", &current_state);
-
-        if current_state.time_remaining_ms == 0 {
-            let app_for_closure = app.clone();
-            match current_state.phase {
-                TimerPhase::Break => {
-                    let a = app_for_closure.clone();
-                    let _ = app_for_closure.run_on_main_thread(move || {
-                        windows::close_notification(&a);
-                        windows::show_break(&a, current_state.break_duration_ms);
-                    });
-                }
-                TimerPhase::Working => {
-                    let a = app_for_closure.clone();
-                    let _ = app_for_closure.run_on_main_thread(move || {
-                        windows::close_break(&a);
-                    });
-                }
+    let mut countdown_visible = false;
+    let mut script = None;
+    for label in ["settings", "notification", windows::PRIMARY_BREAK_LABEL] {
+        if let Some(window) = app.get_webview_window(label) {
+            if window.is_visible().unwrap_or(true) && !window.is_minimized().unwrap_or(false) {
+                countdown_visible = true;
+                let script = script.get_or_insert_with(|| {
+                    format!(
+                        "window.dispatchEvent(new CustomEvent('kedip:timer-update', {{ detail: {} }}))",
+                        serde_json::to_string(&snapshot).expect("timer snapshot is serializable")
+                    )
+                });
+                let _ = window.eval(script.as_str());
             }
         }
+    }
 
-        update_tray_title(
-            &app,
-            paused,
-            current_state.phase,
-            current_state.time_remaining_ms,
-        );
-    });
+    tray::update_status(app, tray_status, phase, paused, remaining);
+    let next_wake =
+        state
+            .clock
+            .lock()
+            .unwrap()
+            .next_wake(now, countdown_visible, cfg!(target_os = "macos"));
+    next_wake
 }

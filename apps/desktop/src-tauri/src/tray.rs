@@ -1,17 +1,16 @@
 //! System tray setup and event handling.
 
-use std::sync::Arc;
-use std::time::Instant;
+use std::time::Duration;
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    App,
+    App, AppHandle,
 };
 
-use crate::state::{AppState, TimerPhase};
-use crate::windows;
+use crate::clock::TimerPhase;
+use crate::timer::{self, Action};
 
-pub fn setup(app: &App, state: Arc<AppState>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn setup(app: &App) -> Result<(), Box<dyn std::error::Error>> {
     let quit_item = MenuItem::with_id(app, "quit", "Quit Kedip", true, None::<&str>)?;
     let settings_item = MenuItem::with_id(app, "settings", "Settings...", true, None::<&str>)?;
     let pause_item = MenuItem::with_id(app, "pause", "Pause", true, None::<&str>)?;
@@ -38,8 +37,7 @@ pub fn setup(app: &App, state: Arc<AppState>) -> Result<(), Box<dyn std::error::
 
     TrayIconBuilder::with_id("main-tray")
         .icon(icon)
-        .title("20:00")
-        .tooltip("Kedip – Click to open, right-click to quit")
+        .tooltip("Kedip")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_tray_icon_event(|tray, event| {
@@ -49,59 +47,74 @@ pub fn setup(app: &App, state: Arc<AppState>) -> Result<(), Box<dyn std::error::
                 ..
             } = event
             {
-                let app = tray.app_handle();
-                windows::show_settings(app);
+                timer::send(tray.app_handle(), Action::OpenSettings);
             }
         })
-        .on_menu_event(move |app, event| {
-            handle_menu_event(app, &event.id.0, &state);
+        .on_menu_event(|app, event| {
+            let action = match event.id.as_ref() {
+                "quit" => return app.exit(0),
+                "settings" => Action::OpenSettings,
+                "pause" => Action::TogglePause,
+                "skip" => Action::Skip,
+                "break_now" => Action::BreakNow,
+                _ => return,
+            };
+            timer::send(app, action);
         })
         .build(app)?;
 
     Ok(())
 }
 
-fn handle_menu_event(app: &tauri::AppHandle, event_id: &str, state: &Arc<AppState>) {
-    match event_id {
-        "quit" => {
-            std::process::exit(0);
-        }
-        "settings" => {
-            windows::show_settings(app);
-        }
-        "pause" => {
-            let mut paused = state.is_paused.lock().unwrap();
-            *paused = !*paused;
-            if !*paused {
-                *state.last_tick.lock().unwrap() = Instant::now();
-            }
-        }
-        "skip" => {
-            let mut timer = state.timer.lock().unwrap();
-            windows::close_break(app);
-            windows::close_notification(app);
-            timer.phase = TimerPhase::Working;
-            timer.time_remaining_ms = timer.work_duration_ms;
-            *state.notification_shown.lock().unwrap() = false;
-            *state.last_tick.lock().unwrap() = Instant::now();
-        }
-        "break_now" => {
-            let mut timer = state.timer.lock().unwrap();
-            windows::close_notification(app);
-            timer.phase = TimerPhase::Break;
-            timer.time_remaining_ms = timer.break_duration_ms;
-            *state.notification_shown.lock().unwrap() = false;
-            *state.last_tick.lock().unwrap() = Instant::now();
+#[derive(PartialEq)]
+pub enum Status {
+    #[cfg(not(target_os = "macos"))]
+    Working,
+    Paused,
+    Break,
+    #[cfg(target_os = "macos")]
+    Minutes(u64),
+}
 
-            let break_duration = timer.time_remaining_ms;
-            drop(timer);
-
-            let app_clone = app.clone();
-            let app_for_thread = app.clone();
-            let _ = app_clone.run_on_main_thread(move || {
-                windows::show_break(&app_for_thread, break_duration);
-            });
+pub fn update_status(
+    app: &AppHandle,
+    last_status: &mut Option<Status>,
+    phase: TimerPhase,
+    paused: bool,
+    _remaining: Duration,
+) {
+    let status = if phase == TimerPhase::Break {
+        Status::Break
+    } else if paused {
+        Status::Paused
+    } else {
+        #[cfg(target_os = "macos")]
+        {
+            let seconds = _remaining.as_secs() + u64::from(_remaining.subsec_nanos() != 0);
+            Status::Minutes((seconds + 59) / 60)
         }
-        _ => {}
+        #[cfg(not(target_os = "macos"))]
+        Status::Working
+    };
+    if last_status.as_ref() == Some(&status) {
+        return;
     }
+    if let Some(tray) = app.tray_by_id("main-tray") {
+        let menu_hint = match phase {
+            TimerPhase::Break => "Kedip — On a break",
+            TimerPhase::Working if paused => "Kedip — Reminders paused",
+            TimerPhase::Working => "Kedip — Reminders on",
+        };
+        let _ = tray.set_tooltip(Some(menu_hint));
+        #[cfg(target_os = "macos")]
+        {
+            let title = match status {
+                Status::Paused => "⏸".into(),
+                Status::Break => "Break".into(),
+                Status::Minutes(minutes) => format!("{minutes}m"),
+            };
+            let _ = tray.set_title(Some(title));
+        }
+    }
+    *last_status = Some(status);
 }

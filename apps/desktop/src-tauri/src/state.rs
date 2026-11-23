@@ -1,51 +1,49 @@
-//! Application state management.
-
-use serde::{Deserialize, Serialize};
-use std::sync::Mutex;
+use crate::clock::{Clock, TimerPhase};
+use crate::timer::Action;
+use serde::Serialize;
+use std::sync::{mpsc, Mutex};
 use std::time::Instant;
 
-const DEFAULT_WORK_DURATION_MS: u64 = 20 * 60 * 1000;
-const DEFAULT_BREAK_DURATION_MS: u64 = 20 * 1000;
-
-#[derive(Clone, Copy, PartialEq, Debug, Serialize, Deserialize)]
-pub enum TimerPhase {
-    Working,
-    Break,
-}
-
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize)]
 pub struct TimerState {
-    pub phase: TimerPhase,
-    pub time_remaining_ms: u64,
-    pub work_duration_ms: u64,
-    pub break_duration_ms: u64,
+    phase: &'static str,
+    time_remaining_ms: u64,
+    phase_duration_ms: u64,
+    work_duration_ms: u64,
+    break_duration_ms: u64,
+    is_paused: bool,
 }
 
-impl Default for TimerState {
-    fn default() -> Self {
+impl TimerState {
+    pub fn new(clock: &Clock, now: Instant) -> Self {
         Self {
-            phase: TimerPhase::Working,
-            time_remaining_ms: DEFAULT_WORK_DURATION_MS,
-            work_duration_ms: DEFAULT_WORK_DURATION_MS,
-            break_duration_ms: DEFAULT_BREAK_DURATION_MS,
+            phase: match clock.phase {
+                TimerPhase::Working => "Working",
+                TimerPhase::Break => "Break",
+            },
+            time_remaining_ms: clock.remaining(now).as_millis() as u64,
+            phase_duration_ms: clock.total.as_millis() as u64,
+            work_duration_ms: clock.work.as_millis() as u64,
+            break_duration_ms: clock.rest.as_millis() as u64,
+            is_paused: clock.paused,
         }
     }
 }
 
 pub struct AppState {
-    pub timer: Mutex<TimerState>,
-    pub last_tick: Mutex<Instant>,
-    pub is_paused: Mutex<bool>,
-    pub notification_shown: Mutex<bool>,
+    pub clock: Mutex<Clock>,
+    pub actions: mpsc::Sender<Action>,
 }
 
-impl Default for AppState {
-    fn default() -> Self {
-        Self {
-            timer: Mutex::new(TimerState::default()),
-            last_tick: Mutex::new(Instant::now()),
-            is_paused: Mutex::new(false),
-            notification_shown: Mutex::new(false),
-        }
+impl AppState {
+    pub fn new() -> (Self, mpsc::Receiver<Action>) {
+        let (actions, receiver) = mpsc::channel();
+        (
+            Self {
+                clock: Mutex::new(Clock::default()),
+                actions,
+            },
+            receiver,
+        )
     }
 }
