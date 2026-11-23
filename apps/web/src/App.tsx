@@ -2,10 +2,8 @@ import {
   ArrowDown,
   ArrowUpRight,
   Bell,
-  Clock3,
   Laptop,
   Monitor,
-  SlidersHorizontal,
   Terminal,
 } from "lucide-react"
 import { Button } from "./components/ui/button"
@@ -30,12 +28,6 @@ const steps = [
   },
 ]
 
-const features = [
-  { icon: SlidersHorizontal, label: "Adjustable schedule" },
-  { icon: Clock3, label: "Pause, snooze, or skip" },
-  { icon: GithubIcon, label: "Free and open source" },
-]
-
 const platforms = [
   { icon: Laptop, name: "macOS", files: ".dmg" },
   { icon: Monitor, name: "Windows", files: ".msi or .exe" },
@@ -50,16 +42,16 @@ function ReminderPreview() {
   return (
     <figure className="min-w-0">
       <div className="overflow-hidden rounded-xl border bg-paper shadow-[0_12px_28px_-20px_#3c3a32]">
-        <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-b px-4 py-2.5">
           <span className="flex items-center gap-2 text-xs font-medium">
             <img src="/logo.svg" alt="" width="16" height="16" />
             Kedip
           </span>
           <span className={meta}>Reminder</span>
         </div>
-        <div className="grid place-items-center bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] bg-[size:12px_12px] px-3 py-8 sm:px-6 sm:py-10">
+        <div className="grid place-items-center bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] bg-[size:12px_12px] px-3 py-4 sm:px-6 sm:py-6">
           <div className="w-full max-w-72 rounded-lg border bg-surface p-4 shadow-sm sm:p-5">
-            <Bell className="mb-4 size-4 text-ink-muted" aria-hidden="true" />
+            <Bell className="mb-2 size-4 text-ink-muted" aria-hidden="true" />
             <p className="text-xl font-semibold tracking-tight">
               Your break starts soon
             </p>
@@ -67,13 +59,13 @@ function ReminderPreview() {
               Starting in 30 seconds
             </p>
             <div
-              className="mt-4 h-1 overflow-hidden rounded-full bg-border"
+              className="mt-3 h-1 overflow-hidden rounded-full bg-border"
               aria-hidden="true"
             >
               <div className="h-full w-2/3 rounded-full bg-signal" />
             </div>
             <div
-              className="mt-4 flex flex-wrap gap-2 text-xs font-medium"
+              className="mt-3 flex flex-wrap gap-2 text-xs font-medium"
               aria-hidden="true"
             >
               <span className="rounded-md bg-foreground px-2.5 py-1.5 text-paper">
@@ -86,8 +78,8 @@ function ReminderPreview() {
           </div>
         </div>
       </div>
-      <figcaption className={`${meta} mt-3 text-right`}>
-        A preview of the break reminder
+      <figcaption className={`${meta} mt-2 text-right`}>
+        Reminder preview
       </figcaption>
     </figure>
   )
@@ -98,7 +90,7 @@ export default function App() {
     <div className="min-h-screen bg-paper text-foreground">
       <header className="border-b">
         <div
-          className={`${frame} flex min-h-16 items-center justify-between gap-3`}
+          className={`${frame} flex min-h-14 items-center justify-between gap-3`}
         >
           <a href="/" className="flex items-center gap-2 font-semibold">
             <img src="/logo.svg" alt="" width="26" height="26" />
@@ -109,16 +101,10 @@ export default function App() {
             className="flex items-center gap-4 text-sm sm:gap-6"
           >
             <a
-              href="#how-it-works"
-              className="hidden hover:underline sm:inline"
-            >
-              How it works
-            </a>
-            <a
               href={GITHUB_URL}
-              className="inline-flex items-center gap-1 hover:underline"
+              className="inline-flex items-center gap-1.5 hover:underline"
             >
-              GitHub <ArrowUpRight className="size-3" aria-hidden="true" />
+              <GithubIcon className="size-4" /> GitHub
             </a>
             <Button
               variant="outline"
@@ -134,7 +120,7 @@ export default function App() {
 
       <main>
         <section aria-labelledby="hero-title" className="border-b">
-          <div className={`${frame} pt-14 pb-5 text-center sm:pt-20`}>
+          <div className={`${frame} pt-9 pb-4 text-center sm:pt-12`}>
             <p className={`${meta} flex items-center justify-center gap-2`}>
               <span
                 aria-hidden="true"
@@ -144,37 +130,25 @@ export default function App() {
             </p>
             <h1
               id="hero-title"
-              className="mx-auto mt-5 max-w-3xl text-[clamp(2.8rem,8vw,5.5rem)] leading-[0.98] font-semibold tracking-[-0.075em] text-balance"
+              className="mx-auto mt-3 max-w-3xl text-[clamp(2.8rem,8vw,5.5rem)] leading-[0.98] font-semibold tracking-[-0.075em] text-balance"
             >
               A little break for your eyes.
             </h1>
-            <p className="mx-auto mt-5 max-w-md text-base leading-relaxed text-pretty text-ink-muted sm:text-lg">
+            <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-pretty text-ink-muted sm:text-lg">
               Kedip is a free, open-source desktop app that reminds you to look
               away from your screen.
             </p>
-            <div className="mt-7 flex flex-wrap justify-center gap-2.5">
-              <Button asChild size="lg" className="rounded-md">
-                <a href="#download">
-                  Download Kedip <ArrowDown aria-hidden="true" />
-                </a>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="rounded-md bg-surface"
-              >
-                <a href={GITHUB_URL}>
-                  <GithubIcon className="size-4" /> View source
-                </a>
-              </Button>
-            </div>
+            <Button asChild size="lg" className="mt-5 rounded-md">
+              <a href="#download">
+                Download Kedip <ArrowDown aria-hidden="true" />
+              </a>
+            </Button>
             <img
               src="/kedip-eye-stack.svg"
               alt=""
               width="560"
               height="360"
-              className="mx-auto mt-5 h-auto w-full max-w-[430px]"
+              className="mx-auto mt-3 h-auto w-full max-w-60 sm:max-w-xs"
             />
           </div>
         </section>
@@ -185,18 +159,18 @@ export default function App() {
           className="border-b"
         >
           <div
-            className={`${frame} grid items-center gap-8 py-11 sm:py-16 md:grid-cols-2 md:gap-12`}
+            className={`${frame} grid items-center gap-5 py-8 sm:py-10 md:grid-cols-2 md:gap-12`}
           >
             <div>
               <p className={meta}>How it works</p>
-              <h2 id="how-title" className={`${sectionTitle} mt-3`}>
+              <h2 id="how-title" className={`${sectionTitle} mt-2`}>
                 Look up. Look away.
               </h2>
-              <ol className="mt-6 border-t">
+              <ol className="mt-4 border-t">
                 {steps.map(({ title, description }, index) => (
                   <li
                     key={title}
-                    className="grid grid-cols-[2.25rem_1fr] border-b py-3.5"
+                    className="grid grid-cols-[2.25rem_1fr] border-b py-2.5"
                   >
                     <span aria-hidden="true" className={`${meta} pt-1`}>
                       {String(index + 1).padStart(2, "0")}
@@ -215,39 +189,25 @@ export default function App() {
           </div>
         </section>
 
-        <section aria-labelledby="features-title" className="border-b">
-          <div className={`${frame} py-6`}>
-            <h2 id="features-title" className="sr-only">
-              Features
-            </h2>
-            <ul className="grid gap-4 sm:grid-cols-3">
-              {features.map(({ icon: Icon, label }) => (
-                <li
-                  key={label}
-                  className={`${meta} flex items-center gap-2.5 sm:justify-center`}
-                >
-                  <Icon className="size-4 shrink-0" aria-hidden="true" />
-                  {label}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-
         <section
           id="download"
           aria-labelledby="download-title"
           className="border-b"
         >
-          <div className={`${frame} py-12 sm:py-16`}>
-            <p className={meta}>Download</p>
-            <h2 id="download-title" className={`${sectionTitle} mt-3`}>
-              Get Kedip
+          <div className={`${frame} py-8 sm:py-10`}>
+            <h2 id="download-title" className={sectionTitle}>
+              Download Kedip
             </h2>
-            <p className="mt-3 text-ink-muted">
-              Pick an installer under Assets on the latest GitHub release.
+            <p className="mt-2 text-sm text-ink-muted">
+              Find your installer under Assets on GitHub.{" "}
+              <a
+                href={INSTALL_URL}
+                className="underline underline-offset-4 hover:text-foreground"
+              >
+                Install guide
+              </a>
             </p>
-            <ul className="mt-6 grid gap-2.5 sm:grid-cols-3">
+            <ul className="mt-4 grid gap-2 sm:grid-cols-3">
               {platforms.map(({ icon: Icon, name, files }) => (
                 <li key={name}>
                   <a
@@ -269,39 +229,24 @@ export default function App() {
                 </li>
               ))}
             </ul>
-            <p className="mt-5 text-sm text-ink-muted">
-              Using Homebrew or need a hand?{" "}
-              <a
-                href={INSTALL_URL}
-                className="underline underline-offset-4 hover:text-foreground"
-              >
-                Read the installation guide
-              </a>
-              .
-            </p>
           </div>
         </section>
       </main>
 
       <footer>
         <div
-          className={`${frame} flex flex-wrap items-center justify-between gap-4 py-5 text-sm`}
+          className={`${frame} flex items-center gap-3 py-3 text-sm text-ink-muted`}
         >
-          <p className="font-semibold">Kedip</p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-ink-muted">
-            <a href={GITHUB_URL} className="hover:underline">
-              GitHub
-            </a>
-            <a href={`${GITHUB_URL}/issues`} className="hover:underline">
-              Report an issue
-            </a>
-            <a
-              href={`${GITHUB_URL}/blob/main/LICENSE`}
-              className="hover:underline"
-            >
-              MIT License
-            </a>
-          </div>
+          <p className="font-semibold text-foreground">Kedip</p>
+          <a
+            href={`${GITHUB_URL}/blob/main/LICENSE`}
+            className="hover:underline"
+          >
+            MIT License
+          </a>
+          <a href={`${GITHUB_URL}/issues`} className="hover:underline">
+            Report an issue
+          </a>
         </div>
       </footer>
     </div>
